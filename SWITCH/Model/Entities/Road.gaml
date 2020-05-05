@@ -9,7 +9,12 @@ model SWITCH
 
 
 species Road {
+	string type;
+	string oneway;
+	float maxspeed;
+	int lanes;
+	
 	aspect default {
-		draw shape color: #gray;
+		draw shape color: #gray end_arrow: 5;
 	} 
 }

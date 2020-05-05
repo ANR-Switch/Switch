@@ -7,9 +7,12 @@
 
 model SWITCH
 
+
 import "Parameters.gaml"
 
 import "Entities/Road.gaml"
+
+import "Entities/Node.gaml"
 
 import "Entities/Individual.gaml"
 
@@ -54,8 +57,12 @@ global {
 	action global_init  {
 		//Initialization of the building using the shapefile of buildings
 		create Building from: building_shapefile;
+		
 		//Initialization of the road using the shapefile of roads
 		create Road from: road_shapefile;
+		
+		//Initialization of the nodes using the shapefile of nodes
+		create Node from: node_shapefile;
 		
 		//Creation of the people agents
 		create Individual number: 10 with: [home_building::one_of(Building), work_building::one_of(Building) ];

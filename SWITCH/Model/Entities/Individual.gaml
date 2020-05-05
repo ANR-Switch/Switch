@@ -328,7 +328,7 @@ species Individual skills: [moving] control:simple_bdi{
 	}
 	
 	aspect default {
-		draw circle(30) color: color border: #black depth: 1.0;
+		draw triangle(30) color: color rotate: heading border: #black depth: 1.0;
 	}	
 		
 }

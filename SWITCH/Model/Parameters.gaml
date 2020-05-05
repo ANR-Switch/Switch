@@ -11,8 +11,10 @@ global {
 	string dataset <- "../Datasets/Castanet Tolosan/"; // default
 	
 	
-	file road_shapefile <- file_exists(dataset+"roads.shp") ? shape_file(dataset+"roads.shp"):nil;
-	file building_shapefile <- file_exists(dataset+"buildings.shp") ? shape_file(dataset+"buildings.shp"):nil;
+	file road_shapefile <- shape_file(dataset+"roads.shp");
+	file building_shapefile <- shape_file(dataset+"buildings.shp");
+	file node_shapefile <- shape_file(dataset+"nodes.shp");
+	
 	
 	//date (et heure) de début de la simulation : 7/4/2020 à 6h
 	date starting_date <- date(2020,4,7,6);
