@@ -1,19 +1,16 @@
 /***
-* Part of the GAMA CoVid19 Modeling Kit
-* see http://gama-platform.org/covid19
+* Part of the SWITCH Project
 * Author: Patrick Taillandier
-* Tags: covid19,epidemiology, gis
+* Tags: gis, OSM data
 ***/
 
-model CoVid19
+model switch_utilities_gis
 
 global {
 	
 	//define the path to the dataset folder
 	string dataset_path <- "../Datasets/Castanet Tolosan/";
-	
-
-	
+		
 	//define the bounds of the studied area
 	file data_file <-shape_file(dataset_path + "boundary.shp");
 	
@@ -23,6 +20,9 @@ global {
 		
 	float mean_area_flats <- 200.0;
 	float min_area_buildings <- 20.0;
+	
+	float default_road_speed <- 50#km/#h;
+	int default_num_lanes <- 1;
 	
 	bool display_google_map <- true parameter:"Display google map image";
 	
@@ -51,8 +51,10 @@ global {
 		
 		write "OSM data retrieved";
 		list<geometry> geom <- osmfile  where (each != nil and not empty(Boundary overlapping each) );
+		list<geometry> roads_intersection <- geom where (each.attributes["highway"] != nil);
 		
-		create Building from: geom with:[building_att:: get("building"),shop_att::get("shop"), historic_att::get("historic"), 
+		
+		create Building from: (geom - roads_intersection) with:[building_att:: get("building"),shop_att::get("shop"), historic_att::get("historic"), 
 			office_att::get("office"), military_att::get("military"),sport_att::get("sport"),leisure_att::get("lesure"),
 			height::float(get("height")), flats::int(get("building:flats")), levels::int(get("building:levels"))
 		];
@@ -125,19 +127,27 @@ global {
 			}
 		}
 		
-		list<geometry> geom_road <- osmfile  where (each != nil and not empty(Boundary overlapping each));
-		loop geom over: geom_road {
+		map<point, Node> nodes_map;
+	
+		loop geom over: roads_intersection {
 			string highway_str <- string(geom get ("highway"));
-				if (length(geom.points) > 1 ) {
-					string oneway <- string(geom get ("oneway"));
-					float maxspeed_val <- float(geom get ("maxspeed"));
-					string lanes_str <- string(geom get ("lanes"));
-					int lanes_val <- empty(lanes_str) ? 1 : ((length(lanes_str) > 1) ? int(first(lanes_str)) : int(lanes_str));
+			if (length(geom.points) > 1 ) {
+				string oneway <- string(geom get ("oneway"));
+				float maxspeed_val <- float(geom get ("maxspeed"));
+				string lanes_str <- string(geom get ("lanes"));
+				int lanes_val <- empty(lanes_str) ? 1 : ((length(lanes_str) > 1) ? int(first(lanes_str)) : int(lanes_str));
 					create Road with: [shape ::geom, type:: highway_str, oneway::oneway, maxspeed::maxspeed_val, lanes::lanes_val] {
-						if lanes < 1 {lanes <- 1;} //default value for the lanes attribute
-						if maxspeed = 0 {maxspeed <- 50.0;} //default value for the maxspeed attribute
+						if lanes < 1 {lanes <- default_num_lanes;} //default value for the lanes attribute
+						if maxspeed = 0 {maxspeed <- default_road_speed;} //default value for the maxspeed attribute
+					}
+			} else if (length(geom.points) = 1 ) {
+				if ( highway_str != nil ) {
+					string crossing <- string(geom get ("crossing"));
+					create Node with: [shape ::geom, type:: highway_str, crossing::crossing] {
+						nodes_map[location] <- self;
 					}
 				}
+			}
 		}
 		
 		graph network<- main_connected_component(as_edge_graph(Road));
@@ -146,8 +156,37 @@ global {
 				do die;
 			}
 		}
-		save Road type:"shp" to:dataset_path +"roads.shp" attributes:["lanes"::self.lanes, "maxspeed"::maxspeed, "oneway"::oneway] ;
-		do load_satellite_image;
+		
+		write "Road and node agents created";
+		
+		ask Road {
+			point ptF <- first(shape.points);
+			if (not(ptF in nodes_map.keys)) {
+				create Node with:[location::ptF] {
+					nodes_map[location] <- self;
+				}	
+			}
+			point ptL <- last(shape.points);
+			if (not(ptL in nodes_map.keys)) {
+				create Node with:[location::ptL] {
+					nodes_map[location] <- self;
+				}
+			}
+		}
+			
+		write "Supplementary node agents created";
+		ask Node {
+			if (empty (Road overlapping (self))) {
+				do die;
+			}
+		}
+		
+		write "node agents filtered";
+		save Road type:"shp" to:dataset_path +"roads.shp" attributes:["type"::type, "lanes"::self.lanes, "maxspeed"::maxspeed, "oneway"::oneway] ;
+		
+		save Node type:"shp" to:dataset_path +"nodes.shp" attributes:["type"::type, "crossing"::crossing] ;
+		
+		//do load_satellite_image;
 	}
 	
 	
@@ -202,18 +241,32 @@ global {
 }
 
 
+species Node {
+	string type;
+	string crossing;
+	aspect default { 
+		if (type = "traffic_signals") {
+			draw circle(2#px) color: #green border: #black depth: 1.0;
+		} else {
+			draw square(2#px) color: #magenta border: #black depth: 1.0 ;
+		}
+		
+	}
+}
+
+
 species Road{
 	rgb color <- #red;
 	string type;
 	string oneway;
 	float maxspeed;
 	int lanes;
-	aspect base_ligne {
-		draw shape color: color; 
+	aspect default {
+		draw shape color: color end_arrow: 5; 
 	}
 	
 } 
-grid cell width: 1500 height:1500 use_individual_shapes: false use_regular_agents: false use_neighbors_cache: false;
+grid cell ;//width: 1500 height:1500 use_individual_shapes: false use_regular_agents: false use_neighbors_cache: false;
 
 species Building {
 	string type;
@@ -245,7 +298,9 @@ experiment generateGISdata type: gui {
 		display map type: opengl draw_env: false{
 			image dataset_path +"satellite.png"  transparency: 0.2 refresh: false;
 			species Building;
+			species Node;
 			species Road;
+			
 		}
 	}
 }

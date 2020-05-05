@@ -21,29 +21,28 @@ global {
 
 experiment "Abstract Experiment" virtual:true{
 
-	
-
 	string ask_dataset_path {
 		int index <- -1;
 		string question <- "Available datasets :\n ";
-		list<string> dirs <- self.gather_dataset_names();
+		list<string> dirs <- gather_dataset_names();
 		loop i from: 0 to: length(dirs) - 1 {
 			question <- question + (i+1) + "- " + dirs[i] + " \n ";
 		}
 
 		loop while: (index < 0) or (index > length(dirs) - 1) {
-			index <- int(user_input(question, ["Your choice"::1])["Your choice"]) - 1;
+			index <- int(user_input(question, [enter("Your choice",1)])["Your choice"]) -1;
 		}
 		return dataset_folder + dirs[index] + "/";
 	}
 	
-	
-	list<string> gather_dataset_names {
-		list<string> dirs <- folder(dataset_folder).contents  ;
-		dirs <- dirs where folder_exists(dataset_folder + each);
+	/*
+	 * Gather all the sub-folder of the given dataset_folder
+	 */
+	list<string> gather_dataset_names(string dataset_fol <- world.dataset_folder) {
+		list<string> dirs <- folder(dataset_fol).contents  ;
+		dirs <- dirs where folder_exists(dataset_fol + each);
 		return dirs;
 	}
-	
 	
 	
 	
