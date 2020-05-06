@@ -33,10 +33,16 @@ global {
 	float number_of_users <- 0.0;
 	float percentage_of_drivers <- 0.0;
 	
+
 	//speed
-	float car_speed <- 25.0;
+	float car_speed <- 20.0;
 	float bus_speed <- 10.0;
-	float bike_speed <- 10.0;
-	float walk_speed <- 5.0;
+	float bike_speed <- 8.0;
+	float walk_speed <- 3.0;
+
+	int nb_individuals <- 1000;
+	
+	bool road_speed_in_km_h <- true;
+		
 		
 }

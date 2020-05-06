@@ -2,7 +2,7 @@
 * ... 
 ***/
 
-model CoVid19
+model SWITCH
 
 import "../Model/Global.gaml"
 

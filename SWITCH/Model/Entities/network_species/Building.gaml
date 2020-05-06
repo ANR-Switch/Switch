@@ -7,14 +7,13 @@
 
 model SWITCH
 
+import "Node.gaml"
 
-species Road {
+species Building parent: Node {
+	
 	string type;
-	string oneway;
-	float maxspeed;
-	int lanes;
 	
 	aspect default {
-		draw shape color: #gray end_arrow: 5;
-	} 
+		draw shape color: #gray border: #black;
+	}
 }
