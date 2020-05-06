@@ -136,9 +136,23 @@ global {
 				float maxspeed_val <- float(geom get ("maxspeed"));
 				string lanes_str <- string(geom get ("lanes"));
 				int lanes_val <- empty(lanes_str) ? 1 : ((length(lanes_str) > 1) ? int(first(lanes_str)) : int(lanes_str));
-					create Road with: [shape ::geom, type:: highway_str, oneway::oneway, maxspeed::maxspeed_val, lanes::lanes_val] {
+					create Road from: [geom] with: [type:: highway_str, lanes::lanes_val] {
 						if lanes < 1 {lanes <- default_num_lanes;} //default value for the lanes attribute
 						if maxspeed = 0 {maxspeed <- default_road_speed;} //default value for the maxspeed attribute
+						switch oneway {
+							match "no" {
+								create Road {
+									lanes <- lanesbackw > 0 ? lanesbackw : max([1, int(myself.lanes / 2.0)]);
+									shape <- polyline(reverse(myself.shape.points));
+									maxspeed <- myself.maxspeed;
+								}
+								lanes <- lanesforwa > 0 ? lanesbackw : int(lanes / 2.0 + 0.5);
+							}
+							match "-1" {
+								shape <- polyline(reverse(shape.points));
+							}
+
+						}
 					}
 			} else if (length(geom.points) = 1 ) {
 				if ( highway_str != nil ) {
@@ -182,7 +196,7 @@ global {
 		}
 		
 		write "node agents filtered";
-		save Road type:"shp" to:dataset_path +"roads.shp" attributes:["type"::type, "lanes"::self.lanes, "maxspeed"::maxspeed, "oneway"::oneway] ;
+		save Road type:"shp" to:dataset_path +"roads.shp" attributes:["junction"::junction, "type"::type, "lanes"::self.lanes, "maxspeed"::maxspeed, "oneway"::oneway] ;
 		
 		save Node type:"shp" to:dataset_path +"nodes.shp" attributes:["type"::type, "crossing"::crossing] ;
 		
@@ -260,6 +274,9 @@ species Road{
 	string type;
 	string oneway;
 	float maxspeed;
+	string junction;
+	int lanesforwa;
+	int lanesbackw;
 	int lanes;
 	aspect default {
 		draw shape color: color end_arrow: 5; 

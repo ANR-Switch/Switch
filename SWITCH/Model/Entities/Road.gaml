@@ -11,6 +11,7 @@ model SWITCH
 species Road {
 	string type;
 	string oneway;
+	string junction;
 	float maxspeed;
 	int lanes;
 	

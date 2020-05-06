@@ -32,6 +32,10 @@ global {
 		
 	float number_of_users <- 0.0;
 	float percentage_of_drivers <- 0.0;
+	
+	int nb_individuals <- 1000;
+	
+	bool road_speed_in_km_h <- true;
 		
 		
 }

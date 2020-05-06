@@ -59,14 +59,14 @@ global {
 		create Building from: building_shapefile;
 		
 		//Initialization of the road using the shapefile of roads
-		create Road from: road_shapefile;
+		create Road from: road_shapefile with: [maxspeed:: float(get("maxspeed")) * (road_speed_in_km_h ? #km/#h : 1.0)];
 		
 		//Initialization of the nodes using the shapefile of nodes
 		create Node from: node_shapefile;
 		
 		//Creation of the people agents
-		create Individual number: 10 with: [home_building::one_of(Building), work_building::one_of(Building) ];
-      	road_network <- as_edge_graph(Road);
+		create Individual number: nb_individuals with: [home_building::one_of(Building), work_building::one_of(Building) ];
+      	road_network <- directed(as_edge_graph(Road));
       	
 	}
 }
