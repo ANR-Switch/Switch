@@ -10,7 +10,7 @@ model SWITCH
 import "../Global.gaml"
 import "../Parameters.gaml"
 import "../Constants.gaml"
-import "Building.gaml"
+import "../Entities/network_species/Building.gaml"
 
 species Individual skills: [moving] control:simple_bdi{
 	list<map<list<int>, predicate>> agenda_week;
