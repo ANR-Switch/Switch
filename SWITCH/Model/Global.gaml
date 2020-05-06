@@ -10,13 +10,13 @@ model SWITCH
 
 import "Parameters.gaml"
 
-import "Entities/Road.gaml"
+import "Entities/network_species/Road.gaml"
 
-import "Entities/Node.gaml"
+import "Entities/network_species/Node.gaml"
 
 import "Entities/Individual.gaml"
 
-import "Entities/Building.gaml"
+import "Entities/network_species/Building.gaml"
 
 global {
 		//variables environement de transport :

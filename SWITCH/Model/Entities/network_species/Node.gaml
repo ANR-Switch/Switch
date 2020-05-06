@@ -8,6 +8,6 @@
 model SWITCH
 
 
-species Hub {
-	
+species Node {
+	string type;
 }

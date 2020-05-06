@@ -1,12 +1,12 @@
 /**
 * Name: PrivateTransport
 * Based on the internal empty template. 
-* Author: Loïc
+* Author: Loï¿½c
 * Tags: 
 */
 
 
-model PrivateTransport
+model SWITCH
 
 /* Insert your model definition here */
 

@@ -1,12 +1,12 @@
 /**
 * Name: Metro
 * Based on the internal empty template. 
-* Author: Loïc
+* Author: Loï¿½c
 * Tags: 
 */
 
 
-model Metro
+model SWITCH
 
 /* Insert your model definition here */
 

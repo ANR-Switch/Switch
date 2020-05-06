@@ -1,12 +1,12 @@
 /**
 * Name: Tram
 * Based on the internal empty template. 
-* Author: Loïc
+* Author: Loï¿½c
 * Tags: 
 */
 
 
-model Tram
+model SWITCH
 
 /* Insert your model definition here */
 

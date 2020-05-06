@@ -7,9 +7,12 @@
 
 model SWITCH
 
+import "Node.gaml"
 
-species Building {
+species Building parent: Node {
+	
 	string type;
+	
 	aspect default {
 		draw shape color: #gray border: #black;
 	}

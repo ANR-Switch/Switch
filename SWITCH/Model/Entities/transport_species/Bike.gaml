@@ -1,12 +1,12 @@
 /**
 * Name: Bike
 * Based on the internal empty template. 
-* Author: Loïc
+* Author: Loï¿½c
 * Tags: 
 */
 
 
-model Bike
+model SWITCH
 
 /* Insert your model definition here */
 

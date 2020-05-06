@@ -1,12 +1,12 @@
 /**
 * Name: PublicTransport
 * Based on the internal empty template. 
-* Author: Loïc
+* Author: Loï¿½c
 * Tags: 
 */
 
 
-model PublicTransport
+model SWITCH
 
 /* Insert your model definition here */
 
