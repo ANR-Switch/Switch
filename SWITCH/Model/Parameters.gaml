@@ -19,7 +19,7 @@ global {
 	//date (et heure) de début de la simulation : 7/4/2020 à 6h
 	date starting_date <- date(2020,4,7,6);
 	
-	list<string> type_mode <- ["car","bus","bike","feet"];
+	list<string> type_mode <- ["car","bus","bike","walk"];
 	list<string> criteria <- ["comfort", "safety", "price","ecology","simplicity","time"];
 	//Step value
 	float step <- 1 #mn;
@@ -32,6 +32,11 @@ global {
 		
 	float number_of_users <- 0.0;
 	float percentage_of_drivers <- 0.0;
-		
+	
+	//speed
+	float car_speed <- 25.0;
+	float bus_speed <- 10.0;
+	float bike_speed <- 10.0;
+	float walk_speed <- 5.0;
 		
 }

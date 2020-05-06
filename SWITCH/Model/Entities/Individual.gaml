@@ -25,10 +25,19 @@ species Individual skills: [moving] control:simple_bdi{
 	
 	rgb color <-#red;
 	
+	int age;
+	string gender;
+	// salaire ? catégorie socio ? 
+	
 	float distance;
 	
+	float time_bike;
+	float time_car;
+	float time_bus;
+	float time_walk;
 	
-	
+	float price_car;
+	float price_bus;
 	
 	init{
 		
@@ -43,10 +52,19 @@ species Individual skills: [moving] control:simple_bdi{
 		
 		
 		
+		
 		//People agents are located anywhere in one of the building
 		location <- home_building.location;
 		distance <- home_building distance_to work_building;
+		time_bike <- distance/bike_speed;
+		time_car <- distance/car_speed;
+		time_bus <- distance/bus_speed;
+		time_walk <- distance/walk_speed;
 		
+		price_bus <- subscription_price/(21.8*2); //21.8 est le nombre moyen de jour "de semaine" par mois
+		price_car <- (7.2*distance/100*gas_price)/(21.8*2);
+		price_bus<- 0.68;
+		price_car <- 0.8;
 		
 		//0 = lundi; 6 = dimanche
 		loop i from: 0 to: 6 {
@@ -82,15 +100,15 @@ species Individual skills: [moving] control:simple_bdi{
 					}
 					match "price" {
 						//on considère qu'une voiture dépense 7,2 litres pour 100 km(moyenne sur 2019)
-						float abs_price <- 7.2*distance/100*gas_price;
-						//voir comment normaliser
-						val <-0.5;
+						val <- 0.5;
+						//val <- 1- (price_car/max([price_car,price_bus]));
 					}
 					match "time" {
 						//on considère que la voiture à une allure moyenne de 25km/h
-						float abs_time <- distance/25.0;
-						//pareil, normaliser en comparant avec les autres ?
+						time_car <- distance/25.0;
+						//val<- time_car/max([time_car,time_bike, time_bus, time_walk]);
 						val <-0.5;
+
 					}
 					match "ecology"{
 						val <-0.0;
@@ -115,9 +133,9 @@ species Individual skills: [moving] control:simple_bdi{
 						val <- 1.0;
 					}
 					match "time" {
-						//on considère que les vélos se déplacent en moyenne à 10km/h
-						float abs_time <- distance/10.0;
+						//val<-time_bike/max([time_car,time_bike, time_bus, time_walk]);
 						val <-0.5;
+
 					}
 					match "ecology"{
 						val <- 1.0;
@@ -141,13 +159,14 @@ species Individual skills: [moving] control:simple_bdi{
 						val <- val1/((30/bus_freq)* bus_capacity);
 					}
 					match "price" {
-					 	float abs_price <- subscription_price;
-						val <-0.5;
+					 	val <-0.5;
+					 	//val <- price_bus/max(price_car,price_bus);
 					}
 					match "time" {
 						// On considère qu'un bus se déplace à 10km/h
-						float abs_time <- distance/10.0;
+						//val<-time_bus/max(time_car,time_bike, time_bus, time_walk);
 						val <-0.5;
+
 					}
 					match "ecology"{
 						val <- 0.75;
@@ -166,7 +185,7 @@ species Individual skills: [moving] control:simple_bdi{
 				}
 				
 			}//end match bus
-			match "feet"{
+			match "walk"{
 				switch criterion {
 					match "comfort" { 
 						if(distance < 3){
@@ -179,7 +198,7 @@ species Individual skills: [moving] control:simple_bdi{
 						val <- 1.0;
 					}
 					match "time" {
-						float abs_time <- distance/5;
+						//val<-time_walk/max(time_car,time_bike, time_bus, time_walk);
 						val <-0.5;
 					}
 					match "ecology"{
@@ -201,7 +220,7 @@ species Individual skills: [moving] control:simple_bdi{
 					}			
 					
 				}//end match criterion
-			}//end match feet
+			}//end match walk
 		}//end switch
 		
 		return val;
@@ -311,7 +330,7 @@ species Individual skills: [moving] control:simple_bdi{
 		color <- #green;
 	}
 	
-	plan walking intention: at_target  finished_when: target = location priority: compute_priority_mobility_mode("feet"){
+	plan walking intention: at_target  finished_when: target = location priority: compute_priority_mobility_mode("walk"){
 		do goto target: target on: road_network speed: 5 #km/#h;
 		if (target = location) {
 			do add_belief(at_target);
@@ -328,7 +347,7 @@ species Individual skills: [moving] control:simple_bdi{
 	}
 	
 	aspect default {
-		draw triangle(30) color: color rotate: heading border: #black depth: 1.0;
+		draw triangle(50) color: color rotate: heading border: #black depth: 1.0;
 	}	
 		
 }
