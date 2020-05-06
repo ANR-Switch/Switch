@@ -66,7 +66,7 @@ global {
 		
 		//Creation of the people agents
 		create Individual number: nb_individuals with: [home_building::one_of(Building), work_building::one_of(Building) ];
-      	road_network <- directed(as_edge_graph(Road));
+      	road_network <- (as_edge_graph(Road));
       	
 	}
 }

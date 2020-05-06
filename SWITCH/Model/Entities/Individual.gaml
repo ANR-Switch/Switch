@@ -15,6 +15,7 @@ import "Building.gaml"
 species Individual skills: [moving] control:simple_bdi{
 	list<map<list<int>, predicate>> agenda_week;
 	point target;
+	path my_path;
 	Building target_building;
 	
 	map<string,int> grades;//how agent care for differents criteria	
@@ -296,33 +297,49 @@ species Individual skills: [moving] control:simple_bdi{
 		
 	//normal move plan
 	plan driving intention: at_target  finished_when: target = location priority: compute_priority_mobility_mode("car"){
-		do goto target: target on: road_network speed: 20 #km/#h return_path: true;
+		if (my_path = nil) {
+			my_path <- road_network path_between (location, target);
+		}
+		do follow path: my_path speed: 20 #km/#h return_path: true;
 		if (target = location) {
 			do add_belief(at_target);
+			my_path <- nil;
 		}
 		color <- #red;
 	}
 	
 	plan cycling intention: at_target  finished_when: target = location priority: compute_priority_mobility_mode("bike"){
-		do goto target: target on: road_network speed: 10 #km/#h;
+		if (my_path = nil) {
+			my_path <- road_network path_between (location, target);
+		}
+		do follow path: my_path speed: 8 #km/#h return_path: true;
 		if (target = location) {
 			do add_belief(at_target);
+			my_path <- nil;
 		}
 		color <- #green;
 	}
 	
 	plan walking intention: at_target  finished_when: target = location priority: compute_priority_mobility_mode("feet"){
-		do goto target: target on: road_network speed: 5 #km/#h;
+		if (my_path = nil) {
+			my_path <- road_network path_between (location, target);
+		}
+		do follow path: my_path speed: 3 #km/#h return_path: true;
 		if (target = location) {
 			do add_belief(at_target);
+			my_path <- nil;
 		}
 		color <- #yellow;
 	}
 	
 	plan taking_bus intention: at_target  finished_when: target = location priority: compute_priority_mobility_mode("bus"){
-		do goto target: target on: road_network speed: 10 #km/#h;
+		if (my_path = nil) {
+			my_path <- road_network path_between (location, target);
+		}
+		do follow path: my_path speed: 10 #km/#h return_path: true;
 		if (target = location) {
 			do add_belief(at_target);
+			my_path <- nil;
 		}
 		color <- #blue;
 	}

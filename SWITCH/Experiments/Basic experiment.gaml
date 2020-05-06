@@ -2,7 +2,7 @@
 ...
 ***/
 
-model CoVid19
+model SWITCH
 
 import "Abstract Experiment.gaml"
 
