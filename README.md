@@ -16,7 +16,12 @@ To run simulations, you have to use the last version of gama (git version or con
 
 ## Importing the model in GAMA
 1. Launch GAMA
-2. Follow these instructions to import the switch project (that should be located in the Github folder) : https://gama-platform.github.io/wiki/ImportingModels
+2. Follow these [instructions](https://gama-platform.github.io/wiki/ImportingModels) to import the switch project (that should be located in the Github folder). If you want to be able to update the model, "copy projects into workspace" has to be unchecked.
+
+
+## Run an experiment
+1. Once the project has been added to GAMA (in "User model"), open the file "Basic experiment.gaml" in the Experiments folder (in the SWITCH Model project) by double-cliking on it. 
+2. Click on the green button "Basic experiment", for more details on launching experiments see this [page](https://gama-platform.github.io/wiki/LaunchingExperiments)
 
 
 
