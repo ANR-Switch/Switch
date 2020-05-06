@@ -9,5 +9,5 @@ model SWITCH
 
 
 species Node {
-	string type;
+	
 }
