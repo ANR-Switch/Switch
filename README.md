@@ -9,9 +9,12 @@ To run simulations, you have to use the last version of gama (git version or con
 * developer version: follow the instruction given on this [page](https://github.com/gama-platform/gama/wiki/InstallingGitVersion)
 
 ## Importing the model from git
-1. First, install github Destop from this [site] (https://desktop.github.com/)
+1. First, install github Desktop from this [site] (https://desktop.github.com/). As github Desktop is only available on MacOS and Windows, if you are running a linux distribution a good alternative is [gitKraken] (https://www.gitkraken.com/) 
+
 2. Launch github Desktop
+
 3. In the file menu, choose "clone repository", then in the URL panel, in the "URL repisitory" field, write "https://github.com/ANR-Switch/Switch.git", then push the clone button
+<img src="images_guide/github_d_4.png">
 4. To update the switch model, just click on the "Fetch origin" button
 
 ## Importing the model in GAMA
