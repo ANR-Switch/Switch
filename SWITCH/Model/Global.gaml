@@ -10,13 +10,11 @@ model SWITCH
 
 import "Parameters.gaml"
 
+import "Entities/network_species/Building.gaml"
+
 import "Entities/network_species/Road.gaml"
 
-import "Entities/network_species/Node.gaml"
-
 import "Entities/Individual.gaml"
-
-import "Entities/network_species/Building.gaml"
 
 global {
 		//variables environement de transport :
@@ -62,7 +60,7 @@ global {
 		create Road from: road_shapefile with: [maxspeed:: float(get("maxspeed")) * (road_speed_in_km_h ? #km/#h : 1.0)];
 		
 		//Initialization of the nodes using the shapefile of nodes
-		create Node from: node_shapefile;
+		create Crossroad from: node_shapefile;
 		
 		//Creation of the people agents
 		create Individual number: nb_individuals with: [home_building::one_of(Building), work_building::one_of(Building) ];
