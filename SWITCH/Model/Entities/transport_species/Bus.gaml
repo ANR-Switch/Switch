@@ -8,5 +8,13 @@
 
 model SWITCH
 
-/* Insert your model definition here */
+import "PublicTransport.gaml"
+
+species Bus parent: PublicTransport {
+	
+	aspect default {
+		draw square(1#px) color: #green border: #black depth: 1.0 ;
+	}
+	
+}
 

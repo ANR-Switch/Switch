@@ -8,5 +8,14 @@
 
 model SWITCH
 
-/* Insert your model definition here */
+import "PublicTransport.gaml"
+
+species Metro parent: PublicTransport {
+	//TODO
+	
+	aspect default {
+		draw square(1#px) color: #green border: #black depth: 1.0 ;
+	}
+	
+}
 

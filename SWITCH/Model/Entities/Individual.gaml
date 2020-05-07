@@ -264,7 +264,6 @@ species Individual skills: [moving] control:simple_bdi{
 		//color <- #blue;
 	}
 	
-	
 	plan do_stay_at_home intention: staying_at_home{
 		if (not has_belief(at_target)) {
 			target <- any_location_in(home_building);
@@ -309,10 +308,7 @@ species Individual skills: [moving] control:simple_bdi{
 		}
 		//color <- #blue;
 	}
-	
-	
-	
-	
+
 		
 	//normal move plan
 	plan driving intention: at_target  finished_when: target = location priority: compute_priority_mobility_mode("car"){
