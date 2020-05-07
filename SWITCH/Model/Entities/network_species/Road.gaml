@@ -28,8 +28,11 @@ species Road {
 	//is the road is oneway or not
 	string oneway;
 	
+	//length of the road (in meters)
+	float length <- shape.perimeter;
+	
 	//maximum space capacity of the road (in meters)
-	float max_capacity <- shape.perimeter * nb_lanes;
+	float max_capacity <- length * nb_lanes;
 	
 	//actual free space capacity of the road (in meters)
 	float current_capacity <- max_capacity;
@@ -53,6 +56,18 @@ species Road {
 		current_capacity <- current_capacity - t.size;
 		present_transports <- present_transports + [t];
 	}
+	
+	bool canAcceptTransport(Transport t){
+		return current_capacity > t.size;
+	}
+	
+	reflex getOutRoad when: present_transports[0].location = end_node.location{
+		loop while: present_transports[0].location = end_node.location{
+			
+		}
+	}
+	
+	
 	
 	
 	aspect default {

@@ -8,6 +8,7 @@
 
 model SWITCH
 
+import "../network_species/Road.gaml"
 
 species Transport {
 	
@@ -19,6 +20,9 @@ species Transport {
 	
 	//passenger capacity 
 	int max_passenger;
+	
+	//Next road to travel on
+	Road nextRoad;
 	
 	aspect default {
 		draw square(1#px) color: #green border: #black depth: 1.0 ;
