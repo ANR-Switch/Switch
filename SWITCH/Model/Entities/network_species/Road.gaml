@@ -42,6 +42,18 @@ species Road {
 	list<Bike> present_bikes;
 	list<Transport> present_transports;
 	
+	action getBikeInRoad(Bike b){
+		if not has_bike_lane {
+			current_capacity <- current_capacity - b.size;
+		}	
+		present_bikes <- present_bikes + [b];
+	}
+	
+	action getInRoad(Transport t){
+		current_capacity <- current_capacity - t.size;
+		present_transports <- present_transports + [t];
+	}
+	
 	
 	aspect default {
 		draw shape color: #gray end_arrow: 5;
