@@ -50,7 +50,7 @@ global {
 	
 	geometry shape <- envelope(road_shapefile);
 	//Graph of the road network
-	graph road_network;
+	graph<Crossroad,Road> road_network;
 	
 	action global_init  {
 		//Initialization of the building using the shapefile of buildings
@@ -64,6 +64,10 @@ global {
 		
 		//Creation of the people agents
 		create Individual number: nb_individuals with: [home_building::one_of(Building), work_building::one_of(Building) ];
-      	road_network <- (as_edge_graph(Road));
+      	road_network <- directed(as_edge_graph(Road,Crossroad));
+      	ask Road {
+      		start_node <- road_network source_of self;
+      		end_node <- road_network target_of self;
+      	}
 	}
 }

@@ -50,7 +50,7 @@ global {
 		}
 		
 		write "OSM data retrieved";
-		list<geometry> geom <- osmfile  where (each != nil and not empty(Boundary overlapping each) );
+		list<geometry> geom <- osmfile  where (each != nil);// and not empty(Boundary overlapping each) );
 		list<geometry> roads_intersection <- geom where (each.attributes["highway"] != nil);
 		
 		
@@ -59,7 +59,7 @@ global {
 			height::float(get("height")), flats::int(get("building:flats")), levels::int(get("building:levels"))
 		];
 		ask Building {
-			if (shape = nil) {do die;} 
+			if (shape = nil) or empty(Boundary overlapping self) {do die;} 
 		}
 		list<Building> bds <- Building where (each.shape.area > 0);
 		ask Building where ((each.shape.area = 0) and (each.shape.perimeter = 0)) {
@@ -132,15 +132,22 @@ global {
 		loop geom over: roads_intersection {
 			string highway_str <- string(geom get ("highway"));
 			if (length(geom.points) > 1 ) {
-				string oneway <- string(geom get ("oneway"));
-				float maxspeed_val <- float(geom get ("maxspeed"));
-				string lanes_str <- string(geom get ("lanes"));
-				int lanes_val <- empty(lanes_str) ? 1 : ((length(lanes_str) > 1) ? int(first(lanes_str)) : int(lanes_str));
+				if not(empty(Boundary overlapping geom)) {
+					string oneway <- string(geom get ("oneway"));
+					float maxspeed_val <- float(geom get ("maxspeed"));
+					string lanes_str <- string(geom get ("lanes"));
+					int lanes_val <- empty(lanes_str) ? 1 : ((length(lanes_str) > 1) ? int(first(lanes_str)) : int(lanes_str));
 					create Road from: [geom] with: [type:: highway_str, lanes::lanes_val] {
 						if lanes < 1 {lanes <- default_num_lanes;} //default value for the lanes attribute
 						if maxspeed = 0 {maxspeed <- default_road_speed;} //default value for the maxspeed attribute
 						switch oneway {
-							match "no" {
+							match "yes"  {
+								
+							}
+							match "-1" {
+								shape <- polyline(reverse(shape.points));
+							}
+							default {
 								create Road {
 									lanes <- lanesbackw > 0 ? lanesbackw : max([1, int(myself.lanes / 2.0)]);
 									shape <- polyline(reverse(myself.shape.points));
@@ -148,12 +155,11 @@ global {
 								}
 								lanes <- lanesforwa > 0 ? lanesbackw : int(lanes / 2.0 + 0.5);
 							}
-							match "-1" {
-								shape <- polyline(reverse(shape.points));
-							}
 
 						}
 					}
+				
+				}
 			} else if (length(geom.points) = 1 ) {
 				if ( highway_str != nil ) {
 					string crossing <- string(geom get ("crossing"));
@@ -189,8 +195,9 @@ global {
 		}
 			
 		write "Supplementary node agents created";
+		list<point> locs <- remove_duplicates(Road accumulate ([first(each.shape.points),last(each.shape.points)]));
 		ask Node {
-			if (empty (Road overlapping (self))) {
+			if not (location in locs) {
 				do die;
 			}
 		}

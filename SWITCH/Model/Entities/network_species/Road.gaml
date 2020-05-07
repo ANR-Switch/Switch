@@ -25,6 +25,9 @@ species Road {
 	//number of motorized vehicule lane in this road
 	int nb_lanes;
 	
+	//is the road is oneway or not
+	string oneway;
+	
 	//maximum space capacity of the road (in meters)
 	float max_capacity <- shape.perimeter * nb_lanes;
 	
