@@ -56,7 +56,10 @@ species Road {
 	action getInRoad(Transport t){
 		current_capacity <- current_capacity - t.size;
 		present_transports << t;
-		t.speed <- getRoadSpeed(t);
+		ask t{ 
+			do goto speed:myself.getRoadSpeed(self) target:myself.end_node;
+			roadPointer <- roadPointer +1;
+		}
 	}
 	
 	bool canAcceptTransport(Transport t){
