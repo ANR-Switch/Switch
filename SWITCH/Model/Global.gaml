@@ -44,10 +44,6 @@ global {
 	//simplicity
 	
 	
-
-
-	
-	
 	geometry shape <- envelope(road_shapefile);
 	//Graph of the road network
 	graph<Crossroad,Road> road_network;
@@ -57,7 +53,7 @@ global {
 		create Building from: building_shapefile;
 		
 		//Initialization of the road using the shapefile of roads
-		create Road from: road_shapefile with: [maxspeed:: float(get("maxspeed")) * (road_speed_in_km_h ? #km/#h : 1.0)];
+		create Road from: road_shapefile with: [max_speed:: float(get("maxspeed")) * (road_speed_in_km_h ? #km/#h : 1.0)];
 		
 		//Initialization of the nodes using the shapefile of nodes
 		create Crossroad from: node_shapefile;
