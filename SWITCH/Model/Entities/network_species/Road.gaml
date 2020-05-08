@@ -13,6 +13,13 @@ import "../transport_species/Bike.gaml"
 
 species Road {
 	
+	//type of road (the OpenStreetMap highway feature: https://wiki.openstreetmap.org/wiki/Map_Features)
+	string type;
+	
+	
+	//is roundabout or not (OSM information)
+	string junction;
+	
 	//start crossroad node
 	Crossroad start_node;
 	

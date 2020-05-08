@@ -53,10 +53,19 @@ global {
 		create Building from: building_shapefile;
 		
 		//Initialization of the road using the shapefile of roads
-		create Road from: road_shapefile with: [max_speed:: float(get("maxspeed")) * (road_speed_in_km_h ? #km/#h : 1.0)];
+		create Road from: road_shapefile with: [
+			type::string(get("type")),
+			oneway::string(get("oneway")),
+			junction::string(get("junction")),
+			nb_lanes::int(get("lanes")),
+			max_speed:: float(get("maxspeed")) * (road_speed_in_km_h ? #km/#h : 1.0)
+		];
 		
 		//Initialization of the nodes using the shapefile of nodes
-		create Crossroad from: node_shapefile;
+		create Crossroad from: node_shapefile  with:[
+			type::string(get("type")),
+			crossing::string(get("crossing"))
+		];
 		
 		//Creation of the people agents
 		create Individual number: nb_individuals with: [home_building::one_of(Building), work_building::one_of(Building) ];
