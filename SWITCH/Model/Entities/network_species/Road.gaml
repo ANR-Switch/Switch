@@ -65,6 +65,8 @@ species Road {
 	
 	reflex getOutRoad when: not empty(present_transports) and (present_transports[0].location = end_node.location){
 		bool nextRoadOk <- present_transports[0].nextRoad.canAcceptTransport(present_transports[0]);
+		// this loop help to free space easily if more than one transport could arrived at the end of the road
+		// during the time step
 		loop while: not empty(present_transports) and (present_transports[0].location = end_node.location) and nextRoadOk{
 			ask present_transports[0].nextRoad { do getInRoad(myself.present_transports[0]); }
 			// free leaving transport space in the road
@@ -76,9 +78,14 @@ species Road {
 		}
 	}
 	
-	reflex getBikeOutRoad when: present_bikes[0].location = end_node.location{
-		loop while: present_bikes[0].location = end_node.location{
+	reflex getBikeOutRoad when: not empty(present_bikes) and present_bikes[0].location = end_node.location{
+		// here we're not checking nextRoad capacity because we assume that even if there is jam (max capacity reached)
+		// bikes can find a way in the road
+		loop while: not empty(present_bikes) and present_bikes[0].location = end_node.location{
 			ask present_bikes[0].nextRoad { do getBikeInRoad(myself.present_bikes[0]); }
+			if not has_bike_lane {
+				current_capacity <- current_capacity + present_bikes[0].size;
+			}
 			//remove transport from the road
 			present_bikes <- copy_between(present_bikes, 1,length(present_bikes));
 		}
