@@ -49,19 +49,19 @@ species Road {
 		if not has_bike_lane {
 			current_capacity <- current_capacity - b.size;
 		}	
-		present_bikes <- present_bikes + [b];
+		present_bikes << b;
 	}
 	
 	action getInRoad(Transport t){
 		current_capacity <- current_capacity - t.size;
-		present_transports <- present_transports + [t];
+		present_transports << t;
 	}
 	
 	bool canAcceptTransport(Transport t){
 		return current_capacity > t.size;
 	}
 	
-	reflex getOutRoad when: present_transports[0].location = end_node.location{
+	reflex getOutRoad when: not empty(present_transports) and (present_transports[0].location = end_node.location){
 		loop while: present_transports[0].location = end_node.location{
 			
 		}
