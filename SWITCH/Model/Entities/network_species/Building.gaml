@@ -7,11 +7,14 @@
 
 model SWITCH
 
-import "Node.gaml"
+import "Hub_subspecies/HubPrivate.gaml"
 
-species Building parent: Node {
+
+species Building {
 	
 	string type;
+	
+	list<HubPrivate> parkings;
 	
 	aspect default {
 		draw shape color: #gray border: #black;

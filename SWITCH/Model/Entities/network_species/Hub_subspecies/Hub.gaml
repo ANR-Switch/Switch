@@ -7,7 +7,9 @@
 
 model SWITCH
 
-
-species Node {
+species Hub {
 	
+	aspect default {
+		draw square(1#px) color: #magenta border: #black depth: 1.0 ;
+	}
 }

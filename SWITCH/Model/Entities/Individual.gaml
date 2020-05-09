@@ -10,19 +10,26 @@ model SWITCH
 import "../Global.gaml"
 import "../Parameters.gaml"
 import "../Constants.gaml"
-import "../Entities/network_species/Building.gaml"
+import "network_species/Building.gaml"
+import "network_species/Hub_subspecies/HubCar.gaml"
+import "network_species/Hub_subspecies/HubBike.gaml"
 
 species Individual skills: [moving] control:simple_bdi{
+	
 	list<map<list<int>, predicate>> agenda_week;
 	point target;
 	path my_path;
 	Building target_building;
+	string status;
 	
 	map<string,int> grades;//how agent care for differents criteria	
 	map<string, float> priority_modes;//priority for each mode
 	
 	Building work_building;
 	Building home_building;
+	
+	HubCar car_place;
+	HubBike bike_place;
 	
 	rgb color <-#red;
 	
@@ -237,7 +244,13 @@ species Individual skills: [moving] control:simple_bdi{
 		return val/length(criteria);
 	}
 	
+	bool has_car{
+		return not (car_place = nil);
+	}
 	
+	bool has_bike{
+		return not (bike_place = nil);
+	}
 	
 	bool is_time(int hour, int minute) {
 		return current_date.hour = hour and current_date.minute = minute;

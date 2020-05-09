@@ -9,7 +9,7 @@
 model SWITCH
 
 import "../network_species/Road.gaml"
-import "../network_species/Hub.gaml"
+import "../network_species/Hub_subspecies/Hub.gaml"
 import "../Individual.gaml"
 
 species Transport skills: [moving]{
@@ -24,13 +24,13 @@ species Transport skills: [moving]{
 	int max_passenger;
 	
 	//passengers present in the transport
-	list<Individual> passengers;
+	list<Individual> passengers <- [];
 	
 	//road graph available for the transport
 	graph available_graph;
 	
 	//the target Hub, final destination of the trip
-	agent target; 
+	Hub target; 
 	
 	//list of roads that lead to the target
 	list<Road> path_to_target;

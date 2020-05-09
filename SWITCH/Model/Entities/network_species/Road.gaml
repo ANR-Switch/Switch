@@ -16,7 +16,6 @@ species Road {
 	//type of road (the OpenStreetMap highway feature: https://wiki.openstreetmap.org/wiki/Map_Features)
 	string type;
 	
-	
 	//is roundabout or not (OSM information)
 	string junction;
 	
@@ -108,9 +107,6 @@ species Road {
 		formula_speed <- formula_speed #km/#h;
 		return max([t.max_speed, formula_speed]);
 	}
-	
-	
-	
 	
 	aspect default {
 		draw shape color: #gray end_arrow: 5;
