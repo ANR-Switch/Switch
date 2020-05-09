@@ -270,7 +270,8 @@ species Individual skills: [moving] control:simple_bdi{
 	
 	plan do_work intention: working{
 		if (not has_belief(at_target)) {
-			target <- any_location_in(work_building);
+			//target <- any_location_in(work_building);
+			target_building <- work_building;
 			do add_subintention(get_current_intention(),at_target, true);
 			do current_intention_on_hold();
 		}
@@ -324,7 +325,7 @@ species Individual skills: [moving] control:simple_bdi{
 
 		
 	//normal move plan
-	plan driving intention: at_target  finished_when: target = location priority: compute_priority_mobility_mode("car"){
+	/*plan driving intention: at_target  finished_when: target = location priority: compute_priority_mobility_mode("car"){
 		if (my_path = nil) {
 			my_path <- road_network path_between (location, target);
 		}
@@ -334,7 +335,18 @@ species Individual skills: [moving] control:simple_bdi{
 			my_path <- nil;
 		}
 		color <- #red;
+	}*/
+	plan driving intention: at_target  finished_when: location = target_building.location priority: compute_priority_mobility_mode("car"){
+		do goto target: car_place;
+		if location = car_place.location{
+			ask car_place{
+				do getInCar(myself,[],closest_to(HubCar,myself.target_building));
+			}
+		}
+		if status = "arrived"{ do goto target: target_building; }
+		if (location = target_building.location) { do add_belief(at_target); }
 	}
+	
 	
 	plan cycling intention: at_target  finished_when: target = location priority: compute_priority_mobility_mode("bike"){
 		if (my_path = nil) {
@@ -373,7 +385,7 @@ species Individual skills: [moving] control:simple_bdi{
 	}
 	
 	aspect default {
-		draw triangle(50) color: color rotate: heading border: #black depth: 1.0;
+		draw circle(5) color: color rotate: heading border: #black depth: 1.0;
 	}	
 		
 }

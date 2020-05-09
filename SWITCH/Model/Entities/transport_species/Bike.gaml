@@ -12,6 +12,8 @@ import "PrivateTransport.gaml"
 
 species Bike parent: PrivateTransport {
 	
+	HubBike target;
+	
 	init{
 		max_speed <- 20.0;
 		size <- 1.0;
@@ -23,8 +25,14 @@ species Bike parent: PrivateTransport {
 		ask path_to_target[0]{ do getBikeInRoad(myself); }	
 	}
 	
+	reflex endTrip when: location = target.location{
+		ask target{
+			do getOutBike(myself);
+		}
+	}
+	
 	aspect default {
-		draw square(1#px) color: #green border: #black depth: 1.0 ;
+		draw triangle(1#px) color: #green border: #black depth: 1.0 ;
 	}
 	
 }
