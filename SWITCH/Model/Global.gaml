@@ -52,6 +52,24 @@ global {
 		//Initialization of the building using the shapefile of buildings
 		create Building from: building_shapefile;
 		
+		ask Building{
+			switch size{
+				match_between [0.0,50.0]{}
+				match_between [50.0,125.0]{type <-"home";}
+				match_between [125.0,250.0]{type <- rnd(1.0)<0.5 ? "parking" : "work";}
+				default {type <- "work";}
+			}
+			if ["home","parking","work"] contains type{
+				create HubCar returns: created_HubCar{
+					location <- any_location_in(myself);
+				}
+				create HubBike returns: created_HubBike{
+					location <- any_location_in(myself);
+				}
+				parkings <- parkings + [created_HubCar] + [created_HubBike];
+			}
+		}
+		
 		//Initialization of the road using the shapefile of roads
 		create Road from: road_shapefile with: [
 			type::string(get("type")),
@@ -68,7 +86,7 @@ global {
 		];
 		
 		//Creation of the people agents
-		create Individual number: nb_individuals with: [home_building::one_of(Building), work_building::one_of(Building) ];
+		create Individual number: nb_individuals with: [home_building::one_of(Building where (each.type = "home")), work_building::one_of(Building where (each.type = "work")) ];
       	road_network <- directed(as_edge_graph(Road,Crossroad));
       	ask Road {
       		start_node <- road_network source_of self;

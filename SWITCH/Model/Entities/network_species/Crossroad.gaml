@@ -17,7 +17,7 @@ species Crossroad{
 	string crossing;
 	
 	aspect default {
-		draw square(1#px) color: #white border: #black depth: 1.0 ;
+		draw circle(3) color: #grey border: #black;
 	}
 	
 }

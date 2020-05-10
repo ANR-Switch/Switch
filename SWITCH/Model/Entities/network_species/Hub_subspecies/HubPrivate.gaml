@@ -15,7 +15,7 @@ import "Hub.gaml"
 species HubPrivate parent: Hub {
 	
 	// Hub capacity (number of transports parkable) 
-	int max_capacity;
+	int max_capacity <- 50;
 	
 	int current_capacity <- 0 min:0;
 	

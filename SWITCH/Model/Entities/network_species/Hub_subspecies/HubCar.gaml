@@ -15,6 +15,10 @@ import "../../../Global.gaml"
 
 species HubCar parent: HubPrivate {
 	
+	init{
+		color <- #red;
+	}
+	
 	action getInCar(Individual driver, list<Individual> passengers_, HubCar targetHub){
 		current_capacity <- current_capacity + 1;
 		create Car{

@@ -32,7 +32,7 @@ species Bike parent: PrivateTransport {
 	}
 	
 	aspect default {
-		draw triangle(1#px) color: #green border: #black depth: 1.0 ;
+		draw square(2) color: #green border: #black;
 	}
 	
 }

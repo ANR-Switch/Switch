@@ -8,8 +8,9 @@
 model SWITCH
 
 species Hub {
+	rgb color;
 	
 	aspect default {
-		draw square(1#px) color: #magenta border: #black depth: 1.0 ;
+		draw square(5) color: color border: #black;
 	}
 }

@@ -27,7 +27,7 @@ species Car parent: PrivateTransport {
 	}
 	
 	aspect default {
-		draw square(1#px) color: #red border: #black depth: 1.0 ;
+		draw square(5) color: #red border: #black;
 	}
 	
 }

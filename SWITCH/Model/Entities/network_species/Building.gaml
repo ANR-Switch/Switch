@@ -12,11 +12,18 @@ import "Hub_subspecies/HubPrivate.gaml"
 
 species Building {
 	
-	string type;
+	string type <- "default";
+	float size <- shape.perimeter;
 	
 	list<HubPrivate> parkings;
 	
 	aspect default {
-		draw shape color: #gray border: #black;
+		switch type{
+			match "home"{color <- #grey;}
+			match "work"{color <- #red;}
+			match "parking"{color <- #blue;}
+			default {color <- #grey;}
+		}
+		draw shape color: color border: #black;
 	}
 }

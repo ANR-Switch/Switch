@@ -14,6 +14,10 @@ import "../../../Global.gaml"
 
 species HubBike parent: HubPrivate {
 	
+	init{
+		color <- #green;
+	}
+	
 	action getInBike(Individual driver, HubBike targetHub){
 		current_capacity <- current_capacity + 1;
 		create Bike{
