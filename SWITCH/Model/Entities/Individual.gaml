@@ -31,6 +31,9 @@ species Individual skills: [moving] control:simple_bdi{
 	HubCar car_place;
 	HubBike bike_place;
 	
+	//the trip the individual has to follow to join the activity
+	list<Hub> transport_trip;
+	
 	rgb color <-#red;
 	
 	int age;
@@ -273,6 +276,7 @@ species Individual skills: [moving] control:simple_bdi{
 			//target <- any_location_in(work_building);
 			target_building <- work_building;
 			do add_subintention(get_current_intention(),at_target, true);
+			status <- "go to trip";
 			do current_intention_on_hold();
 		}
 		//color <- #blue;

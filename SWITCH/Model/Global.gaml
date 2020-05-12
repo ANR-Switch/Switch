@@ -86,7 +86,15 @@ global {
 		];
 		
 		//Creation of the people agents
-		create Individual number: nb_individuals with: [home_building::one_of(Building where (each.type = "home")), work_building::one_of(Building where (each.type = "work")) ];
+		create Individual number: nb_individuals {
+			home_building <- one_of(Building where (each.type = "home"));
+			work_building <- one_of(Building where (each.type = "work"));
+			car_place <- HubCar(home_building.parkings[0]);
+			write home_building.parkings[0];
+			bike_place <- HubBike(home_building.parkings[1]);
+			write home_building.parkings[1];
+			location <- any_location_in(home_building);
+		}
       	road_network <- directed(as_edge_graph(Road,Crossroad));
       	ask Road {
       		start_node <- road_network source_of self;
