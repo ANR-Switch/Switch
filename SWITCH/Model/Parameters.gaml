@@ -16,13 +16,13 @@ global {
 	file node_shapefile <- shape_file(dataset+"nodes.shp");
 	
 	
-	//date (et heure) de début de la simulation : 7/4/2020 à 6h
-	date starting_date <- date(2020,4,7,6);
+	//date (et heure) de début de la simulation : 7/4/2020 à 6h00 0"
+	date starting_date <- date(2020,4,7,6,0,0);
 	
 	list<string> type_mode <- ["car","bus","bike","walk"];
 	list<string> criteria <- ["comfort", "safety", "price","ecology","simplicity","time"];
 	//Step value
-	float step <- 1 #mn;
+	float step <- 30 #sec;
 	
 	float bus_freq <- 7.0;
 	float bus_capacity <- 50.0;

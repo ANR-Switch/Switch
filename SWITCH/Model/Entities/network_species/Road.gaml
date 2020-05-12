@@ -38,7 +38,7 @@ species Road {
 	float size <- shape.perimeter;
 	
 	//maximum space capacity of the road (in meters)
-	float max_capacity <- size * nb_lanes;
+	float max_capacity <- size * nb_lanes min: 10.0;
 	
 	//actual free space capacity of the road (in meters)
 	float current_capacity <- max_capacity;
@@ -47,65 +47,74 @@ species Road {
 	//				= false if not
 	bool has_bike_lane <- false;
 	
-	//list of current vehicules present in the road
-	list<Bike> present_bikes;
-	list<Transport> present_transports;
+	//list of current vehicules present in the road [[time_to_leave,Transport]]
+	list<list> present_bikes;
+	list<list> present_transports;
 	
 	// if there is a bike lane, bikes don't consume road capacity
-	action getBikeInRoad(Bike b){
+	action queueInRoad(Bike b){
 		if not has_bike_lane {
 			current_capacity <- current_capacity - b.size;
-		}	
-		present_bikes << b;
+		}
+		present_bikes << [time+getRoadTravelTime(b),b];
+		ask b{ roadPointer <- roadPointer +1; }
 	}
 	
-	action getInRoad(Transport t){
+	action queueInRoad(Transport t){
 		current_capacity <- current_capacity - t.size;
-		present_transports << t;
-		ask t{ 
-			do goto speed:myself.getRoadSpeed(self) target:myself.end_node;
-			roadPointer <- roadPointer +1;
-		}
+		present_transports << [time+getRoadTravelTime(t),t];
+		ask t{ roadPointer <- roadPointer +1; }
 	}
 	
 	bool canAcceptTransport(Transport t){
 		return current_capacity > t.size;
 	}
 	
-	reflex getOutRoad when: not empty(present_transports) and (present_transports[0].location = end_node.location){
-		bool nextRoadOk <- present_transports[0].nextRoad.canAcceptTransport(present_transports[0]);
+	reflex dequeueFromRoad when: not empty(present_transports) and (float(present_transports[0][0]) <= time){
+		Transport t <- Transport(present_transports[0][1]);
+		float time_to_leave <- float(present_transports[0][0]);
+		bool nextRoadOk <- t.nextRoad.canAcceptTransport(t);
 		// this loop help to free space easily if more than one transport could arrived at the end of the road
 		// during the time step
-		loop while: not empty(present_transports) and (present_transports[0].location = end_node.location) and nextRoadOk{
-			ask present_transports[0].nextRoad { do getInRoad(myself.present_transports[0]); }
+		loop while: not empty(present_transports) and (time_to_leave<=time) and nextRoadOk{
+			ask t.nextRoad { do queueInRoad(t); }
 			// free leaving transport space in the road
-			current_capacity <- current_capacity + present_transports[0].size;
+			current_capacity <- current_capacity + t.size;
 			//remove transport from the road
 			present_transports <- copy_between(present_transports, 1,length(present_transports));
 			//checking if the next Transport can also join the next road
-			nextRoadOk <- present_transports[0].nextRoad.canAcceptTransport(present_transports[0]);
+			t <- Transport(present_transports[0][1]);
+			time_to_leave <- float(present_transports[0][0]);
+			nextRoadOk <- t.nextRoad.canAcceptTransport(t);
 		}
 	}
 	
-	reflex getBikeOutRoad when: not empty(present_bikes) and present_bikes[0].location = end_node.location{
+	reflex dequeueBikeFromRoad when: not empty(present_bikes) and (float(present_bikes[0][0]) <= time){
 		// here we're not checking nextRoad capacity because we assume that even if there is jam (max capacity reached)
 		// bikes can find a way in the road
-		loop while: not empty(present_bikes) and present_bikes[0].location = end_node.location{
-			ask present_bikes[0].nextRoad { do getBikeInRoad(myself.present_bikes[0]); }
+		Bike b <- Bike(present_bikes[0][1]);
+		float time_to_leave <- float(present_bikes[0][0]);
+		loop while: not empty(present_bikes) and (time_to_leave <= time){
+			ask b.nextRoad { do queueInRoad(b); }
 			if not has_bike_lane {
-				current_capacity <- current_capacity + present_bikes[0].size;
+				current_capacity <- current_capacity + b.size;
 			}
 			//remove transport from the road
 			present_bikes <- copy_between(present_bikes, 1,length(present_bikes));
 		}
 	}
 	
-	// compute the real speed (km/h) of incoming transports
+	// compute the travel of incoming transports
 	// The formula used is BPR equilibrium formula
-	float getRoadSpeed(Transport t){
-		float formula_speed <- size / (size/(max_speed #m/#s)) * ( 1 + 0.15 * (current_capacity/max_capacity)^4);
-		formula_speed <- formula_speed #km/#h;
-		return max([t.max_speed, formula_speed]);
+	float getRoadTravelTime(Transport t){
+		float max_speed_formula <- max([t.speed,max_speed]) #m/#sec;
+		float free_flow_travel_time <- size/max_speed_formula;
+		// here the capacity is in meters so the traffic flow is defined by the quantity of vehicule
+		// (in meters) that can pass trough the road in a step duration
+		float vehicule_flow <- max_speed_formula * (step #sec);
+		float capacity_ratio <- current_capacity / max_capacity;
+		float travel_time <- free_flow_travel_time *  (1.0 + 0.15 * (vehicule_flow/capacity_ratio)^4);
+		return travel_time;
 	}
 	
 	aspect default {
