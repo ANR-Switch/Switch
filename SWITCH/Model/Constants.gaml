@@ -20,4 +20,5 @@ global {
 	predicate leisure <- new_predicate("leisure");
 	predicate eating <- new_predicate("eating");
 	predicate at_target <- new_predicate("at target");
+	predicate at_subtarget <- new_predicate("at_subtarget");
 }

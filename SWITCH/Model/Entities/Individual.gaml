@@ -17,7 +17,7 @@ import "network_species/Hub_subspecies/HubBike.gaml"
 species Individual skills: [moving] control:simple_bdi{
 	
 	list<map<list<int>, predicate>> agenda_week;
-	point target;
+	point subtarget;
 	path my_path;
 	Building target_building;
 	string status among: ["go to trip","passenger","driving","trip finished",nil];
@@ -341,23 +341,33 @@ species Individual skills: [moving] control:simple_bdi{
 		color <- #red;
 	}*/
 	
-	plan driving intention: at_target  finished_when: location = target_building.location priority: 10{
-		switch status{
-			match "go to trip" {
-				write "go to car";
-				do goto target: car_place;
-				if location = car_place.location{
-					write "get in car";
-					ask car_place{ do getInCar(myself,[],closest_to(HubCar,myself.target_building)); }
-				}
-			}
-			match "trip finished"{
-				write "trip finished";
-				do goto target: target_building;
-			}
+	plan execute_trip intention: at_target  finished_when: location = target_building.location priority: 10{
+		
+		//boucle sur les hubs par pas de 2 (alterne marche/transport)
+		loop i from:0 to: length(transport_trip)-1 step: 2 {
+			subtarget <- transport_trip[i].location;//marche jusqu'au hub
+			do add_subintention(get_current_intention(),at_subtarget,true); 
+			//enter()//transport jusqu'au hub suivant
+			
 		}
-		if (location = target_building.location) { do add_belief(at_target); }
+		//fin : marcher jusqu'a la target finale du trajet
+		subtarget <- target_building.location;
+		if(not has_belief(at_subtarget)){
+			do add_subintention(get_current_intention(),at_subtarget,true);
+		}
+		if (location = target_building.location) { 
+			do add_belief(at_target);
+		}
 	}
+	
+	plan walk_to_subtarget intention: at_subtarget finished_when: location = subtarget {
+		do goto(subtarget,walk_speed,road_network);
+		if(location = subtarget){
+			do add_belief(at_subtarget);
+		}
+	}
+	
+	
 	
 	
 	/*plan cycling intention: at_target  finished_when: target = location priority: compute_priority_mobility_mode("bike"){
