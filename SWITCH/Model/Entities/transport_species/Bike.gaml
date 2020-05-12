@@ -27,7 +27,7 @@ species Bike parent: PrivateTransport {
 	
 	reflex endTrip when: location = target.location{
 		ask target{
-			do getOutBike(myself);
+			do leave(myself);
 		}
 	}
 	

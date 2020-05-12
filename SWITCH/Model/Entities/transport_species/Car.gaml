@@ -22,7 +22,7 @@ species Car parent: PrivateTransport {
 	
 	reflex endTrip when: location = target.location{
 		ask target{
-			do getOutCar(myself);
+			do leave(myself);
 		}
 	}
 	

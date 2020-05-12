@@ -18,22 +18,23 @@ species HubBike parent: HubPrivate {
 		color <- #green;
 	}
 	
-	action getInBike(Individual driver, HubBike targetHub){
+	action enter(list<Individual> passengers_, HubBike targetHub){
 		current_capacity <- current_capacity + 1;
 		create Bike{
-			passengers << driver;
-			driver.status <- "driving";
+			//As a bike can only have one person on it, only the first person on the list is taken in
+			passengers << passengers_[0];
+			passengers_[0].status <- "driving";
 			available_graph <- road_network;
 			target <- targetHub;
 			path_to_target <- path_between(available_graph,myself,target).vertices;
 		}
 	}
 	
-	action getOutBike(Bike b){
+	action leave(Bike t){
 		current_capacity <- current_capacity - 1;
-		b.passengers[0].location <- location;
-		b.passengers[0].bike_place <- self;
-		b.passengers[0].status <- "trip finished";
-		ask b{do die;}
+		t.passengers[0].location <- location;
+		t.passengers[0].bike_place <- self;
+		t.passengers[0].status <- "trip finished";
+		ask t{do die;}
 	}
 }
