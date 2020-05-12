@@ -280,7 +280,7 @@ species Individual skills: [moving] control:simple_bdi{
 	
 	plan do_stay_at_home intention: staying_at_home{
 		if (not has_belief(at_target)) {
-			target <- any_location_in(home_building);
+			target_building <- home_building;
 			do add_subintention(get_current_intention(),at_target, true);
 			do current_intention_on_hold();
 		}
@@ -289,7 +289,7 @@ species Individual skills: [moving] control:simple_bdi{
 	
 	plan do_eating_at_home intention: eating priority: rnd(1.0){
 		if (not has_belief(at_target)) {
-			target <- any_location_in(home_building);
+			target_building <- home_building;
 			do add_subintention(get_current_intention(),at_target, true);
 			do current_intention_on_hold();
 		}
@@ -298,7 +298,7 @@ species Individual skills: [moving] control:simple_bdi{
 	
 	plan do_eating_restaurant intention: eating priority: rnd(1.0){
 		if (not has_belief(at_target)) {
-			target <- any_location_in(one_of(Building));
+			target_building <- any_location_in(one_of(Building));
 			do add_subintention(get_current_intention(),at_target, true);
 			do current_intention_on_hold();
 		}
@@ -307,7 +307,7 @@ species Individual skills: [moving] control:simple_bdi{
 	
 	plan see_a_movie intention: leisure priority: rnd(1.0){
 		if (not has_belief(at_target)) {
-			target <- any_location_in(one_of(Building));
+			target_building <- any_location_in(one_of(Building));
 			do add_subintention(get_current_intention(),at_target, true);
 			do current_intention_on_hold();
 		}
@@ -316,7 +316,7 @@ species Individual skills: [moving] control:simple_bdi{
 	
 	plan meet_a_friend intention: leisure priority: rnd(1.0){
 		if (not has_belief(at_target)) {
-			target <- any_location_in(one_of(Building));
+			target_building <- any_location_in(one_of(Building));
 			do add_subintention(get_current_intention(),at_target, true);
 			do current_intention_on_hold();
 		}
@@ -340,12 +340,15 @@ species Individual skills: [moving] control:simple_bdi{
 	plan driving intention: at_target  finished_when: location = target_building.location priority: 10{
 		switch status{
 			match "go to trip" {
+				write "go to car";
 				do goto target: car_place;
 				if location = car_place.location{
+					write "get in car";
 					ask car_place{ do getInCar(myself,[],closest_to(HubCar,myself.target_building)); }
 				}
 			}
 			match "trip finished"{
+				write "trip finished";
 				do goto target: target_building;
 			}
 		}
@@ -353,7 +356,7 @@ species Individual skills: [moving] control:simple_bdi{
 	}
 	
 	
-	plan cycling intention: at_target  finished_when: target = location priority: compute_priority_mobility_mode("bike"){
+	/*plan cycling intention: at_target  finished_when: target = location priority: compute_priority_mobility_mode("bike"){
 		if (my_path = nil) {
 			my_path <- road_network path_between (location, target);
 		}
@@ -387,7 +390,7 @@ species Individual skills: [moving] control:simple_bdi{
 			my_path <- nil;
 		}
 		color <- #blue;
-	}
+	}*/
 	
 	aspect default {
 		draw circle(20) color: #magenta rotate: heading border: #black;
