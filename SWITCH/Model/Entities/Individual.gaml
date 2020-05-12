@@ -20,7 +20,7 @@ species Individual skills: [moving] control:simple_bdi{
 	point target;
 	path my_path;
 	Building target_building;
-	string status among: ["go to trip","passenger","driving","trip finished"];
+	string status among: ["go to trip","passenger","driving","trip finished",nil];
 	
 	map<string,int> grades;//how agent care for differents criteria	
 	map<string, float> priority_modes;//priority for each mode
