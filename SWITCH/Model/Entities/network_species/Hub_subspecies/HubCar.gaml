@@ -22,10 +22,9 @@ species HubCar parent: HubPrivate {
 	action enter(list<Individual> passengers_, HubCar targetHub){
 		current_capacity <- current_capacity + 1;
 		create Car{
-			passengers << passengers_[0];
 			passengers_[0].status <- "driving";
 			int nb_passenger <- min (length(passengers_), max_passenger);
-			loop i from: 1 to: nb_passenger-1{
+			loop i from: 0 to: nb_passenger-1{
 				passengers << passengers_[i];
 				passengers_[i].status <- "passenger";
 			}
