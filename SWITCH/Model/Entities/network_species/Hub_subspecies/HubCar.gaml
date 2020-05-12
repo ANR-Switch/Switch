@@ -19,13 +19,13 @@ species HubCar parent: HubPrivate {
 		color <- #red;
 	}
 	
-	action getInCar(Individual driver, list<Individual> passengers_, HubCar targetHub){
+	action enter(list<Individual> passengers_, HubCar targetHub){
 		current_capacity <- current_capacity + 1;
 		create Car{
-			passengers << driver;
-			driver.status <- "driving";
+			passengers << passengers_[0];
+			passengers_[0].status <- "driving";
 			int nb_passenger <- min (length(passengers_), max_passenger);
-			loop i from: 0 to: nb_passenger-1{
+			loop i from: 1 to: nb_passenger-1{
 				passengers << passengers_[i];
 				passengers_[i].status <- "passenger";
 			}
@@ -35,13 +35,13 @@ species HubCar parent: HubPrivate {
 		}
 	}
 	
-	action getOutCar(Car c){
+	action leave(Car t){
 		current_capacity <- current_capacity - 1;
-		c.passengers[0].car_place <- self;
-		loop passenger over: c.passengers{
+		t.passengers[0].car_place <- self;
+		loop passenger over: t.passengers{
 			passenger.location <- location;
 			passenger.status <- "trip finished";
 		}
-		ask c{do die;}
+		ask t{do die;}
 	}
 }

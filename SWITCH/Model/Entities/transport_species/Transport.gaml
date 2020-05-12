@@ -24,6 +24,7 @@ species Transport skills: [moving]{
 	int max_passenger;
 	
 	//passengers present in the transport
+	// the fisrt passenger of the list is considered as the driver
 	list<Individual> passengers <- [];
 	
 	//road graph available for the transport

@@ -271,6 +271,12 @@ species Individual skills: [moving] control:simple_bdi{
 		}
 	}
 	
+	//compute a trip acording to priority and target
+	action compute_transport_trip(point target_){
+		// for the moment this function is only returning a car trip
+		return [car_place, HubCar closest_to target_];
+	}
+	
 	plan do_work intention: working{
 		if (not has_belief(at_target)) {
 			//target <- any_location_in(work_building);
@@ -329,17 +335,6 @@ species Individual skills: [moving] control:simple_bdi{
 
 		
 	//normal move plan
-	/*plan driving intention: at_target  finished_when: target = location priority: compute_priority_mobility_mode("car"){
-		if (my_path = nil) {
-			my_path <- road_network path_between (location, target);
-		}
-		do follow path: my_path speed: car_speed #km/#h return_path: true;
-		if (target = location) {
-			do add_belief(at_target);
-			my_path <- nil;
-		}
-		color <- #red;
-	}*/
 	
 	plan execute_trip intention: at_target  finished_when: location = target_building.location priority: 10{
 		
@@ -370,41 +365,6 @@ species Individual skills: [moving] control:simple_bdi{
 	
 	
 	
-	/*plan cycling intention: at_target  finished_when: target = location priority: compute_priority_mobility_mode("bike"){
-		if (my_path = nil) {
-			my_path <- road_network path_between (location, target);
-		}
-		do follow path: my_path speed: bike_speed #km/#h return_path: true;
-		if (target = location) {
-			do add_belief(at_target);
-			my_path <- nil;
-		}
-		color <- #green;
-	}
-
-	plan walking intention: at_target  finished_when: target = location priority: compute_priority_mobility_mode("walk"){
-		if (my_path = nil) {
-			my_path <- road_network path_between (location, target);
-		}
-		do follow path: my_path speed: walk_speed #km/#h return_path: true;
-		if (target = location) {
-			do add_belief(at_target);
-			my_path <- nil;
-		}
-		color <- #yellow;
-	}
-	
-	plan taking_bus intention: at_target  finished_when: target = location priority: compute_priority_mobility_mode("bus"){
-		if (my_path = nil) {
-			my_path <- road_network path_between (location, target);
-		}
-		do follow path: my_path speed: bus_speed #km/#h return_path: true;
-		if (target = location) {
-			do add_belief(at_target);
-			my_path <- nil;
-		}
-		color <- #blue;
-	}*/
 	
 	aspect default {
 		draw circle(20) color: #magenta rotate: heading border: #black;
