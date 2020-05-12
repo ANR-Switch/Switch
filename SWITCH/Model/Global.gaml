@@ -66,7 +66,7 @@ global {
 				create HubBike returns: created_HubBike{
 					location <- any_location_in(myself);
 				}
-				parkings <- parkings + [created_HubCar] + [created_HubBike];
+				parkings <- parkings + [created_HubCar][0] + [created_HubBike][0];
 			}
 		}
 		

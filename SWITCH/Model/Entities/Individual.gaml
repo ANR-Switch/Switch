@@ -274,7 +274,7 @@ species Individual skills: [moving] control:simple_bdi{
 	//compute a trip acording to priority and target
 	action compute_transport_trip(point target_){
 		// for the moment this function is only returning a car trip
-		return [car_place, HubCar closest_to target_];
+		transport_trip <- [car_place, HubCar closest_to target_];
 	}
 	
 	plan do_work intention: working{
@@ -337,7 +337,8 @@ species Individual skills: [moving] control:simple_bdi{
 	//normal move plan
 	
 	plan execute_trip intention: at_target  finished_when: location = target_building.location priority: 10{
-		
+		write "i want to be at target";
+		do compute_transport_trip(target_building.location);
 		//boucle sur les hubs par pas de 2 (alterne marche/transport)
 		loop i from:0 to: length(transport_trip)-1 step: 2 {
 			subtarget <- transport_trip[i].location;//marche jusqu'au hub
@@ -357,6 +358,7 @@ species Individual skills: [moving] control:simple_bdi{
 	}
 	
 	plan walk_to_subtarget intention: at_subtarget finished_when: location = subtarget {
+		
 		do goto(subtarget,walk_speed,road_network);
 		if(location = subtarget){
 			do add_belief(at_subtarget);
