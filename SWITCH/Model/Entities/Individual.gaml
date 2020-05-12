@@ -346,7 +346,7 @@ species Individual skills: [moving] control:simple_bdi{
 				}
 			}
 			match "trip finished"{
-				if status = "trip finished"{ do goto target: target_building; }
+				do goto target: target_building;
 			}
 		}
 		if (location = target_building.location) { do add_belief(at_target); }
