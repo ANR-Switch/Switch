@@ -20,7 +20,7 @@ species Individual skills: [moving] control:simple_bdi{
 	point target;
 	path my_path;
 	Building target_building;
-	string status;
+	string status among: ["go to trip","passenger","driving","trip finished"];
 	
 	map<string,int> grades;//how agent care for differents criteria	
 	map<string, float> priority_modes;//priority for each mode
@@ -337,14 +337,18 @@ species Individual skills: [moving] control:simple_bdi{
 		color <- #red;
 	}*/
 	
-	plan driving intention: at_target  finished_when: location = target_building.location priority: compute_priority_mobility_mode("car"){
-		do goto target: car_place;
-		if location = car_place.location{
-			ask car_place{
-				do getInCar(myself,[],closest_to(HubCar,myself.target_building));
+	plan driving intention: at_target  finished_when: location = target_building.location priority: 10{
+		switch status{
+			match "go to trip" {
+				do goto target: car_place;
+				if location = car_place.location{
+					ask car_place{ do getInCar(myself,[],closest_to(HubCar,myself.target_building)); }
+				}
+			}
+			match "trip finished"{
+				if status = "trip finished"{ do goto target: target_building; }
 			}
 		}
-		if status = "trip finished"{ do goto target: target_building; }
 		if (location = target_building.location) { do add_belief(at_target); }
 	}
 	
