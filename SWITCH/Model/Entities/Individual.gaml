@@ -308,7 +308,7 @@ species Individual skills: [moving] control:simple_bdi{
 	
 	plan do_eating_restaurant intention: eating priority: rnd(1.0){
 		if (not has_belief(at_target)) {
-			target_building <- any_location_in(one_of(Building));
+			target_building <- one_of(Building);
 			do add_subintention(get_current_intention(),at_target, true);
 			do current_intention_on_hold();
 		}
@@ -317,7 +317,7 @@ species Individual skills: [moving] control:simple_bdi{
 	
 	plan see_a_movie intention: leisure priority: rnd(1.0){
 		if (not has_belief(at_target)) {
-			target_building <- any_location_in(one_of(Building));
+			target_building <- one_of(Building);
 			do add_subintention(get_current_intention(),at_target, true);
 			do current_intention_on_hold();
 		}
@@ -326,7 +326,7 @@ species Individual skills: [moving] control:simple_bdi{
 	
 	plan meet_a_friend intention: leisure priority: rnd(1.0){
 		if (not has_belief(at_target)) {
-			target_building <- any_location_in(one_of(Building));
+			target_building <- one_of(Building);
 			do add_subintention(get_current_intention(),at_target, true);
 			do current_intention_on_hold();
 		}
