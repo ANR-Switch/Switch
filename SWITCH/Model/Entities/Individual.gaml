@@ -271,6 +271,12 @@ species Individual skills: [moving] control:simple_bdi{
 		}
 	}
 	
+	//compute a trip acording to priority and target
+	action compute_transport_trip(point target_){
+		// for the moment this function is only returning a car trip
+		return [car_place, HubCar closest_to target_];
+	}
+	
 	plan do_work intention: working{
 		if (not has_belief(at_target)) {
 			//target <- any_location_in(work_building);
@@ -340,8 +346,6 @@ species Individual skills: [moving] control:simple_bdi{
 		}
 		color <- #red;
 	}*/
-	
-	
 	
 	aspect default {
 		draw circle(20) color: #magenta rotate: heading border: #black;
