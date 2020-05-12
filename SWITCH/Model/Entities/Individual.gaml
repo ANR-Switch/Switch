@@ -342,8 +342,9 @@ species Individual skills: [moving] control:simple_bdi{
 		loop i from:0 to: length(transport_trip)-1 step: 2 {
 			subtarget <- transport_trip[i].location;//marche jusqu'au hub
 			do add_subintention(get_current_intention(),at_subtarget,true); 
-			//enter()//transport jusqu'au hub suivant
-			
+			ask transport_trip[i]{
+				do enter([myself],myself.transport_trip[i+1]);
+			}
 		}
 		//fin : marcher jusqu'a la target finale du trajet
 		subtarget <- target_building.location;
