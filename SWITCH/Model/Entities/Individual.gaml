@@ -337,7 +337,6 @@ species Individual skills: [moving] control:simple_bdi{
 	//normal move plan
 	
 	plan execute_trip intention: at_target  finished_when: location = target_building.location priority: 10{
-		write "i want to be at target";
 		do compute_transport_trip(target_building.location);
 		//boucle sur les hubs par pas de 2 (alterne marche/transport)
 		loop i from:0 to: length(transport_trip)-1 step: 2 {
@@ -370,7 +369,7 @@ species Individual skills: [moving] control:simple_bdi{
 	
 	
 	aspect default {
-		draw circle(20) color: #magenta rotate: heading border: #black;
+		draw circle(40) color: #magenta rotate: heading border: #black;
 	}	
 		
 }
