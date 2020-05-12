@@ -40,7 +40,7 @@ global {
 	float bike_speed <- 8.0;
 	float walk_speed <- 3.0;
 
-	int nb_individuals <- 1000;
+	int nb_individuals <- 1;
 	
 	bool road_speed_in_km_h <- true;
 		
