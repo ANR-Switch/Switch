@@ -34,7 +34,7 @@ species HubBike parent: HubPrivate {
 		current_capacity <- current_capacity - 1;
 		t.passengers[0].location <- location;
 		t.passengers[0].bike_place <- self;
-		t.passengers[0].status <- "trip finished";
+		t.passengers[0].status <- "arrived";
 		ask t{do die;}
 	}
 }

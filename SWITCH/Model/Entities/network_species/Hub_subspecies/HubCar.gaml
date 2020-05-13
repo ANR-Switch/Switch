@@ -40,7 +40,7 @@ species HubCar parent: HubPrivate {
 		t.passengers[0].car_place <- self;
 		loop passenger over: t.passengers{
 			passenger.location <- location;
-			passenger.status <- "trip finished";
+			passenger.status <- "arrived";
 		}
 		ask t{do die;}
 	}
