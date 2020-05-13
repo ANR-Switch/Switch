@@ -52,6 +52,7 @@ species Transport skills: [moving]{
 	}
 	
 	reflex updateNextRoad when: nextRoad = path_to_target[road_pointer]{
+		write "start";
 		if road_pointer = length(path_to_target)-1{
 			//if the current road is the last road of the trip then the transport can join the target
 			do goto target: target;

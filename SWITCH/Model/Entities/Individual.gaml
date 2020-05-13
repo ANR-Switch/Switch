@@ -84,12 +84,14 @@ species Individual skills: [moving] control:simple_bdi{
 			map<list<int>,predicate> agenda_day;
 			if (i < 5) {
 				agenda_day[[8,30,0]] <- working;
-				agenda_day[[12,0,0]] <- eating;
-				agenda_day[[13,30,0]] <- working; 
+				//agenda_day[[12,0,0]] <- eating;
+				//agenda_day[[13,30,0]] <- working; 
 				agenda_day[[17,30,0]] <- staying_at_home; 
 			} else {
-				agenda_day[[12,0,0]] <- eating;
+				/*agenda_day[[12,0,0]] <- eating;
 				agenda_day[[15,0,0]] <- leisure;
+				agenda_day[[17,30,0]] <- staying_at_home;*/
+				agenda_day[[8,30,0]] <- working;
 				agenda_day[[17,30,0]] <- staying_at_home; 
 			}
 			agenda_week << agenda_day;
@@ -280,22 +282,20 @@ species Individual skills: [moving] control:simple_bdi{
 	
 	plan do_work intention: working{
 		if (not has_belief(at_target)) {
-			//target <- any_location_in(work_building);
+			write "go to work";
 			target_building <- work_building;
 			do add_subintention(get_current_intention(),at_target, true);
-			status <- "go to trip";
 			do current_intention_on_hold();
 		}
-		//color <- #blue;
 	}
 	
 	plan do_stay_at_home intention: staying_at_home{
 		if (not has_belief(at_target)) {
+			write "go to home";
 			target_building <- home_building;
 			do add_subintention(get_current_intention(),at_target, true);
 			do current_intention_on_hold();
 		}
-		//color <- #red;
 	}
 	
 	plan do_eating_at_home intention: eating priority: rnd(1.0){

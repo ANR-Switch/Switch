@@ -53,7 +53,9 @@ experiment "Abstract Experiment" virtual:true{
             {
            		draw world.name  font: default at: { 20#px, 20#px} anchor: #top_left color:text_color;
            		draw ("Day " + int((current_date - starting_date) /  #day))   font: default at: { 20#px, 50#px} anchor: #top_left color:text_color;
-            	draw ("" + current_date.hour + "h"+current_date.minute) font: default at: { 20#px, 80#px} anchor: #top_left color:text_color;
+            	string dispclock <- current_date.hour <10 ? "0"+current_date.hour : ""+current_date.hour;
+            	dispclock <- current_date.minute <10 ? dispclock+"h0"+current_date.minute : dispclock +"h"+current_date.minute;
+            	draw dispclock font: default at: { 20#px, 80#px} anchor: #top_left color:text_color;
             }
 			image file:  file_exists(dataset+"/satellite.png") ? (dataset+"/satellite.png"): dataset_folder+"Default/satellite.png" transparency: 0.5 refresh: false;
 			
