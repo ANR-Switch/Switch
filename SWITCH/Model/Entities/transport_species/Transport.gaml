@@ -37,13 +37,13 @@ species Transport skills: [moving]{
 	list<Road> path_to_target;
 	
 	//indicate the actual road in path_to_target list
-	int roadPointer <- -1;
+	int road_pointer <- -1;
 	
 	//Next road to travel on
 	Road nextRoad;
 	
 	
-	reflex startTrip when: roadPointer < 0{
+	reflex startTrip when: road_pointer < 0{
 		write "start";
 		location <- path_to_target[0].start_node.location;
 		if path_to_target[0].canAcceptTransport(self){
@@ -51,13 +51,13 @@ species Transport skills: [moving]{
 		}
 	}
 	
-	reflex updateNextRoad when: nextRoad = path_to_target[roadPointer]{
-		if roadPointer = length(path_to_target)-1{
+	reflex updateNextRoad when: nextRoad = path_to_target[road_pointer]{
+		if road_pointer = length(path_to_target)-1{
 			//if the current road is the last road of the trip then the transport can join the target
 			do goto target: target;
 			nextRoad <- nil;
 		}else{
-			nextRoad <- path_to_target[roadPointer+1];
+			nextRoad <- path_to_target[road_pointer+1];
 		}
 	}
 	

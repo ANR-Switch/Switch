@@ -57,14 +57,14 @@ species Road {
 			current_capacity <- current_capacity - b.size;
 		}
 		present_bikes << [time+getRoadTravelTime(b),b];
-		ask b{ roadPointer <- roadPointer +1; }
+		ask b{ road_pointer <- road_pointer +1; }
 	}
 	
 	action queueInRoad(Transport t){
 		write "entering a road";
 		current_capacity <- current_capacity - t.size;
 		present_transports << [time+getRoadTravelTime(t),t];
-		ask t{ roadPointer <- roadPointer +1; }
+		ask t{ road_pointer <- road_pointer +1; }
 	}
 	
 	bool canAcceptTransport(Transport t){

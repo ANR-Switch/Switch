@@ -20,7 +20,7 @@ species Bike parent: PrivateTransport {
 		max_passenger <- 1;
 	}
 	
-	reflex startTrip when: roadPointer < 0{
+	reflex startTrip when: road_pointer < 0{
 		location <- path_to_target[0].start_node.location;
 		ask path_to_target[0]{ do queueInRoad(myself); }	
 	}

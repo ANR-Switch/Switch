@@ -83,13 +83,14 @@ species Individual skills: [moving] control:simple_bdi{
 			
 			map<list<int>,predicate> agenda_day;
 			if (i < 5) {
-				agenda_day[[8,30]] <- working;
-				agenda_day[[12,0]] <- eating;
-				agenda_day[[13,30]] <- working; 
-				agenda_day[[17,30]] <- staying_at_home; 
+				agenda_day[[8,30,0]] <- working;
+				agenda_day[[12,0,0]] <- eating;
+				agenda_day[[13,30,0]] <- working; 
+				agenda_day[[17,30,0]] <- staying_at_home; 
 			} else {
-				agenda_day[[12,0]] <- eating;
-				agenda_day[[15,0]] <- leisure;
+				agenda_day[[12,0,0]] <- eating;
+				agenda_day[[15,0,0]] <- leisure;
+				agenda_day[[17,30,0]] <- staying_at_home; 
 			}
 			agenda_week << agenda_day;
 		}
@@ -260,7 +261,7 @@ species Individual skills: [moving] control:simple_bdi{
 	}
 	
 	reflex executeAgenda {
-		predicate act <- agenda_week[current_date.day_of_week - 1][[current_date.hour,current_date.minute]];
+		predicate act <- agenda_week[current_date.day_of_week - 1][[current_date.hour,current_date.minute,current_date.second]];
 		if (act != nil) {
 			if (get_current_intention() != nil) {
 				do remove_intention(first(intention_base).predicate, true);
@@ -342,6 +343,7 @@ species Individual skills: [moving] control:simple_bdi{
 		loop i from:0 to: length(transport_trip)-1 step: 2 {
 			subtarget <- transport_trip[i].location;//marche jusqu'au hub
 			do add_subintention(get_current_intention(),at_subtarget,true); 
+			do current_intention_on_hold();
 			ask transport_trip[i]{
 				do enter([myself],myself.transport_trip[i+1]);
 			}

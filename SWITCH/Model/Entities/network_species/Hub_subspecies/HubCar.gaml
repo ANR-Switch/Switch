@@ -20,7 +20,7 @@ species HubCar parent: HubPrivate {
 	}
 	
 	action enter(list<Individual> passengers_, HubCar targetHub){
-		write "entering a hub";
+		write "entering a hub: " + self;
 		current_capacity <- current_capacity + 1;
 		create Car{
 			int nb_passenger <- min (length(passengers_), max_passenger);

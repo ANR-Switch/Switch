@@ -22,7 +22,7 @@ global {
 	list<string> type_mode <- ["car","bus","bike","walk"];
 	list<string> criteria <- ["comfort", "safety", "price","ecology","simplicity","time"];
 	//Step value
-	float step <- 30 #sec;
+	float step <- 10 #sec;
 	
 	float bus_freq <- 7.0;
 	float bus_capacity <- 50.0;

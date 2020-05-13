@@ -16,7 +16,7 @@ species Car parent: PrivateTransport {
 	
 	init{
 		max_speed <- 130.0;
-		size <- 4.13;//Argus average size in meters
+		size <- 4.13;// Argus average size in meters
 		max_passenger <- 5;
 	}
 	
