@@ -207,7 +207,7 @@ global {
 		
 		save Node type:"shp" to:dataset_path +"nodes.shp" attributes:["type"::type, "crossing"::crossing] ;
 		
-		//do load_satellite_image;
+		do load_satellite_image;
 	}
 	
 	
@@ -242,14 +242,13 @@ global {
 		float long_max <- float(v[ind+2] replace (" ",""));
 		float lat_min <- float(v[ind + 1] replace (" ",""));
 		float lat_max <- float(v[ind +3] replace ("]",""));
-		point pt1 <- to_GAMA_CRS({lat_min,long_max}, "EPSG:4326").location ;
-		point pt2 <- to_GAMA_CRS({lat_max,long_min},"EPSG:4326").location;
-		pt1 <- CRS_transform(pt1, "EPSG:3857").location ;
-		pt2 <- CRS_transform(pt2,"EPSG:3857").location;
+		point pt1 <- CRS_transform({lat_min,long_max},"EPSG:4326", "EPSG:3857").location ;
+		point pt2 <- CRS_transform({lat_max,long_min},"EPSG:4326","EPSG:3857").location;
 		float width <- abs(pt1.x - pt2.x)/1500;
-		float height <- abs(pt1.y - pt2.y)/1500;
-		
-		string info <- ""  + width +"\n0.0\n0.0\n"+height+"\n"+min(pt1.x,pt2.x)+"\n"+min(pt1.y,pt2.y);
+		float height <- (pt2.y - pt1.y)/1500;
+			
+		string info <- ""  + width +"\n0.0\n0.0\n"+height+"\n"+min(pt1.x,pt2.x)+"\n"+(height < 0 ? max(pt1.y,pt2.y) : min(pt1.y,pt2.y));
+	
 		save info to: dataset_path +"satellite.pgw";
 		
 		
@@ -290,7 +289,7 @@ species Road{
 	}
 	
 } 
-grid cell ;//width: 1500 height:1500 use_individual_shapes: false use_regular_agents: false use_neighbors_cache: false;
+grid cell width: 1500 height:1500 use_individual_shapes: false use_regular_agents: false use_neighbors_cache: false;
 
 species Building {
 	string type;
