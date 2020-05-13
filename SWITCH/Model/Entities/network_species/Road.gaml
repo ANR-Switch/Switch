@@ -61,6 +61,7 @@ species Road {
 	}
 	
 	action queueInRoad(Transport t){
+		write "entering a road";
 		current_capacity <- current_capacity - t.size;
 		present_transports << [time+getRoadTravelTime(t),t];
 		ask t{ roadPointer <- roadPointer +1; }
@@ -71,6 +72,7 @@ species Road {
 	}
 	
 	reflex dequeueFromRoad when: not empty(present_transports) and (float(present_transports[0][0]) <= time){
+		write "leaving a road";
 		Transport t <- Transport(present_transports[0][1]);
 		float time_to_leave <- float(present_transports[0][0]);
 		bool nextRoadOk <- t.nextRoad.canAcceptTransport(t);
@@ -118,6 +120,8 @@ species Road {
 	}
 	
 	aspect default {
-		draw shape color: #gray end_arrow: 5;
+		rgb road_color <- #gray;
+		if current_capacity != max_capacity {road_color <- #red; }
+		draw shape color: road_color end_arrow: 5;
 	} 
 }

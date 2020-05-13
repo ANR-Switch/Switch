@@ -93,6 +93,7 @@ species Individual skills: [moving] control:simple_bdi{
 			}
 			agenda_week << agenda_day;
 		}
+		do add_belief(at_target);
 		do add_desire(staying_at_home);
 		
 	}
@@ -237,7 +238,6 @@ species Individual skills: [moving] control:simple_bdi{
 		return val;
 	}
 
-	
 	float compute_priority_mobility_mode(string type) {
 		float val <- 0.0;
 		loop i from: 0 to: length(criteria)-1{
@@ -265,7 +265,7 @@ species Individual skills: [moving] control:simple_bdi{
 			if (get_current_intention() != nil) {
 				do remove_intention(first(intention_base).predicate, true);
 			}
-			
+			write "start activity: "+act;
 			do remove_belief(at_target);
 			do add_desire(act);
 		}
@@ -364,12 +364,15 @@ species Individual skills: [moving] control:simple_bdi{
 		}
 	}
 	
-	
-	
-	
-	
 	aspect default {
-		draw circle(40) color: #magenta rotate: heading border: #black;
+		switch status{
+			match "driving"{ color <- #yellow; }
+			match "passenger"{ color <- #cyan; }
+			match "trip finished"{ color <- #green; }
+			default { color <- #magenta; }
+		}
+		 
+		draw circle(40) color: color rotate: heading border: #black;
 	}	
 		
 }
