@@ -130,7 +130,7 @@ species Road {
 		// Color of the road is determined according to current road occupation
 		rgb color <- rgb(105,105,105,current_capacity/max_capacity);
 		geometry geom_display <- (shape + (2.5));
-		write geometry;
+		
 		draw geom_display border:  #gray  color: color;
 		
 		draw ""+type+" - "+max_speed+"km/h"  at: location+point([15,-5]) size:10 color:#black;
