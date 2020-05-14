@@ -28,8 +28,8 @@ species Individual skills: [moving] control:simple_bdi{
 	Building work_building;
 	Building home_building;
 	
-	HubCar car_place;
-	HubBike bike_place;
+	point car_place;
+	point bike_place;
 	
 	//the trip the individual has to follow to join the activity
 	//the trip is modelized as a Hub pair list:

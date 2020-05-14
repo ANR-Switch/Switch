@@ -133,7 +133,7 @@ species Road {
 		
 		draw geom_display border:  #gray  color: color;
 		
-		draw ""+type+" - "+max_speed+"km/h"  at: location+point([15,-5]) size:10 color:#black;
+		draw ""+type+" - "+length(present_transports)+" PCU"  at: location+point([15,-5]) size:10 color:#black;
 		
 		// Display each vehicle in the queue according to their size and colored according to their time_to_leave
 		// Warning : Their are currently display next to the starting node. They need to be drafted along the road.

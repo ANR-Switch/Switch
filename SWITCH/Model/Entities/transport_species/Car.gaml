@@ -21,9 +21,14 @@ species Car parent: PrivateTransport {
 	}
 	
 	reflex endTrip when: location = target.location{
-		ask target{
-			do leave(myself);
+		loop passenger over:passengers{
+			// we assumed that the first passenger is the car owner
+			if passenger = passengers[0]{ passenger.car_place <- location;}
+			passenger.status <- "arrived";
+			passenger.location <- location;
 		}
+		write "car arrived at destination";
+		do die;
 	}
 	
 	aspect default {

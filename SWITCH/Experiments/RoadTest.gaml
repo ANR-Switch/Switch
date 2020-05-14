@@ -9,6 +9,8 @@ model SWITCH
 
 import "../Model/Entities/network_species/Road.gaml"
 import "../Model/Entities/network_species/Crossroad.gaml"
+import "../Model/Entities/transport_species/Transport.gaml"
+import "../Model/Entities/transport_species/PrivateTransport.gaml"
 import "../Model/Entities/transport_species/Car.gaml"
 
 global {
@@ -51,22 +53,37 @@ species transport_generator{
 	bool next_road_ok;
 	
 	reflex send_car{
-		create Car returns: created_car { location <- A.location; posTarget <- one_of([D,E,G,H]).location; available_graph <- road_network;}
+		create Car returns: created_car {
+			location <- A.location; 
+			posTarget <- one_of([D,E,G,H]).location; 
+			available_graph <- road_network;
+			path_to_target <- list<Road>(path_between(available_graph,location,posTarget).edges);
+			nextRoad <- path_to_target[road_pointer+1];
+		}
 		nb_transport_sent <- 1;
 		next_road_ok <- created_car[0].nextRoad.canAcceptTransport(created_car[0]);
+		
 		loop while: next_road_ok and nb_transport_sent < nb_transport_to_send{
-			create Car returns: created_car { location <- A.location; posTarget <- one_of([D,E,G,H]).location; available_graph <- road_network;}
+			create Car returns: created_car {
+				location <- A.location; 
+				posTarget <- one_of([D,E,G,H]).location; 
+				available_graph <- road_network;
+				path_to_target <- list<Road>(path_between(available_graph,location,posTarget).edges);
+				nextRoad <- path_to_target[road_pointer+1];
+			}
 			next_road_ok <- created_car[0].nextRoad.canAcceptTransport(created_car[0]);
 			nb_transport_sent <- nb_transport_sent + 1;
 		}
+		loop i over:Car{ write "nextRoad= "+i.nextRoad+ " pointer= " +i.road_pointer; }
 		write "end step nb car created: "+nb_transport_sent;
 	}
 	
 }
 
 experiment RoadTest type: gui {
+	float minimum_cycle_duration <- 0.7;
 	output {
-		layout #split parameters: false navigator: false editors: false consoles: true toolbars: false tray: false tabs: true;	
+		layout #split parameters: false navigator: false editors: false consoles: true toolbars: false tray: true tabs: true;	
 		display map background: #white type: opengl {
 			species Crossroad aspect: roadTest;
 			species Road aspect: roadTest;
