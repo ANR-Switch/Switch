@@ -71,7 +71,6 @@ species transport_generator {
             }
             nb_transport_sent <- nb_transport_sent + 1;
         }
-        write "end step nb car created: " + nb_transport_sent;
     }
 
 }

@@ -108,8 +108,6 @@ species Road {
 					//this road can free space in its queue
 					current_capacity <- current_capacity + t.size;
 					remove [time_to_leave,t] from: transportList;
-					write transportList;
-					write present_transports;
 				}
 			}else{
 				//this road can free space in its queue

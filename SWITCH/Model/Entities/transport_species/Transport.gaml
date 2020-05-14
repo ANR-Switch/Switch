@@ -47,7 +47,6 @@ species Transport skills: [moving]{
 	
 	// this action is called by road accepting this transport
 	action enterRoad(Road r){
-		write "enter road";
 		road_pointer <- startedTrip ? road_pointer + 1 : 0;	
 		startedTrip <- true;	
 		if road_pointer = length(path_to_target)-1{
