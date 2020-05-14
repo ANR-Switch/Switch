@@ -36,7 +36,7 @@ global {
 		G <- Crossroad first_with (each.type = "G");
 		H <- Crossroad first_with (each.type = "H");
 		create Road{type <- "AB"; start_node <- A; end_node <- B; max_speed <- road_speed; shape <- line([A.location,B.location]); do init;}
-		create Road{type <- "BC"; start_node <- B; end_node <- C; max_speed <- 20; shape <- line([B.location,C.location]); do init;}
+		create Road{type <- "BC"; start_node <- B; end_node <- C; max_speed <- 50; shape <- line([B.location,C.location]); do init;}
 		create Road{type <- "CD"; start_node <- C; end_node <- D; max_speed <- road_speed; shape <- line([C.location,D.location]); do init;}
 		create Road{type <- "CE"; start_node <- C; end_node <- E; max_speed <- road_speed; shape <- line([C.location,E.location]); do init;}
 		create Road{type <- "BF"; start_node <- B; end_node <- F; max_speed <- road_speed; shape <- line([B.location,F.location]); do init;}

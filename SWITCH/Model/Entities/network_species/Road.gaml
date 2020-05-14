@@ -108,21 +108,20 @@ species Road {
 					//this road can free space in its queue
 					current_capacity <- current_capacity + t.size;
 					remove [time_to_leave,t] from: transportList;
+					count <- count - 1;
 				}
+				count <- count + 1;
 			}else{
 				//this road can free space in its queue
 				current_capacity <- current_capacity + t.size;
 				remove [time_to_leave,t]  from: transportList;
 				ask t{ do endTrip; }
 			}
-			if count = length(transportList)-1{
-				//this is just a way to stop the loop once there is no  more vehicule in the queue
-				time_to_leave <- time + 1;
-			}else{
-				count <- count + 1;
+			if(not empty(transportList)){
 				time_to_leave <- float(transportList[count][0]);
 				t <- Transport(transportList[count][1]);
-			}		
+			}
+					
 		}
 	}
 	
