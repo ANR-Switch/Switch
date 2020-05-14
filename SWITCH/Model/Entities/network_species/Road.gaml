@@ -115,8 +115,14 @@ species Road {
 				remove [time_to_leave,t]  from: transportList;
 				ask t{ do endTrip; }
 			}
-			time_to_leave <- float(transportList[count][0]);
-			t <- Transport(transportList[count][1]);
+			if count = length(transportList)-1{
+				//this is just a way to stop the loop once there is no  more vehicule in the queue
+				time_to_leave <- time + 1;
+			}else{
+				count <- count + 1;
+				time_to_leave <- float(transportList[count][0]);
+				t <- Transport(transportList[count][1]);
+			}		
 		}
 	}
 	
