@@ -20,5 +20,10 @@ species Crossroad{
 		draw circle(3) color: #grey border: #black;
 	}
 	
+	aspect roadTest{
+		draw circle(10) color: #grey border: #black;
+		draw type at: location+point([15,-5]) size:10 color:#black;
+	}
+	
 }
 

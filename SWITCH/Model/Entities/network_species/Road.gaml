@@ -124,4 +124,9 @@ species Road {
 		if current_capacity != max_capacity {road_color <- #red; }
 		draw shape color: road_color end_arrow: 5;
 	} 
+	
+	aspect roadTest {
+		draw shape color: #black end_arrow: 15;
+		draw ""+type+" - "+max_speed+"km/h"  at: location+point([15,-5]) size:10 color:#black;
+	} 
 }

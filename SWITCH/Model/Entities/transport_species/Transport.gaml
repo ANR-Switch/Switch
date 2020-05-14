@@ -30,8 +30,10 @@ species Transport skills: [moving]{
 	//road graph available for the transport
 	graph available_graph;
 	
-	//the target Hub, final destination of the trip
+	//the target position, final destination of the trip
 	Hub target; 
+	//same as target but it is a point (for test purpose)
+	point posTarget;
 	
 	//list of roads that lead to the target
 	list<Road> path_to_target;
@@ -45,7 +47,7 @@ species Transport skills: [moving]{
 	
 	reflex startTrip when: road_pointer < 0{
 		write "start";
-		location <- path_to_target[0].start_node.location;
+		path_to_target <- path_between(available_graph,location,target).vertices;
 		if path_to_target[0].canAcceptTransport(self){
 			ask path_to_target[0]{ do queueInRoad(myself); }	
 		}
