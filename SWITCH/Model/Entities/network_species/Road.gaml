@@ -69,10 +69,9 @@ species Road {
 		point transport_target;
 		ask b{ 
 			do enterRoad(myself);
-			transport_target <- nextRoad = nil? posTarget : nil;
 		}
 		
-		present_bikes << [time+getRoadTravelTime(b),b,transport_target];
+		present_bikes << [time+getRoadTravelTime(b),b];
 	}
 	
 	action queueInRoad(Transport t){
@@ -80,9 +79,8 @@ species Road {
 		point transport_target;
 		ask t{ 
 			do enterRoad(myself);
-			transport_target <- nextRoad = nil? posTarget : nil;
 		}
-		present_transports << [time+getRoadTravelTime(t),t,transport_target];
+		present_transports << [time+getRoadTravelTime(t),t];
 	}
 	
 	bool canAcceptTransport(Transport t){
@@ -99,8 +97,8 @@ species Road {
 	
 	action dequeue(list<list> transportList){
 		int count <- 0;
-		float time_to_leave <- float(transportList[0][0]);
-		Transport t <- Transport(transportList[0][1]);
+		float time_to_leave <- float(transportList[count][0]);
+		Transport t <- Transport(transportList[count][1]);
 		loop while: not empty(transportList) and (time_to_leave<=time){
 			if t.nextRoad != nil{
 				//the transport isn't on its last road so we check if its next road can accept it 
@@ -109,16 +107,18 @@ species Road {
 					ask t.nextRoad { do queueInRoad(t); }
 					//this road can free space in its queue
 					current_capacity <- current_capacity + t.size;
-					remove t from: transportList;
+					remove [time_to_leave,t] from: transportList;
+					write transportList;
+					write present_transports;
 				}
 			}else{
-				ask t{ do endTrip; }
 				//this road can free space in its queue
 				current_capacity <- current_capacity + t.size;
-				remove t from: transportList;
+				remove [time_to_leave,t]  from: transportList;
+				ask t{ do endTrip; }
 			}
-			time_to_leave <- float(transportList[0][0]);
-			t <- Transport(transportList[0][1]);
+			time_to_leave <- float(transportList[count][0]);
+			t <- Transport(transportList[count][1]);
 		}
 	}
 	
@@ -153,7 +153,7 @@ species Road {
 	
 	aspect roadTest {
     // Color of the road is determined according to current road occupation
-        rgb color <- rgb(105, 105, 105, current_capacity / max_capacity);
+        rgb color <- rgb(150,255 * (current_capacity / max_capacity),0);
         geometry geom_display <- (shape + (2.5));
         draw geom_display border: #gray color: color;
         draw "" + type + " - " + length(present_transports) + " PCU" at: location + point([15, -5]) size: 10 color: #black;

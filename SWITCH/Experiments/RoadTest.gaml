@@ -44,51 +44,36 @@ global {
 		create Road{type <- "FH"; start_node <- F; end_node <- H; max_speed <- road_speed; shape <- line([F.location,H.location]); do init;}
 		road_network <- directed(as_edge_graph(Road,Crossroad));
 		create transport_generator;
-		create Car returns: created_car{
-			location <- A.location; 
-			posTarget <- one_of([D,E,G,H]).location; 
-			available_graph <- road_network;
-			path_to_target <- list<Road>(path_between(available_graph,location,posTarget).edges);
-			nextRoad <- path_to_target[road_pointer];
-		}
-		write ""+created_car[0]+"'s path ="+created_car[0].path_to_target;
-		ask created_car[0].nextRoad{do queueInRoad(created_car[0]);}
 	}
 }
 
-species transport_generator{
-	
-	int nb_transport_sent <- 0;
-	int nb_transport_to_send <- 10;
-	bool next_road_ok;
-	
-	reflex send_car{
-		create Car returns: created_car {
-			location <- A.location; 
-			posTarget <- one_of([D,E,G,H]).location; 
-			available_graph <- road_network;
-			path_to_target <- list<Road>(path_between(available_graph,location,posTarget).edges);
-			nextRoad <- path_to_target[road_pointer];
-		}
-		nb_transport_sent <- 1;
-		next_road_ok <- created_car[0].nextRoad.canAcceptTransport(created_car[0]);
-		loop while: next_road_ok and nb_transport_sent < nb_transport_to_send{
-			write ""+created_car[0]+"'s path ="+created_car[0].path_to_target;
-			write created_car[0].nextRoad;
-			ask created_car[0].nextRoad{do queueInRoad(created_car[0]);}
-			create Car returns: created_car {
-				location <- A.location; 
-				posTarget <- one_of([D,E,G,H]).location; 
-				available_graph <- road_network;
-				path_to_target <- list<Road>(path_between(available_graph,location,posTarget).edges);
-				nextRoad <- path_to_target[road_pointer];
-			}
-			next_road_ok <- created_car[0].nextRoad.canAcceptTransport(created_car[0]);
-			nb_transport_sent <- nb_transport_sent + 1;
-		}
-		write "end step nb car created: "+nb_transport_sent;
-	}
-	
+species transport_generator {
+    
+
+    reflex send_car {
+        int nb_transport_sent <- 0;
+        int nb_transport_to_send <- 10;
+        loop while: nb_transport_sent < nb_transport_to_send {
+            create Car {
+                location <- A.location;
+                posTarget <- one_of([D, E, G, H]).location;
+                available_graph <- road_network;
+                path_to_target <- list<Road>(path_between(available_graph, location, posTarget).edges);
+                nextRoad <- path_to_target[road_pointer];
+                if (not nextRoad.canAcceptTransport(self)){
+                    nb_transport_sent <- 10;
+                    do die;
+                }else{
+                    ask nextRoad {
+                        do queueInRoad(myself);
+                    }
+                }
+            }
+            nb_transport_sent <- nb_transport_sent + 1;
+        }
+        write "end step nb car created: " + nb_transport_sent;
+    }
+
 }
 
 experiment RoadTest type: gui {
