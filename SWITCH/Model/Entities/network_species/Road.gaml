@@ -126,7 +126,21 @@ species Road {
 	} 
 	
 	aspect roadTest {
-		draw shape color: #black end_arrow: 15;
+		
+		// Color of the road is determined according to current road occupation
+		rgb color <- rgb(105,105,105,current_capacity/max_capacity);
+		geometry geom_display <- (shape + (2.5));
+		
+		draw geom_display border:  #gray  color: color;
+		
 		draw ""+type+" - "+max_speed+"km/h"  at: location+point([15,-5]) size:10 color:#black;
+		
+		// Display each vehicle in the queue according to their size and colored according to their time_to_leave
+		// Warning : Their are currently display next to the starting node. They need to be drafted along the road.
+		loop i from: 0 to: length (present_transports) - 1 { 
+			Transport t <- Transport(present_transports[0][1]);
+			float time_to_leave <- float(present_transports[0][0]);
+			draw box(t.size, 1.5,1.5) at: location-(i*t.size)  color: rgb(time_to_leave);
+		}
 	} 
 }
