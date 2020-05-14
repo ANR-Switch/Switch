@@ -166,13 +166,13 @@ species Road {
             float y0 <- end_node.location.y;
             float d <- sqrt(((x1 - x0) * (x1 - x0)) + ((y1 - y0) * (y1 - y0)));
             loop i from: 0 to: length(present_transports) - 1 {
-                Transport trans <- Transport(present_transports[0][1]);
+                Transport trans <- Transport(present_transports[i][1]);
                 float dt <- (i * trans.size) + i * spacing;
                 float t <- dt / d;
                 float xt <- ((1 - t) * x0 + t * x1);
                 float yt <- ((1 - t) * y0 + t * y1);
-                float time_to_leave <- float(present_transports[0][0]);
-                draw box(trans.size, 1.5, 1.5) at: point([xt, yt]) color: rgb(int(time_to_leave - time));
+                float time_to_leave <- present_transports[i][0];
+                draw box(trans.size, 1.5, 1.5) at: point([xt, yt]) color: rgb(255 - int(time - time_to_leave));
             }
         }
     }
