@@ -29,7 +29,7 @@ species Road {
 	float max_speed;
 	
 	//number of motorized vehicule lane in this road
-	int nb_lanes;
+	int nb_lanes <- 1;
 	
 	//is the road is oneway or not
 	string oneway;

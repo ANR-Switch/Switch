@@ -40,6 +40,7 @@ global {
 		create Road{type <- "FG"; start_node <- F; end_node <- G; max_speed <- road_speed; shape <- line([F.location,G.location]);}
 		create Road{type <- "FH"; start_node <- F; end_node <- H; max_speed <- road_speed; shape <- line([F.location,H.location]);}
 		road_network <- directed(as_edge_graph(Road,Crossroad));
+		create transport_generator;
 	}
 }
 
@@ -47,13 +48,18 @@ species transport_generator{
 	
 	int nb_transport_sent <- 0;
 	int nb_transport_to_send <- 10;
+	bool next_road_ok;
 	
 	reflex send_car{
-		bool next_road_ok;
-		create Car returns: created_car {posTarget <- one_of([D,E,G,H]).location;}
-		loop while: next_road_ok {
-			create Car returns: created_car {}
+		create Car returns: created_car { location <- A.location; posTarget <- one_of([D,E,G,H]).location; available_graph <- road_network;}
+		nb_transport_sent <- 1;
+		next_road_ok <- created_car[0].nextRoad.canAcceptTransport(created_car[0]);
+		loop while: next_road_ok and nb_transport_sent < nb_transport_to_send{
+			create Car returns: created_car { location <- A.location; posTarget <- one_of([D,E,G,H]).location; available_graph <- road_network;}
+			next_road_ok <- created_car[0].nextRoad.canAcceptTransport(created_car[0]);
+			nb_transport_sent <- nb_transport_sent + 1;
 		}
+		write "end step nb car created: "+nb_transport_sent;
 	}
 	
 }

@@ -44,10 +44,13 @@ species Transport skills: [moving]{
 	//Next road to travel on
 	Road nextRoad;
 	
+	init{
+		path_to_target <- path_between(available_graph,location,posTarget).edges;
+		nextRoad <- path_to_target[road_pointer+1];
+	}
 	
 	reflex startTrip when: road_pointer < 0{
 		write "start";
-		path_to_target <- path_between(available_graph,location,target).vertices;
 		if path_to_target[0].canAcceptTransport(self){
 			ask path_to_target[0]{ do queueInRoad(myself); }	
 		}
