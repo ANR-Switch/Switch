@@ -20,7 +20,8 @@ species Car parent: PrivateTransport {
 		max_passenger <- 5;
 	}
 	
-	reflex endTrip when: location = target.location{
+	action endTrip{
+		location <- posTarget;
 		loop passenger over:passengers{
 			// we assumed that the first passenger is the car owner
 			if passenger = passengers[0]{ passenger.car_place <- location;}

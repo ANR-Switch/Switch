@@ -39,29 +39,26 @@ species Transport skills: [moving]{
 	list<Road> path_to_target;
 	
 	//indicate the actual road in path_to_target list
-	int road_pointer <- -1;
+	int road_pointer <- 0;
+	bool startedTrip <- false;
 	
 	//Next road to travel on
 	Road nextRoad;
 	
-	reflex startTrip when: road_pointer < 0{
-		write "start trip";
-		if path_to_target[0].canAcceptTransport(self){
-			ask path_to_target[0]{ do queueInRoad(myself); }	
-		}
-	}
-	
-	reflex updateNextRoad when: nextRoad = path_to_target[road_pointer]{
+	// this action is called by road accepting this transport
+	action enterRoad(Road r){
+		write "enter road";
+		road_pointer <- startedTrip ? road_pointer + 1 : 0;	
+		startedTrip <- true;	
 		if road_pointer = length(path_to_target)-1{
 			//if the current road is the last road of the trip then the transport can join the target
-			do goto target: target;
 			nextRoad <- nil;
 		}else{
 			nextRoad <- path_to_target[road_pointer+1];
 		}
 	}
 	
-	reflex endTrip when: location = target.location{}
+	action endTrip{}
 	
 	aspect default {
 		draw square(1#px) color: #green border: #black depth: 1.0 ;
