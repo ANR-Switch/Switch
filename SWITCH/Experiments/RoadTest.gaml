@@ -102,28 +102,27 @@ experiment RoadTest type: gui {
 		}
 		display chart_D{
 			chart "traveled distance by car going to D" type: series{
-				write goto_D;
 				loop c over: goto_D{
 					data ""+c value: c.chart_values style: line color: rnd_color(255);
 				}
       		}
       	}
       	display chart_E refresh: every (10 #cycles){
-			chart "traveled distance by car going to D" type: series{
+			chart "traveled distance by car going to E" type: series{
 				loop c over: goto_E{
 					data ""+c value: c.chart_values style: line color: rnd_color(255);
 				}
       		}
       	}
       	display chart_G refresh: every (10 #cycles){
-			chart "traveled distance by car going to D" type: series{
+			chart "traveled distance by car going to G" type: series{
 				loop c over: goto_G{
 					data ""+c value: c.chart_values style: line color: rnd_color(255);
 				}
       		}
       	}
       	display chart_H refresh: every (10 #cycles){
-			chart "traveled distance by car going to D" type: series{
+			chart "traveled distance by car going to H" type: series{
 				loop c over: goto_H{
 					data ""+c value: c.chart_values style: line color: rnd_color(255);
 				}
