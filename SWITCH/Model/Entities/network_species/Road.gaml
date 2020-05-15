@@ -177,7 +177,10 @@ species Road {
                 float xt <- ((1 - t) * x0 + t * x1);
                 float yt <- ((1 - t) * y0 + t * y1);
                 float time_to_leave <- present_transports[i][0];
-                draw box(trans.size, 1.5, 1.5) at: point([xt, yt]) color: rgb(255 - int(time - time_to_leave));
+                
+                float heading <- angle_between ({x0,y0},{x1,y0},{x1,y1}) ;
+                
+                draw box(trans.size, 1.5, 1.5) at: point([xt, yt]) rotate: heading color: rgb(255 - int(time - time_to_leave));
             }
         }
     }
