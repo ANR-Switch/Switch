@@ -187,7 +187,7 @@ species Road {
                     carColor <- rgb(255 - min(255,abs(nbStepToLeave)),0,0);
                 }
                 
-                draw box(trans.size, 1.5, 1.5) at: point([xt, yt]) color: carColor;
+                draw box(trans.size, 1.5, 1.5) at: point([xt, yt]) color: carColor rotate:angle_between({x0,y0},{x1,y0},{x1,y1});
             }
         }
     }
