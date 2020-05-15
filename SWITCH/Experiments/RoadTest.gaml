@@ -23,14 +23,11 @@ global {
 	graph<Crossroad,Road> road_network;
 	Crossroad A;Crossroad B;Crossroad C;Crossroad D;
 	Crossroad E;Crossroad F;Crossroad G;Crossroad H;
-	list<Transport> goto_D;
-	list<Transport> goto_E;
-	list<Transport> goto_G;
-	list<Transport> goto_H;
-	
+	// data = [string destination :: [string car_name :: float dist_traveled]]
+	map<string,list<pair<string,float>>> data;
 	
 	init{
-		goto_D <- []; goto_E <- []; goto_G <- []; goto_H <- [];
+		data["D"] <- []; data["E"] <- []; data["G"] <- []; data["H"] <- [];
 		
 		create Crossroad from: crossroad_shapefile with:[
 			type::string(get("name"))
@@ -53,6 +50,16 @@ global {
 		road_network <- directed(as_edge_graph(Road,Crossroad));
 		create transport_generator;
 	}
+	
+	reflex print_data{
+		loop k over: data.keys{
+			loop v over: data[k]{
+				write ""+k+"   "+v.key+"   "+v.value;
+			}
+		}
+		write "-----------------------------";
+		data["D"] <- []; data["E"] <- []; data["G"] <- []; data["H"] <- [];
+	}
 }
 
 species transport_generator {
@@ -67,10 +74,10 @@ species transport_generator {
                 Crossroad c <- one_of([D, E, G, H]);
                 if flip(0.1){
                 	switch c{
-                		match D{goto_D << self; test_target <- "D";}
-                		match E{goto_E << self; test_target <- "E";}
-                		match G{goto_G << self; test_target <- "G";}
-                		match H{goto_H << self; test_target <- "H";}
+                		match D{test_target <- "D";}
+                		match E{test_target <- "E";}
+                		match G{test_target <- "G";}
+                		match H{test_target <- "H";}
                 	}
                 }
                 posTarget <- c.location;
@@ -100,32 +107,37 @@ experiment RoadTest type: gui {
 			species Crossroad aspect: roadTest;
 			species Road aspect: roadTest;
 		}
-		display chart_D{
+		display chart_D refresh: every (5 #cycles){
 			chart "traveled distance by car going to D" type: series{
-				loop c over: goto_D{
-					data ""+c value: c.chart_values style: line color: rnd_color(255);
+				write "test";
+				loop data_point over: data["D"]{
+					data data_point.key value: data_point.value style: line color: rnd_color(255);
 				}
+				data["D"] <- [];
       		}
       	}
-      	display chart_E refresh: every (10 #cycles){
+      	display chart_E refresh: every (5 #cycles){
 			chart "traveled distance by car going to E" type: series{
-				loop c over: goto_E{
-					data ""+c value: c.chart_values style: line color: rnd_color(255);
+				loop data_point over: data["E"]{
+					data data_point.key value: data_point.value style: line color: rnd_color(255);
 				}
+				data["E"] <- [];
       		}
       	}
-      	display chart_G refresh: every (10 #cycles){
+      	display chart_G refresh: every (5 #cycles){
 			chart "traveled distance by car going to G" type: series{
-				loop c over: goto_G{
-					data ""+c value: c.chart_values style: line color: rnd_color(255);
+				loop data_point over: data["G"]{
+					data data_point.key value: data_point.value style: line color: rnd_color(255);
 				}
+				data["G"] <- [];
       		}
       	}
-      	display chart_H refresh: every (10 #cycles){
+      	display chart_H refresh: every (5 #cycles){
 			chart "traveled distance by car going to H" type: series{
-				loop c over: goto_H{
-					data ""+c value: c.chart_values style: line color: rnd_color(255);
+				loop data_point over: data["H"]{
+					data data_point.key value: data_point.value style: line color: rnd_color(255);
 				}
+				data["H"] <- [];
       		}
       	}
 	}

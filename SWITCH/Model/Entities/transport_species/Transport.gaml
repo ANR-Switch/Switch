@@ -9,6 +9,7 @@
 model SWITCH
 
 import "../network_species/Road.gaml"
+import "../../../Experiments/RoadTest.gaml"
 import "../network_species/Hub_subspecies/Hub.gaml"
 import "../Individual.gaml"
 
@@ -48,17 +49,16 @@ species Transport skills: [moving]{
 	//******* /!\ TESTING ATTRIBUTES and ACTION **********
 	string test_target;
 	bool already_reached_end_road <- false;
-	list<point> chart_values <- [];
-	int traveled_dist <- 0.0;
+	float traveled_dist <- 0.0;
 	
 	
 	action addPointReachedEndRoad{
 		traveled_dist <- traveled_dist + path_to_target[road_pointer].size;
-		chart_values << [time,traveled_dist];
+		data[test_target] << ""+self::traveled_dist;
 	}
 	action addPointEnterRoad{
 		already_reached_end_road <- false;
-		chart_values << [time,traveled_dist];
+		data[test_target] << ""+self::traveled_dist;
 	}
 	//****************************************************
 	
