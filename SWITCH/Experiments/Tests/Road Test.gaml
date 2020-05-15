@@ -7,31 +7,33 @@
 
 model SWITCH
 
-import "../Model/Entities/network_species/Road.gaml"
-import "../Model/Entities/network_species/Crossroad.gaml"
-import "../Model/Entities/transport_species/Transport.gaml"
-import "../Model/Entities/transport_species/PrivateTransport.gaml"
-import "../Model/Entities/transport_species/Car.gaml"
+import "../../Model/logger.gaml"
+import "../../Model/Entities/network_species/Road.gaml"
+import "../../Model/Entities/network_species/Crossroad.gaml"
+import "../../Model/Entities/transport_species/Transport.gaml"
+import "../../Model/Entities/transport_species/PrivateTransport.gaml"
+import "../../Model/Entities/transport_species/Car.gaml"
 
-global {
+global { 
 	string datasettest <- "../Datasets/Road test/"; // default
 	file crossroad_shapefile <- shape_file(datasettest+"roadTest.shp");
 	geometry shape <- envelope(crossroad_shapefile);
 	float step <- 5 #sec;
 	float road_speed <- 50.0;
+	list<string> crossroads;
 	
 	graph<Crossroad,Road> road_network;
 	Crossroad A;Crossroad B;Crossroad C;Crossroad D;
 	Crossroad E;Crossroad F;Crossroad G;Crossroad H;
-	// data = [string destination :: [string car_name :: float dist_traveled]]
-	map<string,list<pair<string,float>>> data;
 	
 	init{
-		data["D"] <- []; data["E"] <- []; data["G"] <- []; data["H"] <- [];
+		create logger with: [store_individual_dest::true]{the_logger <- self;}
+		//logger.data["D"] <- []; logger.data["E"] <- []; logger.data["G"] <- []; logger.data["H"] <- [];
 		
 		create Crossroad from: crossroad_shapefile with:[
 			type::string(get("name"))
 		];
+		crossroads <- remove_duplicates(Crossroad collect each.type);
 		A <- Crossroad first_with (each.type = "A");
 		B <- Crossroad first_with (each.type = "B");
 		C <- Crossroad first_with (each.type = "C");
@@ -52,13 +54,8 @@ global {
 	}
 	
 	reflex print_data{
-		loop k over: data.keys{
-			loop v over: data[k]{
-				write ""+k+"   "+v.key+"   "+v.value;
-			}
-		}
-		write "-----------------------------";
-		data["D"] <- []; data["E"] <- []; data["G"] <- []; data["H"] <- [];
+		write the_logger.data_to_string;
+		ask the_logger {do reset_data;}
 	}
 }
 
@@ -107,13 +104,12 @@ experiment RoadTest type: gui {
 			species Crossroad aspect: roadTest;
 			species Road aspect: roadTest;
 		}
-		display chart_D refresh: every (5 #cycles){
+		/*display chart_D refresh: every (5 #cycles){
 			chart "traveled distance by car going to D" type: series{
 				write "test";
 				loop data_point over: data["D"]{
 					data data_point.key value: data_point.value style: line color: rnd_color(255);
 				}
-				data["D"] <- [];
       		}
       	}
       	display chart_E refresh: every (5 #cycles){
@@ -121,7 +117,6 @@ experiment RoadTest type: gui {
 				loop data_point over: data["E"]{
 					data data_point.key value: data_point.value style: line color: rnd_color(255);
 				}
-				data["E"] <- [];
       		}
       	}
       	display chart_G refresh: every (5 #cycles){
@@ -129,16 +124,14 @@ experiment RoadTest type: gui {
 				loop data_point over: data["G"]{
 					data data_point.key value: data_point.value style: line color: rnd_color(255);
 				}
-				data["G"] <- [];
-      		}
+			}
       	}
       	display chart_H refresh: every (5 #cycles){
 			chart "traveled distance by car going to H" type: series{
 				loop data_point over: data["H"]{
 					data data_point.key value: data_point.value style: line color: rnd_color(255);
 				}
-				data["H"] <- [];
-      		}
-      	}
+			}
+      	}*/
 	}
 }

@@ -15,7 +15,7 @@ import "Entities/network_species/Crossroad.gaml"
 import "Entities/network_species/Road.gaml"
 
 import "Entities/Individual.gaml"
-
+ 
 global {
 		//variables environement de transport :
 	//map<string, map<string,float>> info_mode_env; //<mode, <critère,valeur>>
@@ -41,7 +41,7 @@ global {
 	//time
 	float bus_freq; //intervalle en minute
 	
-	//simplicity
+	logger the_logger;
 	
 	
 	geometry shape <- envelope(road_shapefile);

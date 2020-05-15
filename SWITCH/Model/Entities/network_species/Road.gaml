@@ -38,7 +38,7 @@ species Road {
 	float size <- shape.perimeter;
 	
 	//maximum space capacity of the road (in meters)
-	float max_capacity <- size * nb_lanes min: 10;
+	float max_capacity <- size * nb_lanes min: 10.0;
 	
 	//actual free space capacity of the road (in meters)
 	float current_capacity <- max_capacity;
@@ -155,7 +155,7 @@ species Road {
 	
 	aspect roadTest {
     // Color of the road is determined according to current road occupation
-        rgb color <- rgb(150,255 * (current_capacity / max_capacity),0);
+        //rgb color <- rgb(150,255 * (current_capacity / max_capacity),0);
         geometry geom_display <- (shape + (2.5));
         draw geom_display border: #gray color: #black;
         draw "" + type + " - " + length(present_transports) + " PCU" at: location + point([15, -5]) size: 10 color: #black;
@@ -175,9 +175,9 @@ species Road {
                 float t <- dt / d;
                 float xt <- ((1 - t) * x0 + t * x1);
                 float yt <- ((1 - t) * y0 + t * y1);
-                float time_to_leave <- present_transports[i][0];
+                float time_to_leave <- float(present_transports[i][0]);
                 
-                int nbStepToLeave <- int(time_to_leave - time)*step;
+                int nbStepToLeave <- round(int(time_to_leave - time)*step);
                 
                 rgb carColor;
                 

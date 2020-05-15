@@ -8,8 +8,9 @@
 
 model SWITCH
 
+import "../../logger.gaml"
+
 import "../network_species/Road.gaml"
-import "../../../Experiments/RoadTest.gaml"
 import "../network_species/Hub_subspecies/Hub.gaml"
 import "../Individual.gaml"
 
@@ -54,11 +55,15 @@ species Transport skills: [moving]{
 	
 	action addPointReachedEndRoad{
 		traveled_dist <- traveled_dist + path_to_target[road_pointer].size;
-		data[test_target] << ""+self::traveled_dist;
+		if (the_logger != nil) {
+			ask the_logger {do add_data(myself.test_target, myself.name, myself.traveled_dist);}
+		}
 	}
 	action addPointEnterRoad{
 		already_reached_end_road <- false;
-		data[test_target] << ""+self::traveled_dist;
+		if (the_logger != nil) {
+			ask the_logger {do add_data(myself.test_target, myself.name, myself.traveled_dist);}
+		}
 	}
 	//****************************************************
 	
