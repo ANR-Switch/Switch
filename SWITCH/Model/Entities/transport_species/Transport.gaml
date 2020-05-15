@@ -46,26 +46,19 @@ species Transport skills: [moving]{
 	Road nextRoad;
 	
 	//******* /!\ TESTING ATTRIBUTES and ACTION **********
-	int time_last_enter;
-	int time_next_leave;
-	float size_current_road;
-	float traveled_dist -> computeTravelDist();
+	string test_target;
+	bool already_reached_end_road <- false;
+	list<point> chart_values <- [];
+	int traveled_dist <- 0.0;
 	
-	float computeTravelDist{
-		if not startedTrip{
-			return 0.0;
-		}else{
-			int count <- 0;
-			float dist <- 0.0;
-			loop while: count < road_pointer{
-				// we sum all the previously fully traveled road
-				dist <- dist + path_to_target[count].size;
-				count <- count +1;
-			}
-			// now we compute the distance traveled on current road
-			dist <- dist + path_to_target[road_pointer].traveledDist(self) ;
-			return dist;
-		}
+	
+	action addPointReachedEndRoad{
+		traveled_dist <- traveled_dist + path_to_target[road_pointer].size;
+		chart_values << [time,traveled_dist];
+	}
+	action addPointEnterRoad{
+		already_reached_end_road <- false;
+		chart_values << [time,traveled_dist];
 	}
 	//****************************************************
 	
@@ -73,7 +66,10 @@ species Transport skills: [moving]{
 	// this action is called by road accepting this transport
 	action enterRoad(Road r){
 		road_pointer <- startedTrip ? road_pointer + 1 : 0;	
-		startedTrip <- true;	
+		startedTrip <- true;
+		//****** Metrics purpose *************	
+		if (test_target != nil) {do addPointEnterRoad();}
+		//************************************
 		if road_pointer = length(path_to_target)-1{
 			//if the current road is the last road of the trip then the transport can join the target
 			nextRoad <- nil;

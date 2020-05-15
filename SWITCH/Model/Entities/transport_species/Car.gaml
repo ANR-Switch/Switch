@@ -28,6 +28,7 @@ species Car parent: PrivateTransport {
 			passenger.status <- "arrived";
 			passenger.location <- location;
 		}
+		write chart_values;
 		do die;
 	}
 	

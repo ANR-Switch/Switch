@@ -53,18 +53,6 @@ species Road {
 	list<list> present_bikes <- [];
     list<list> present_transports <- [];
     
-    //******* /!\ TESTING ATTRIBUTES and ACTION **********
-    bool test_mode;
-    float traveledDist(Transport t){
-    	loop i over: present_transports{
-    		if i[1] = t{
-    			return size * (time-float(i[2])) / (float(i[0])-float(i[2]));
-    		}
-    	}
-    	return 0.0;
-    }
-    //****************************************************
-    
     action init{
     	size <- shape.perimeter;
     	max_capacity <- size * nb_lanes;
@@ -79,11 +67,7 @@ species Road {
 		ask b{ 
 			do enterRoad(myself);
 		}
-		if not test_mode {
-			present_bikes << [time+getRoadTravelTime(b),b];
-		}else{
-			present_bikes << [time+getRoadTravelTime(b),b,time];
-		}
+		present_bikes << [time+getRoadTravelTime(b),b];
 	}
 	
 	action queueInRoad(Transport t){
@@ -91,11 +75,7 @@ species Road {
 		ask t{ 
 			do enterRoad(myself);
 		}
-		if not test_mode{
-			present_transports << [time+getRoadTravelTime(t),t];
-		}else{
-			present_transports << [time+getRoadTravelTime(t),t,time];
-		}
+		present_transports << [time+getRoadTravelTime(t),t];
 		
 	}
 	
@@ -116,6 +96,9 @@ species Road {
 		float time_to_leave <- float(transportList[count][0]);
 		Transport t <- Transport(transportList[count][1]);
 		loop while: not empty(transportList) and (time_to_leave<=time){
+			//****** Metrics purpose *************
+			if (t.test_target != nil) and (not t.already_reached_end_road) {ask t{do addPointReachedEndRoad;}}
+			//************************************
 			if t.nextRoad != nil{
 				//the transport isn't on its last road so we check if its next road can accept it 
 				if t.nextRoad.canAcceptTransport(t){
@@ -174,7 +157,7 @@ species Road {
     // Color of the road is determined according to current road occupation
         rgb color <- rgb(150,255 * (current_capacity / max_capacity),0);
         geometry geom_display <- (shape + (2.5));
-        draw geom_display border: #gray color: color;
+        draw geom_display border: #gray color: #black;
         draw "" + type + " - " + length(present_transports) + " PCU" at: location + point([15, -5]) size: 10 color: #black;
 
         // Display each vehicle in the queue according to their size and colored according to their time_to_leave
@@ -194,9 +177,17 @@ species Road {
                 float yt <- ((1 - t) * y0 + t * y1);
                 float time_to_leave <- present_transports[i][0];
                 
-                float heading <- angle_between ({x0,y0},{x1,y0},{x1,y1}) ;
+                int nbStepToLeave <- int(time_to_leave - time)*step;
                 
-                draw box(trans.size, 1.5, 1.5) at: point([xt, yt]) rotate: heading color: rgb(255 - int(time - time_to_leave));
+                rgb carColor;
+                
+                if (nbStepToLeave > 0){
+                    carColor <- rgb(0,255 - min(255,nbStepToLeave),0);
+                }else{
+                    carColor <- rgb(255 - min(255,abs(nbStepToLeave)),0,0);
+                }
+                
+                draw box(trans.size, 1.5, 1.5) at: point([xt, yt]) color: carColor;
             }
         }
     }
