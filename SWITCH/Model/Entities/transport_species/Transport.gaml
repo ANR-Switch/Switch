@@ -45,6 +45,31 @@ species Transport skills: [moving]{
 	//Next road to travel on
 	Road nextRoad;
 	
+	//******* /!\ TESTING ATTRIBUTES and ACTION **********
+	int time_last_enter;
+	int time_next_leave;
+	float size_current_road;
+	float traveled_dist -> computeTravelDist();
+	
+	float computeTravelDist{
+		if not startedTrip{
+			return 0.0;
+		}else{
+			int count <- 0;
+			float dist <- 0.0;
+			loop while: count < road_pointer{
+				// we sum all the previously fully traveled road
+				dist <- dist + path_to_target[count].size;
+				count <- count +1;
+			}
+			// now we compute the distance traveled on current road
+			dist <- dist + path_to_target[road_pointer].traveledDist(self) ;
+			return dist;
+		}
+	}
+	//****************************************************
+	
+	
 	// this action is called by road accepting this transport
 	action enterRoad(Road r){
 		road_pointer <- startedTrip ? road_pointer + 1 : 0;	

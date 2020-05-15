@@ -53,6 +53,18 @@ species Road {
 	list<list> present_bikes <- [];
     list<list> present_transports <- [];
     
+    //******* /!\ TESTING ATTRIBUTES and ACTION **********
+    bool test_mode;
+    float traveledDist(Transport t){
+    	loop i over: present_transports{
+    		if i[1] = t{
+    			return size * (time-float(i[2])) / (float(i[0])-float(i[2]));
+    		}
+    	}
+    	return 0.0;
+    }
+    //****************************************************
+    
     action init{
     	size <- shape.perimeter;
     	max_capacity <- size * nb_lanes;
@@ -64,23 +76,27 @@ species Road {
 		if not has_bike_lane {
 			current_capacity <- current_capacity - b.size;
 		}
-		present_bikes << [time+getRoadTravelTime(b),b];
-		ask b{ road_pointer <- road_pointer +1; }
-		point transport_target;
 		ask b{ 
 			do enterRoad(myself);
 		}
-		
-		present_bikes << [time+getRoadTravelTime(b),b];
+		if not test_mode {
+			present_bikes << [time+getRoadTravelTime(b),b];
+		}else{
+			present_bikes << [time+getRoadTravelTime(b),b,time];
+		}
 	}
 	
 	action queueInRoad(Transport t){
 		current_capacity <- current_capacity - t.size;
-		point transport_target;
 		ask t{ 
 			do enterRoad(myself);
 		}
-		present_transports << [time+getRoadTravelTime(t),t];
+		if not test_mode{
+			present_transports << [time+getRoadTravelTime(t),t];
+		}else{
+			present_transports << [time+getRoadTravelTime(t),t,time];
+		}
+		
 	}
 	
 	bool canAcceptTransport(Transport t){
