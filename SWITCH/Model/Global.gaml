@@ -59,15 +59,6 @@ global {
 				match_between [125.0,250.0]{type <- rnd(1.0)<0.5 ? "parking" : "work";}
 				default {type <- "work";}
 			}
-			if ["home","parking","work"] contains type{
-				create HubCar returns: created_HubCar{
-					location <- any_location_in(myself);
-				}
-				create HubBike returns: created_HubBike{
-					location <- any_location_in(myself);
-				}
-				parkings <- parkings + [created_HubCar][0] + [created_HubBike][0];
-			}
 		}
 		
 		//Initialization of the road using the shapefile of roads
@@ -89,10 +80,8 @@ global {
 		create Individual number: nb_individuals {
 			home_building <- one_of(Building where (each.type = "home"));
 			work_building <- one_of(Building where (each.type = "work"));
-			car_place <- HubCar(home_building.parkings[0]);
-			write home_building.parkings[0];
-			bike_place <- HubBike(home_building.parkings[1]);
-			write home_building.parkings[1];
+			car_place <- home_building.location;
+			bike_place <- home_building.location;
 			location <- any_location_in(home_building);
 		}
       	road_network <- directed(as_edge_graph(Road,Crossroad));

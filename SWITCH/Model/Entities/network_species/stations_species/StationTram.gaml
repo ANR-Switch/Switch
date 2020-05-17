@@ -8,8 +8,8 @@
 
 model SWITCH
 
-import "HubPublic.gaml"
+import "Station.gaml"
 
-species HubTram parent: HubPublic {
+species HubTram parent: Station {
 	
 }

@@ -7,15 +7,10 @@
 
 model SWITCH
 
-import "Hub_subspecies/HubPrivate.gaml"
-
-
 species Building {
 	
 	string type <- "default";
 	float size <- shape.perimeter;
-	
-	list<HubPrivate> parkings;
 	
 	aspect default {
 		switch type{

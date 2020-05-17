@@ -11,7 +11,6 @@ model SWITCH
 import "../../logger.gaml"
 
 import "../network_species/Road.gaml"
-import "../network_species/Hub_subspecies/Hub.gaml"
 import "../Individual.gaml"
 
 species Transport skills: [moving]{
@@ -33,8 +32,6 @@ species Transport skills: [moving]{
 	graph available_graph;
 	
 	//the target position, final destination of the trip
-	Hub target; 
-	//same as target but it is a point (for test purpose)
 	point posTarget;
 	
 	//list of roads that lead to the target

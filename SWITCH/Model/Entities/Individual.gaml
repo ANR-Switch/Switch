@@ -11,8 +11,6 @@ import "../Global.gaml"
 import "../Parameters.gaml"
 import "../Constants.gaml"
 import "network_species/Building.gaml"
-import "network_species/Hub_subspecies/HubCar.gaml"
-import "network_species/Hub_subspecies/HubBike.gaml"
 
 species Individual skills: [moving] control:simple_bdi{
 	
@@ -35,7 +33,7 @@ species Individual skills: [moving] control:simple_bdi{
 	//the trip is modelized as a Hub pair list:
 	//the first Hub of the pair is the entry Hub and the second is the exit one
 	//the individual need to make the trip between those pair by foot
-	list<pair<Hub,Hub>> transport_trip;
+	//list<pair<Hub,Hub>> transport_trip;
 	int trip_pointer <- 0;
 	
 	rgb color <-#red;
@@ -281,7 +279,7 @@ species Individual skills: [moving] control:simple_bdi{
 	//compute a trip acording to priority and target
 	action compute_transport_trip(point target_){
 		// for the moment this function is only returning a car trip
-		transport_trip << car_place :: HubCar closest_to target_;
+		//transport_trip << car_place :: HubCar closest_to target_;
 		trip_pointer <- 0;
 	}
 	
@@ -373,10 +371,10 @@ species Individual skills: [moving] control:simple_bdi{
 			match "go to trip"{
 				do add_subintention(get_current_intention(),at_subtarget,true); 
 				do current_intention_on_hold();
-				write "ask hub: "+transport_trip[trip_pointer].key+" to go to hub: "+transport_trip[trip_pointer].value;
+				/*write "ask hub: "+transport_trip[trip_pointer].key+" to go to hub: "+transport_trip[trip_pointer].value;
 				ask transport_trip[trip_pointer].key{
 					do enter([myself],myself.transport_trip[myself.trip_pointer].value);
-				}
+				}*/
 			}
 			match_one ["driving","passenger"]{ do remove_belief(at_subtarget); }
 			match "arrived"{

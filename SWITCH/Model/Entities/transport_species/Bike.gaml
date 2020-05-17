@@ -12,23 +12,21 @@ import "PrivateTransport.gaml"
 
 species Bike parent: PrivateTransport {
 	
-	HubBike target;
-	
 	init{
 		max_speed <- 14.0;
 		size <- 1.0;
 		max_passenger <- 1;
 	}
 	
-	reflex startTrip when: road_pointer < 0{
-		location <- path_to_target[0].start_node.location;
-		ask path_to_target[0]{ do queueInRoad(myself); }	
-	}
-	
-	reflex endTrip when: location = target.location{
-		ask target{
-			do leave(myself);
+	action endTrip{
+		location <- posTarget;
+		loop passenger over:passengers{
+			// we assumed that the first passenger is the car owner
+			if passenger = passengers[0]{ passenger.car_place <- location;}
+			passenger.status <- "arrived";
+			passenger.location <- location;
 		}
+		do die;
 	}
 	
 	aspect default {

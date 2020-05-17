@@ -11,6 +11,7 @@ import "../../Individual.gaml"
 
 species Hub {
 	rgb color;
+	string name;
 	
 	aspect default {
 		draw square(5) color: color border: #black;
