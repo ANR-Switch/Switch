@@ -76,6 +76,7 @@ global {
 			crossing::string(get("crossing"))
 		];
 		
+		
 		//Creation of the people agents
 		create Individual number: nb_individuals {
 			home_building <- one_of(Building where (each.type = "home"));
@@ -83,6 +84,35 @@ global {
 			car_place <- home_building.location;
 			bike_place <- home_building.location;
 			location <- any_location_in(home_building);
+		}
+		
+		if (choice_of_target_mode = gravity) {
+			map<string, list<Building>> buildings <- Building group_by (each.type);
+			ask Individual {
+				list<predicate> acts <- remove_duplicates((agenda_week accumulate each.values) collect each.key) - [staying_at_home, working, studying, visiting_friend] ;
+				loop act over: acts {
+					map<string, list<Building>> bds;
+					loop type over: activities[act.name] {
+						list<Building> buildings <- buildings[type];
+						if length(buildings) <= nb_candidates {
+							bds[type] <- buildings;
+						} else {
+							list<Building> bds_;
+							list<float> proba_per_building;
+							loop b over: buildings {
+								float dist <- max(20,b.location distance_to home_building.location);
+								proba_per_building << (b.shape.area / dist ^ gravity_power);
+							}
+							loop while: length(bds_) < nb_candidates {
+								bds_<< buildings[rnd_choice(proba_per_building)];
+								bds_ <- remove_duplicates(bds_);
+							}
+							bds[type] <- bds_;
+						}
+						building_targets[act] <- bds;
+					}
+				}
+			}
 		}
       	road_network <- directed(as_edge_graph(Road,Crossroad));
       	ask Road {
