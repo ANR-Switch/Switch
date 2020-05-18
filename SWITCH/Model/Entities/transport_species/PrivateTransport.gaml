@@ -20,16 +20,7 @@ species PrivateTransport parent: Transport {
 		}
 	}
 
-	action endTrip{
-		location <- pos_target;
-		loop passenger over:passengers{
-			// we assumed that the first passenger is always the transport owner
-			if passenger = passengers[0]{ passenger.car_place <- location;}
-			passenger.status <- "arrived";
-			passenger.location <- location;
-		}
-		do die;
-	}
+
 	
 	aspect default {
 		draw square(1#px) color: #green border: #black;

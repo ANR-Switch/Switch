@@ -271,7 +271,6 @@ species Individual skills: [moving] control:simple_bdi{
 			if (get_current_intention() != nil) {
 				do remove_intention(first(intention_base).predicate, true);
 			}
-			write "start activity: "+act;
 			do remove_belief(at_target);
 			do add_desire(act);
 		}
@@ -280,13 +279,12 @@ species Individual skills: [moving] control:simple_bdi{
 	//compute a trip acording to priority and target
 	action compute_transport_trip(point target_){
 		// for the moment this function is only returning a car trip
-		transport_trip << ["car",car_place,any_location_in(one_of(Building where ((each.type = "parking") and distance_to(each.location,target_)<300)))];
+		transport_trip << ["car",car_place,closest_to((Building where (each.type = "parking")),target_).location];
 		trip_pointer <- 0;
 	}
 	
 	plan do_work intention: working{
 		if (not has_belief(at_target)) {
-			write "go to work";
 			target_building <- work_building;
 			do compute_transport_trip(target_building.location);
 			status <- "go to trip";
@@ -297,7 +295,6 @@ species Individual skills: [moving] control:simple_bdi{
 	
 	plan do_stay_at_home intention: staying_at_home{
 		if (not has_belief(at_target)) {
-			write "go to home";
 			target_building <- home_building;
 			do compute_transport_trip(target_building.location);
 			status <- "go to trip";
@@ -360,9 +357,12 @@ species Individual skills: [moving] control:simple_bdi{
 			match "arrived"{
 				if trip_pointer = length(transport_trip)-1{
 					//The individual completed the trip he just has to join the activity building
-					do goto target: target_building.location;
+					subtarget <- target_building.location;
+					do add_subintention(get_current_intention(),at_subtarget,true); 
+					do current_intention_on_hold();
 					if location = target_building.location{
 						status <- "activity";
+						do remove_belief(at_subtarget);
 						do add_belief(at_target);
 					}
 				}else{
@@ -409,11 +409,12 @@ species Individual skills: [moving] control:simple_bdi{
 		switch status{
 			match "driving"{ color <- #yellow; }
 			match "passenger"{ color <- #cyan; }
-			match "trip finished"{ color <- #green; }
+			match "arrived"{ color <- #green; }
+			match "activity"{ color <- #magenta; }
 			default { color <- #magenta; }
 		}
 		 
-		draw circle(40) color: color rotate: heading border: #black;
+		draw circle(5) color: color rotate: heading border: #black;
 	}	
 		
 }

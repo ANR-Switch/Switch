@@ -95,7 +95,7 @@ species Road {
 		int count <- 0;
 		float time_to_leave <- float(transportList[count][0]);
 		Transport t <- Transport(transportList[count][1]);
-		loop while: not empty(transportList) and (time_to_leave<=time){
+		loop while: not empty(transportList) and (time_to_leave<=time) and count < length(transportList){
 			//****** Metrics purpose *************
 			if (t.test_target != nil) and (not t.already_reached_end_road) {ask t{do addPointReachedEndRoad;}}
 			//************************************
@@ -116,11 +116,10 @@ species Road {
 				remove [time_to_leave,t]  from: transportList;
 				ask t{ do endTrip; }
 			}
-			if(not empty(transportList)){
+			if(not empty(transportList) and count < length(transportList)){
 				time_to_leave <- float(transportList[count][0]);
 				t <- Transport(transportList[count][1]);
-			}
-					
+			}		
 		}
 	}
 	
@@ -155,7 +154,7 @@ species Road {
 	
 	aspect advanced {
         geometry geom_display <- (shape + (2.5));
-        draw geom_display border: #gray color: #black;
+        draw geom_display border: #gray color: length(present_transports) > 0 ? #magenta : #black;
         // Display each vehicle in the queue according to their size and colored according to their time_to_leave
         // Vehicles at the top of FIFO are the closet of the end_node.
         if (length(present_transports) > 0) {
