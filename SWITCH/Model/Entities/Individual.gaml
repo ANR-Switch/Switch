@@ -20,7 +20,7 @@ species Individual skills: [moving] control:simple_bdi{
 	point subtarget;
 	path my_path;
 	Building target_building;
-	string status among: ["go to trip","passenger","driving","arrived",nil];
+	string status among: ["go to trip","passenger","driving","arrived","activity",nil];
 	
 	map<string,int> grades;//how agent care for differents criteria	
 	map<string, float> priority_modes;//priority for each mode
@@ -32,10 +32,9 @@ species Individual skills: [moving] control:simple_bdi{
 	point bike_place;
 	
 	//the trip the individual has to follow to join the activity
-	//the trip is modelized as a Hub pair list:
-	//the first Hub of the pair is the entry Hub and the second is the exit one
-	//the individual need to make the trip between those pair by foot
-	//list<pair<Hub,Hub>> transport_trip;
+	//transport_trip [[string tp_mode, point start_pos, point target_pos]]
+	// tp_mode in [
+	list<list> transport_trip;
 	int trip_pointer <- 0;
 	
 	rgb color <-#red;
@@ -281,7 +280,7 @@ species Individual skills: [moving] control:simple_bdi{
 	//compute a trip acording to priority and target
 	action compute_transport_trip(point target_){
 		// for the moment this function is only returning a car trip
-		//transport_trip << car_place :: HubCar closest_to target_;
+		transport_trip << ["car",car_place,any_location_in(one_of(Building where ((each.type = "parking") and distance_to(each.location,target_)<300)))];
 		trip_pointer <- 0;
 	}
 	
@@ -300,6 +299,8 @@ species Individual skills: [moving] control:simple_bdi{
 		if (not has_belief(at_target)) {
 			write "go to home";
 			target_building <- home_building;
+			do compute_transport_trip(target_building.location);
+			status <- "go to trip";
 			do add_subintention(get_current_intention(),at_target, true);
 			do current_intention_on_hold();
 		}
@@ -340,53 +341,40 @@ species Individual skills: [moving] control:simple_bdi{
 		}
 		//color <- #blue;
 	}
-
-		
-	//normal move plan
-	
-	plan execute_trip intention: at_target  finished_when: location = target_building.location priority: 10{
-		do compute_transport_trip(target_building.location);
-		//boucle sur les hubs par pas de 2 (alterne marche/transport)
-		loop i from:0 to: length(transport_trip)-2 step: 2 {
-			subtarget <- transport_trip[i].location;//marche jusqu'au hub
-			do add_subintention(get_current_intention(),at_subtarget,true); 
-			do current_intention_on_hold();
-			write "ask hub: "+transport_trip[i]+" to go to hub: "+transport_trip[i+1];
-			ask transport_trip[i]{
-				do enter([myself],myself.transport_trip[i+1]);
-			}
-			
-			do remove_belief(at_subtarget);
-		}
-		//fin : marcher jusqu'a la target finale du trajet
-		subtarget <- target_building.location;
-		if(not has_belief(at_subtarget)){
-			do add_subintention(get_current_intention(),at_subtarget,true);
-		}
-		if (location = target_building.location) { 
-			do add_belief(at_target);
-		}
-	}
 	
 	plan execute_trip intention: at_target{
 		switch status{
 			match "go to trip"{
+				subtarget <- transport_trip[trip_pointer][1];
 				do add_subintention(get_current_intention(),at_subtarget,true); 
 				do current_intention_on_hold();
-				/*write "ask hub: "+transport_trip[trip_pointer].key+" to go to hub: "+transport_trip[trip_pointer].value;
-				ask transport_trip[trip_pointer].key{
-					do enter([myself],myself.transport_trip[myself.trip_pointer].value);
-				}*/
+				switch transport_trip[trip_pointer][0]{
+					match "car"{do useCar([self],transport_trip[trip_pointer][2]);}
+					match "bike"{do useBike([self],transport_trip[trip_pointer][2]);}
+					default{write "error execute_trip transport mode switch";}
+				}
 			}
-			match_one ["driving","passenger"]{ do remove_belief(at_subtarget); }
+			match_one ["driving","passenger"]{ 
+				do remove_belief(at_subtarget);
+			}
 			match "arrived"{
-				
+				if trip_pointer = length(transport_trip)-1{
+					//The individual completed the trip he just has to join the activity building
+					do goto target: target_building.location;
+					if location = target_building.location{
+						status <- "activity";
+						do add_belief(at_target);
+					}
+				}else{
+					//There is transport left to use so the individual join the next departure by foot
+					trip_pointer <- trip_pointer + 1;
+					status <- "go to trip";
+				}
 			}
 		}
 	}
 	
 	plan walk_to_subtarget intention: at_subtarget{
-		
 		do goto(subtarget,walk_speed,road_network);
 		if(location = subtarget){
 			do add_belief(at_subtarget);
