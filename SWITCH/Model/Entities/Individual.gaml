@@ -391,10 +391,25 @@ species Individual skills: [moving] control:simple_bdi{
                 location <- myself.location;
                 pos_target <- pos_target_;
                 available_graph <- road_network;
+                /*path p <- path_between(available_graph, location, pos_target);
+                int count <- 0;
+              	loop while: (p = nil)  and (count < 10){
+              		p <- path_between(available_graph, location, any_location_in(one_of(Building)));
+              		count <- count + 1;
+                }
+                if(p = nil){
+                	write "error path";
+        			draw circle(80) at: location color: #white;
+                }else{
+                	if count = 1{
+                		write "error path";
+                		draw circle(80) at: pos_target_ color: #white;
+                	}
+                }*/
                 path_to_target <- list<Road>(path_between(available_graph, location, pos_target).edges);  
                 nextRoad <- path_to_target[road_pointer];
                 do getIn(passengers_);
-                ask nextRoad {do queueInRoad(myself);}
+                ask nextRoad {do queueInRoad(myself,0.0);}
 		}
 	}
 	
@@ -403,10 +418,11 @@ species Individual skills: [moving] control:simple_bdi{
                 location <- myself.location;
                 pos_target <- pos_target_;
                 available_graph <- road_network;
-                path_to_target <- list<Road>(path_between(available_graph, location, pos_target).edges);  
+                path p <- path_between(available_graph, location, pos_target);
+                path_to_target <- list<Road>(path_between(available_graph, location, pos_target).edges);
                 nextRoad <- path_to_target[road_pointer];
                 do getIn(passengers_);
-                ask nextRoad {do queueInRoad(myself);}
+                ask nextRoad {do queueInRoad(myself,0.0);}
 		}
 	}
 	

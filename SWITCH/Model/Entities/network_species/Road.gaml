@@ -60,22 +60,22 @@ species Road {
     }
 	
 	// if there is a bike lane, bikes don't consume road capacity
-	action queueInRoad(Bike b){
+	action queueInRoad(Bike b, float time_left){
 		if not has_bike_lane {
 			current_capacity <- current_capacity - b.size;
 		}
 		ask b{ 
 			do enterRoad(myself);
 		}
-		present_bikes << [time+getRoadTravelTime(b),b];
+		present_bikes << [time+getRoadTravelTime(b)-time_left,b];
 	}
 	
-	action queueInRoad(Transport t){
+	action queueInRoad(Transport t, float time_left){
 		current_capacity <- current_capacity - t.size;
 		ask t{ 
 			do enterRoad(myself);
 		}
-		present_transports << [time+getRoadTravelTime(t),t];
+		present_transports << [time+getRoadTravelTime(t)-time_left,t];
 		
 	}
 	
@@ -103,7 +103,7 @@ species Road {
 				//the transport isn't on its last road so we check if its next road can accept it 
 				if t.nextRoad.canAcceptTransport(t){
 					//if the next road is ok then it takes the transport in charge
-					ask t.nextRoad { do queueInRoad(t); }
+					ask t.nextRoad { do queueInRoad(t,time-time_to_leave); }
 					//this road can free space in its queue
 					current_capacity <- current_capacity + t.size;
 					remove [time_to_leave,t] from: transportList;
@@ -153,27 +153,8 @@ species Road {
 	} 
 	
 	aspect advanced {
-        geometry geom_display <- (shape + (2.5));
-        draw geom_display border: #gray color: length(present_transports) > 0 ? #magenta : #black;
-        // Display each vehicle in the queue according to their size and colored according to their time_to_leave
-        // Vehicles at the top of FIFO are the closet of the end_node.
-        if (length(present_transports) > 0) {
-            float spacing <- 0.0;
-            float x1 <- start_node.location.x;
-            float y1 <- start_node.location.y;
-            float x0 <- end_node.location.x;
-            float y0 <- end_node.location.y;
-            float d <- sqrt(((x1 - x0) * (x1 - x0)) + ((y1 - y0) * (y1 - y0)));
-            loop i from: 0 to: length(present_transports) - 1 {
-                Transport trans <- Transport(present_transports[i][1]);
-                float dt <- (i * trans.size) + i * spacing;
-                float t <- dt / d;
-                float xt <- ((1 - t) * x0 + t * x1);
-                float yt <- ((1 - t) * y0 + t * y1);
-
-                draw box(trans.size, 1.5, 1.5) at: point([xt, yt]) color: #white rotate:angle_between({x0,y0},{x1,y0},{x1,y1});
-            }
-        }
+        geometry geom_display <- (shape + (2.0));
+        draw geom_display border: #gray color: rgb(255*(max_capacity-current_capacity)/max_capacity,0,0);
     }
 	
 	aspect roadTest {

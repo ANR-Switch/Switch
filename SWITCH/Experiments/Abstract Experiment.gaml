@@ -60,8 +60,8 @@ experiment "Abstract Experiment" virtual:true{
 			image file:  file_exists(dataset+"/satellite.png") ? (dataset+"/satellite.png"): dataset_folder+"Default/satellite.png" transparency: 0.5 refresh: false;
 			
 			species Building;
-			species Crossroad;
 			species Road aspect: advanced;
+			species Crossroad;
 			species Individual;
 		}
 		
