@@ -16,7 +16,7 @@ import "transport_species/Bike.gaml"
 
 species Individual skills: [moving] control:simple_bdi{
 	
-	list<map<list<int>, predicate>> agenda_week;
+	list<map<list<int>, pair<predicate,list<Individual>>>> agenda_week;
 	point subtarget;
 	path my_path;
 	Building target_building;
@@ -31,6 +31,8 @@ species Individual skills: [moving] control:simple_bdi{
 	list<Individual> relatives;
 	list<Individual> friends;
 	list<Individual> colleagues;
+	
+	map<predicate,map<string, list<Building>>> building_targets;
 	
 	point car_place;
 	point bike_place;
@@ -89,18 +91,18 @@ species Individual skills: [moving] control:simple_bdi{
 		loop i from: 0 to: 6 {
 			// ce que je fais durant la journee
 			
-			map<list<int>,predicate> agenda_day;
+			map<list<int>,pair<predicate,list<Individual>>> agenda_day;
 			if (i < 5) {
-				agenda_day[[8,30,0]] <- working;
+				agenda_day[[8,30,0]] <- working::[];
 				//agenda_day[[12,0,0]] <- eating;
 				//agenda_day[[13,30,0]] <- working; 
-				agenda_day[[17,30,0]] <- staying_at_home; 
+				agenda_day[[17,30,0]] <- staying_at_home::[]; 
 			} else {
 				/*agenda_day[[12,0,0]] <- eating;
 				agenda_day[[15,0,0]] <- leisure;
 				agenda_day[[17,30,0]] <- staying_at_home;*/
-				agenda_day[[8,30,0]] <- working;
-				agenda_day[[17,30,0]] <- staying_at_home; 
+				agenda_day[[8,30,0]] <- working::[];
+				agenda_day[[17,30,0]] <- staying_at_home::[]; 
 			}
 			agenda_week << agenda_day;
 		}
@@ -271,7 +273,7 @@ species Individual skills: [moving] control:simple_bdi{
 	}
 	
 	reflex executeAgenda {
-		predicate act <- agenda_week[current_date.day_of_week - 1][[current_date.hour,current_date.minute,current_date.second]];
+		predicate act <- agenda_week[current_date.day_of_week - 1][[current_date.hour,current_date.minute,current_date.second]].key;
 		if (act != nil) {
 			if (get_current_intention() != nil) {
 				do remove_intention(first(intention_base).predicate, true);
