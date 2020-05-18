@@ -28,6 +28,10 @@ species Individual skills: [moving] control:simple_bdi{
 	Building work_building;
 	Building home_building;
 	
+	list<Individual> relatives;
+	list<Individual> friends;
+	list<Individual> colleagues;
+	
 	point car_place;
 	point bike_place;
 	
@@ -41,6 +45,7 @@ species Individual skills: [moving] control:simple_bdi{
 	
 	int age;
 	string gender;
+	string category <- none;
 	// salaire ? catégorie socio ? 
 	
 	float distance;

@@ -10,6 +10,8 @@ model SWITCH
 species Building {
 	
 	string type <- "default";
+	//Number of households in the building
+	int nb_households <- 1;
 	float size <- shape.perimeter;
 	
 	aspect default {
@@ -22,3 +24,5 @@ species Building {
 		draw shape color: color border: #black;
 	}
 }
+
+species Outside parent: Building ;
