@@ -17,7 +17,6 @@ global {
 	file node_shapefile <- shape_file(dataset+"nodes.shp");
 	
 	file individual_shapefile <- file_exists(dataset +"individuals.shp") ? shape_file(dataset+"individuals.shp") : nil;
-	file agenda_file <- file_exists(dataset +"agenda.csv") ? csv_file(dataset+"agenda.csv", ";", true) : nil;
 	
 	//date (et heure) de début de la simulation : 7/4/2020 à 6h00 0"
 	date starting_date <- date(2020,4,7,8,20,0);
