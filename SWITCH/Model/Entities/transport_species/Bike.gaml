@@ -18,17 +18,6 @@ species Bike parent: PrivateTransport {
 		max_passenger <- 1;
 	}
 	
-	action endTrip{
-		location <- posTarget;
-		loop passenger over:passengers{
-			// we assumed that the first passenger is the car owner
-			if passenger = passengers[0]{ passenger.car_place <- location;}
-			passenger.status <- "arrived";
-			passenger.location <- location;
-		}
-		do die;
-	}
-	
 	aspect default {
 		draw square(2) color: #green border: #black;
 	}

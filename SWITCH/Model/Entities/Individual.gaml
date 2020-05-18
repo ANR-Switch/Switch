@@ -11,6 +11,8 @@ import "../Global.gaml"
 import "../Parameters.gaml"
 import "../Constants.gaml"
 import "network_species/Building.gaml"
+import "transport_species/Car.gaml"
+import "transport_species/Bike.gaml"
 
 species Individual skills: [moving] control:simple_bdi{
 	
@@ -388,6 +390,30 @@ species Individual skills: [moving] control:simple_bdi{
 		do goto(subtarget,walk_speed,road_network);
 		if(location = subtarget){
 			do add_belief(at_subtarget);
+		}
+	}
+	
+	action useCar(list<Individual> passengers_, point pos_target_){
+		create Car returns: created_car{
+                location <- myself.location;
+                pos_target <- pos_target_;
+                available_graph <- road_network;
+                path_to_target <- list<Road>(path_between(available_graph, location, pos_target).edges);  
+                nextRoad <- path_to_target[road_pointer];
+                do getIn(passengers_);
+                ask nextRoad {do queueInRoad(myself);}
+		}
+	}
+	
+	action useBike(list<Individual> passengers_, point pos_target_){
+		create Bike returns: created_car{
+                location <- myself.location;
+                pos_target <- pos_target_;
+                available_graph <- road_network;
+                path_to_target <- list<Road>(path_between(available_graph, location, pos_target).edges);  
+                nextRoad <- path_to_target[road_pointer];
+                do getIn(passengers_);
+                ask nextRoad {do queueInRoad(myself);}
 		}
 	}
 	

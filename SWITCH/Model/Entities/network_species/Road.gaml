@@ -153,6 +153,30 @@ species Road {
 		draw shape color: road_color end_arrow: 5;
 	} 
 	
+	aspect advanced {
+        geometry geom_display <- (shape + (2.5));
+        draw geom_display border: #gray color: #black;
+        // Display each vehicle in the queue according to their size and colored according to their time_to_leave
+        // Vehicles at the top of FIFO are the closet of the end_node.
+        if (length(present_transports) > 0) {
+            float spacing <- 0.0;
+            float x1 <- start_node.location.x;
+            float y1 <- start_node.location.y;
+            float x0 <- end_node.location.x;
+            float y0 <- end_node.location.y;
+            float d <- sqrt(((x1 - x0) * (x1 - x0)) + ((y1 - y0) * (y1 - y0)));
+            loop i from: 0 to: length(present_transports) - 1 {
+                Transport trans <- Transport(present_transports[i][1]);
+                float dt <- (i * trans.size) + i * spacing;
+                float t <- dt / d;
+                float xt <- ((1 - t) * x0 + t * x1);
+                float yt <- ((1 - t) * y0 + t * y1);
+
+                draw box(trans.size, 1.5, 1.5) at: point([xt, yt]) color: #white rotate:angle_between({x0,y0},{x1,y0},{x1,y1});
+            }
+        }
+    }
+	
 	aspect roadTest {
     // Color of the road is determined according to current road occupation
         //rgb color <- rgb(150,255 * (current_capacity / max_capacity),0);

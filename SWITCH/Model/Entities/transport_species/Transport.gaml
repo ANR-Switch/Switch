@@ -32,7 +32,7 @@ species Transport skills: [moving]{
 	graph available_graph;
 	
 	//the target position, final destination of the trip
-	point posTarget;
+	point pos_target;
 	
 	//list of roads that lead to the target
 	list<Road> path_to_target;

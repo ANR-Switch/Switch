@@ -61,10 +61,8 @@ experiment "Abstract Experiment" virtual:true{
 			
 			species Building;
 			species Crossroad;
-			species Road;
+			species Road aspect: advanced;
 			species Individual;
-			species HubCar;
-			species HubBike;
 		}
 		
 	}

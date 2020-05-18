@@ -77,9 +77,9 @@ species transport_generator {
                 		match H{test_target <- "H";}
                 	}
                 }
-                posTarget <- c.location;
+                pos_target <- c.location;
                 available_graph <- road_network;
-                path_to_target <- list<Road>(path_between(available_graph, location, posTarget).edges);
+                path_to_target <- list<Road>(path_between(available_graph, location, pos_target).edges);
                 nextRoad <- path_to_target[road_pointer];
                 if (not nextRoad.canAcceptTransport(self)){
                     nb_transport_sent <- nb_transport_to_send;
