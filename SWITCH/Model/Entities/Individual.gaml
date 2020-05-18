@@ -60,7 +60,7 @@ species Individual skills: [moving] control:simple_bdi{
 	float price_car;
 	float price_bus;
 	
-	init{
+	action initialization{
 		
 		loop i from: 0 to: length(criteria)-1{
       		grades[criteria[i]]<- rnd(9);
@@ -71,41 +71,21 @@ species Individual skills: [moving] control:simple_bdi{
 			priority_modes[type_mode[i]]<- compute_priority_mobility_mode(type_mode[i]);
 		}
 		
-		
-		
-		
 		//People agents are located anywhere in one of the building
 		location <- any_location_in(home_building);
-		distance <- home_building distance_to work_building;
-		time_bike <- distance/bike_speed;
-		time_car <- distance/car_speed;
-		time_bus <- distance/bus_speed;
-		time_walk <- distance/walk_speed;
+		if (work_building != nil) {
+			distance <- home_building distance_to work_building;
+			time_bike <- distance/bike_speed;
+			time_car <- distance/car_speed;
+			time_bus <- distance/bus_speed;
+			time_walk <- distance/walk_speed;
+		}
 		
 		price_bus <- subscription_price/(21.8*2); //21.8 est le nombre moyen de jour "de semaine" par mois
 		price_car <- (7.2*distance/100*gas_price)/(21.8*2);
 		price_bus<- 0.68;
 		price_car <- 0.8;
-		
-		//0 = lundi; 6 = dimanche
-		loop i from: 0 to: 6 {
-			// ce que je fais durant la journee
-			
-			map<list<int>,pair<predicate,list<Individual>>> agenda_day;
-			if (i < 5) {
-				agenda_day[[8,30,0]] <- working::[];
-				//agenda_day[[12,0,0]] <- eating;
-				//agenda_day[[13,30,0]] <- working; 
-				agenda_day[[17,30,0]] <- staying_at_home::[]; 
-			} else {
-				/*agenda_day[[12,0,0]] <- eating;
-				agenda_day[[15,0,0]] <- leisure;
-				agenda_day[[17,30,0]] <- staying_at_home;*/
-				agenda_day[[8,30,0]] <- working::[];
-				agenda_day[[17,30,0]] <- staying_at_home::[]; 
-			}
-			agenda_week << agenda_day;
-		}
+	
 		do add_belief(at_target);
 		do add_desire(staying_at_home);
 		
@@ -273,8 +253,9 @@ species Individual skills: [moving] control:simple_bdi{
 	}
 	
 	reflex executeAgenda {
-		predicate act <- agenda_week[current_date.day_of_week - 1][[current_date.hour,current_date.minute,current_date.second]].key;
-		if (act != nil) {
+		pair act_p <- agenda_week[current_date.day_of_week - 1][[current_date.hour,current_date.minute,current_date.second]];
+		if (act_p != nil) {
+			predicate act <- act_p.key;
 			if (get_current_intention() != nil) {
 				do remove_intention(first(intention_base).predicate, true);
 			}
@@ -286,7 +267,8 @@ species Individual skills: [moving] control:simple_bdi{
 	//compute a trip acording to priority and target
 	action compute_transport_trip(point target_){
 		// for the moment this function is only returning a car trip
-		transport_trip << ["car",car_place,closest_to((Building where (each.type = "parking")),target_).location];
+		//
+		transport_trip << ["car",car_place,any_location_in(Road closest_to target_)];
 		trip_pointer <- 0;
 	}
 	
