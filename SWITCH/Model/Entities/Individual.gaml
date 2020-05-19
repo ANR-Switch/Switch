@@ -280,6 +280,7 @@ species Individual skills: [moving] control:simple_bdi{
 		transport_trip << ["walk",location, car_place];
 		point target_parking <- any_location_in(Road closest_to target_);
 		transport_trip << ["car",car_place,target_parking];
+		car_place <- target_parking;
 		transport_trip << ["walk",target_parking,target_];
 		
 		trip_pointer <- 0;
@@ -289,7 +290,7 @@ species Individual skills: [moving] control:simple_bdi{
 	
 	action prepare_trip (Building target_bd){
 		target_building <- target_bd;
-		do compute_transport_trip(target_building.location);
+		do compute_transport_trip(any_location_in(target_building));
 		status <- "go to trip";
 		do add_subintention(get_current_intention(),at_target, true);
 		do current_intention_on_hold();
@@ -378,10 +379,6 @@ species Individual skills: [moving] control:simple_bdi{
 			}*/
 			match "arrived"{
 				if trip_pointer = length(transport_trip)-1{
-					//The individual completed the trip he just has to join the activity building
-					if location = target_building.location{
-						status <- "activity";
-					}
 					color <- colors_per_act[current_activity];
 					do add_belief(at_target);
 					
@@ -405,10 +402,18 @@ species Individual skills: [moving] control:simple_bdi{
                 location <- myself.location;
                 pos_target <- pos_target_;
                 available_graph <- road_network;
-                path_to_target <- list<Road>(path_between(available_graph, location, pos_target).edges);  
-                nextRoad <- path_to_target[road_pointer];
-                do getIn(passengers_);
-                ask nextRoad {do queueInRoad(myself,0.0);}
+                path the_path <- path_between(available_graph, location, pos_target);
+                if (the_path = nil) {
+                	write "PATH NIL //// TELEPORTATION ACTIVEEE !!!!!!";
+                	myself.location <- pos_target_;
+                	myself.status <- "arrived";
+                } else {
+                	path_to_target <- list<Road>(the_path.edges);  
+	                nextRoad <- path_to_target[road_pointer];
+	                do getIn(passengers_);
+	                ask nextRoad {do queueInRoad(myself,0.0);}
+                }
+                
 			}
 		}
 		
