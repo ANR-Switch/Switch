@@ -41,9 +41,9 @@ global {
 	
 
 	//speed
-	float car_speed <- 20.0;
-	float bus_speed <- 10.0;
-	float bike_speed <- 8.0;
+	float car_speed <- 20.0#km/#h;
+	float bus_speed <- 10.0#km/#h;
+	float bike_speed <- 8.0#km/#h;
 	float walk_speed <- 3.0 #km/#h;
 
 	int num_individuals <- 1000;

@@ -136,7 +136,13 @@ species Individual skills: [moving] control:simple_bdi{
 				switch criterion {
 					match "comfort" {
 						//enfants, motif du déplacement
-						val <-0.5;
+						if weather = "sunny"{
+							val <- 1.0;
+						} else if (weather = "rainy"){
+							val <-0.3;
+						} else {
+							val <- 0.1;
+						}
 					}
 					match "price" {
 						val <- 1.0;
@@ -454,6 +460,7 @@ species Individual skills: [moving] control:simple_bdi{
 			status <- "arrived";
 		}
 	}
+	
 	
 	action useBike(list<Individual> passengers_, point pos_target_){
 		create Bike returns: created_car{

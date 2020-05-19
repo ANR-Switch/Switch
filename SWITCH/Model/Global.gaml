@@ -44,6 +44,9 @@ global {
 	//time
 	float bus_freq; //intervalle en minute
 	
+	string weather among: ["sunny","rainy","stormy",nil];
+	
+	
 	logger the_logger;
 	
 	
@@ -58,6 +61,8 @@ global {
 		//Initialization of the building using the shapefile of buildings
 		create Building from: building_shapefile;
 		create Outside {the_outside <- self;}
+		
+		weather <- "sunny";
 		
 		do write_message("Building created");
 		
@@ -198,6 +203,18 @@ global {
 		if (debug_mode) {
 			write mess;
 		}
+	}
+	
+	action update_weather{
+		int t <- rnd(3);
+		if(t = 0){
+			weather <- "sunny";
+		}else if (t=1){
+			weather <- "rainy";
+		} else {
+			weather <- "stormy";
+		}
+		
 	}
 	
 	list<Individual> manage_list_int(string val) {
