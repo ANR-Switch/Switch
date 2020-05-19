@@ -78,6 +78,9 @@ species Transport skills: [moving]{
 		}else{
 			nextRoad <- path_to_target[road_pointer+1];
 		}
+		loop passenger over:passengers{
+			passenger.location <- first(r.shape.points);
+		}
 	}
 	
 	action endTrip{}

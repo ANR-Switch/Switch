@@ -25,6 +25,7 @@ species Car parent: PrivateTransport {
 			if passenger = passengers[0]{ passenger.car_place <- location;}
 			passenger.status <- "arrived";
 			passenger.location <- location;
+			passenger.current_car <- nil;
 		}
 		do die;
 	}

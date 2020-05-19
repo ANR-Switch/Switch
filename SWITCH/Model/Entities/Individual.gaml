@@ -280,7 +280,6 @@ species Individual skills: [moving] control:simple_bdi{
 		transport_trip << ["walk",location, car_place];
 		point target_parking <- any_location_in(Road closest_to target_);
 		transport_trip << ["car",car_place,target_parking];
-		car_place <- target_parking;
 		transport_trip << ["walk",target_parking,target_];
 		
 		trip_pointer <- 0;
