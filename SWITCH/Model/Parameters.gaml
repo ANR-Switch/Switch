@@ -11,7 +11,7 @@ import "Constants.gaml"
 global {
 	string dataset <- "../Datasets/Castanet Tolosan/"; // default
 	
-	map<predicate,rgb> colors_per_act <- [staying_at_home::#blue, working::#red, leisure::#magenta, visiting_friend::#pink, eating::#orange, shopping::#gold, practicing_sport::#cyan, doing_other_act::#gray];
+	map<predicate,rgb> colors_per_act <- [staying_at_home::#blue, working::#red, studying:: #chartreuse, leisure::#magenta, visiting_friend::#pink, eating::#orange, shopping::#gold, practicing_sport::#cyan, doing_other_act::#gray];
 	map<string,rgb> colors_per_mobility_mode <- ["car"::#olivedrab, "bike"::#maroon, "bus"::#palegreen, "walk"::#blueviolet];
 	
 	
@@ -22,13 +22,21 @@ global {
 	file individual_shapefile <- file_exists(dataset +"individuals.shp") ? shape_file(dataset+"individuals.shp") : nil;
 	
 	//date (et heure) de début de la simulation : 7/4/2020 à 6h00 0"
-	date starting_date <- date(2020,4,7,8,20,0);
+	date starting_date <- date(2020,4,7,0,0,0);
 	
 	bool debug_mode <- false;
 	list<string> type_mode <- ["car","bus","bike","walk"];
 	list<string> criteria <- ["comfort", "safety", "price","ecology","simplicity","time"];
 	//Step value
-	float step <- 15 #sec;
+	float normal_step <- 30 #sec;
+	float fast_step <- 15 #mn;
+	
+	float step <- normal_step;
+	
+	int duration_days <- 7;
+	
+	date end_date <- starting_date add_days 7;
+	
 	
 	float bus_freq <- 7.0;
 	float bus_capacity <- 50.0;

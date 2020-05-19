@@ -79,6 +79,19 @@ experiment "Abstract Experiment" virtual:true{
 			species Individual;
 		}
 		
+		display activity_charts refresh: every(15 #mn) {
+			chart "activities during week"  size: {1.0,0.5} background: #darkgray{
+				loop act over: colors_per_act.keys {
+					data act.name color: colors_per_act[act] value: Individual count (each.current_activity = act);
+				}
+			}
+			chart "activities" type: pie size: {1.0,0.5} position: {0.0,0.5} background: #darkgray {
+				loop act over: colors_per_act.keys {
+					data act.name color: colors_per_act[act] value: Individual count (each.current_activity = act);
+				}
+			}
+		}
+		
 	}
 
 }
