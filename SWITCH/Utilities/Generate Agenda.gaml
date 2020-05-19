@@ -5,7 +5,7 @@
 * Tags: 
 */
 
-
+ 
 model GenerateAgenda
 
 import "../Model/Parameters.gaml"
@@ -105,7 +105,7 @@ global {
 					bool already <- false;
 					loop h from: lunch_hours_min to: lunch_hours_max {
 						if (h in (agenda_day.keys collect each[0])){
-							already <- true;
+							already <- true; 
 							break;
 						}
 					}

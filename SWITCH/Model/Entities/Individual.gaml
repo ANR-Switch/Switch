@@ -17,16 +17,18 @@ import "transport_species/Bike.gaml"
 species Individual skills: [moving] control:simple_bdi{
 	
 	list<map<list<int>, pair<predicate,list<Individual>>>> agenda_week;
-	point subtarget;
+	map<list<int>, pair<predicate,list<Individual>>> agenda_d;
 	path my_path;
 	Building target_building;
 	string status among: ["go to trip","passenger","driving","arrived","activity",nil];
+	predicate current_activity <- staying_at_home;
 	
 	map<string,int> grades;//how agent care for differents criteria	
 	map<string, float> priority_modes;//priority for each mode
 	
 	Building work_building;
 	Building home_building;
+	Car current_car;
 	
 	list<Individual> relatives;
 	list<Individual> friends;
@@ -43,7 +45,7 @@ species Individual skills: [moving] control:simple_bdi{
 	list<list> transport_trip;
 	int trip_pointer <- 0;
 	
-	rgb color <-#red;
+	rgb color <-colors_per_act[current_activity];
 	
 	int age;
 	string gender;
@@ -61,7 +63,8 @@ species Individual skills: [moving] control:simple_bdi{
 	float price_bus;
 	
 	action initialization{
-		
+		car_place <- any_location_in(Road closest_to self);
+		bike_place <-location;
 		loop i from: 0 to: length(criteria)-1{
       		grades[criteria[i]]<- rnd(9);
 	  	}
@@ -252,15 +255,20 @@ species Individual skills: [moving] control:simple_bdi{
 		return current_date.hour = hour and current_date.minute = minute;
 	}
 	
+	reflex define_agenda_day when: every(#day) {
+		agenda_d <- agenda_week[current_date.day_of_week - 1];
+	}
+	
 	reflex executeAgenda {
-		pair act_p <- agenda_week[current_date.day_of_week - 1][[current_date.hour,current_date.minute,current_date.second]];
-		if (act_p != nil) {
-			predicate act <- act_p.key;
+		pair act_p <- agenda_d[[current_date.hour,current_date.minute]];
+		if (act_p.key != nil) {
+			current_activity <- act_p.key;
 			if (get_current_intention() != nil) {
 				do remove_intention(first(intention_base).predicate, true);
 			}
 			do remove_belief(at_target);
-			do add_desire(act);
+			do add_desire(current_activity);
+			ask world {do write_message(myself.name + " - new activity: " + myself.current_activity);}
 		}
 	}
 	
@@ -268,92 +276,115 @@ species Individual skills: [moving] control:simple_bdi{
 	action compute_transport_trip(point target_){
 		// for the moment this function is only returning a car trip
 		//
-		transport_trip << ["car",car_place,any_location_in(Road closest_to target_)];
+		transport_trip <- [];
+		transport_trip << ["walk",location, car_place];
+		point target_parking <- any_location_in(Road closest_to target_);
+		transport_trip << ["car",car_place,target_parking];
+		transport_trip << ["walk",target_parking,target_];
+		
 		trip_pointer <- 0;
+		ask world {do write_message(myself.name + " - transport trip: " + myself.transport_trip);}
 	}
 	
+	
+	action prepare_trip (Building target_bd){
+		target_building <- target_bd;
+		do compute_transport_trip(target_building.location);
+		status <- "go to trip";
+		do add_subintention(get_current_intention(),at_target, true);
+		do current_intention_on_hold();
+		
+	}
 	plan do_work intention: working{
 		if (not has_belief(at_target)) {
-			target_building <- work_building;
-			do compute_transport_trip(target_building.location);
-			status <- "go to trip";
-			do add_subintention(get_current_intention(),at_target, true);
-			do current_intention_on_hold();
+			do prepare_trip(work_building);
+		}
+	}
+	
+	plan do_study intention:studying {
+		if (not has_belief(at_target)) {
+			do prepare_trip(work_building);	
 		}
 	}
 	
 	plan do_stay_at_home intention: staying_at_home{
 		if (not has_belief(at_target)) {
-			target_building <- home_building;
-			do compute_transport_trip(target_building.location);
-			status <- "go to trip";
-			do add_subintention(get_current_intention(),at_target, true);
-			do current_intention_on_hold();
+			do prepare_trip(home_building);
 		}
 	}
 	
-	plan do_eating_at_home intention: eating priority: rnd(1.0){
+	plan do_shopping intention: shopping{
 		if (not has_belief(at_target)) {
-			target_building <- home_building;
-			do add_subintention(get_current_intention(),at_target, true);
-			do current_intention_on_hold();
+			Building bd <- one_of(Building);
+			do prepare_trip(bd);	
 		}
-		//color <- #yellow;
 	}
 	
-	plan do_eating_restaurant intention: eating priority: rnd(1.0){
+	
+	plan do_eating_restaurant intention: eating {
 		if (not has_belief(at_target)) {
-			target_building <- one_of(Building);
-			do add_subintention(get_current_intention(),at_target, true);
-			do current_intention_on_hold();
+			Building bd <- one_of(Building);
+			do prepare_trip(bd);	
 		}
-		//color <- #green;
 	}
 	
-	plan see_a_movie intention: leisure priority: rnd(1.0){
+	plan do_a_leisure_activity intention: leisure {
 		if (not has_belief(at_target)) {
-			target_building <- one_of(Building);
-			do add_subintention(get_current_intention(),at_target, true);
-			do current_intention_on_hold();
+			Building bd <- one_of(Building);
+			do prepare_trip(bd);	
 		}
-		//color <- #magenta;
 	}
 	
-	plan meet_a_friend intention: leisure priority: rnd(1.0){
+	plan meet_a_friend intention: visiting_friend priority: rnd(1.0){
 		if (not has_belief(at_target)) {
 			target_building <- one_of(Building);
 			do add_subintention(get_current_intention(),at_target, true);
 			do current_intention_on_hold();
 		}
-		//color <- #blue;
 	}
+	
+	plan practice_sport intention: practicing_sport{
+		Building bd <- one_of(Building);
+		if (not has_belief(at_target)) {
+			do prepare_trip(bd);	
+		}
+	}
+	
+	
+	plan do_other_activity intention: shopping{
+		Building bd <- one_of(Building);
+		if (not has_belief(at_target)) {
+			do prepare_trip(bd);	
+		}
+	}
+	
+	
+	
 	
 	plan execute_trip intention: at_target{
+		ask world {do write_message(myself.name + " - status: " + myself.status + " trip_pointer: " + myself.trip_pointer);}
+		
 		switch status{
 			match "go to trip"{
-				subtarget <- transport_trip[trip_pointer][1];
-				do add_subintention(get_current_intention(),at_subtarget,true); 
-				do current_intention_on_hold();
 				switch transport_trip[trip_pointer][0]{
+					match "walk"{do walk(transport_trip[trip_pointer][2]);}
 					match "car"{do useCar([self],transport_trip[trip_pointer][2]);}
 					match "bike"{do useBike([self],transport_trip[trip_pointer][2]);}
 					default{write "error execute_trip transport mode switch";}
 				}
 			}
-			match_one ["driving","passenger"]{ 
+			/*match_one ["driving","passenger"]{ 
 				do remove_belief(at_subtarget);
-			}
+			}*/
 			match "arrived"{
 				if trip_pointer = length(transport_trip)-1{
 					//The individual completed the trip he just has to join the activity building
-					subtarget <- target_building.location;
-					do add_subintention(get_current_intention(),at_subtarget,true); 
-					do current_intention_on_hold();
 					if location = target_building.location{
 						status <- "activity";
-						do remove_belief(at_subtarget);
-						do add_belief(at_target);
 					}
+					color <- colors_per_act[current_activity];
+					do add_belief(at_target);
+					
 				}else{
 					//There is transport left to use so the individual join the next departure by foot
 					trip_pointer <- trip_pointer + 1;
@@ -363,37 +394,31 @@ species Individual skills: [moving] control:simple_bdi{
 		}
 	}
 	
-	plan walk_to_subtarget intention: at_subtarget{
-		do goto(subtarget,walk_speed,road_network);
-		if(location = subtarget){
-			do add_belief(at_subtarget);
-		}
-	}
+	
 	
 	action useCar(list<Individual> passengers_, point pos_target_){
-		create Car returns: created_car{
+		ask world {do write_message(myself.name + " - drive: location" + myself.location + " target: "+ pos_target_);}
+		if (current_car = nil) {
+			color <- #yellow; 
+			create Car {
+				myself.current_car <- self;
                 location <- myself.location;
                 pos_target <- pos_target_;
                 available_graph <- road_network;
-                /*path p <- path_between(available_graph, location, pos_target);
-                int count <- 0;
-              	loop while: (p = nil)  and (count < 10){
-              		p <- path_between(available_graph, location, any_location_in(one_of(Building)));
-              		count <- count + 1;
-                }
-                if(p = nil){
-                	write "error path";
-        			draw circle(80) at: location color: #white;
-                }else{
-                	if count = 1{
-                		write "error path";
-                		draw circle(80) at: pos_target_ color: #white;
-                	}
-                }*/
                 path_to_target <- list<Road>(path_between(available_graph, location, pos_target).edges);  
                 nextRoad <- path_to_target[road_pointer];
                 do getIn(passengers_);
                 ask nextRoad {do queueInRoad(myself,0.0);}
+			}
+		}
+		
+	}
+	action walk( point pos_target_){
+		ask world {do write_message(myself.name + " - walk: location" + myself.location + " target: "+ pos_target_);}
+		
+		do goto(pos_target_,walk_speed,road_network);
+		if(location = pos_target_){
+			status <- "arrived";
 		}
 	}
 	
@@ -413,10 +438,8 @@ species Individual skills: [moving] control:simple_bdi{
 	aspect default {
 		switch status{
 			match "driving"{ color <- #yellow; }
-			match "passenger"{ color <- #cyan; }
+			match "passenger"{ color <- #lightblue; }
 			match "arrived"{ color <- #green; }
-			match "activity"{ color <- #magenta; }
-			default { color <- #magenta; }
 		}
 		 
 		draw circle(5) color: color rotate: heading border: #black;

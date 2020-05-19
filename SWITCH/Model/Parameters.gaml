@@ -11,7 +11,7 @@ import "Constants.gaml"
 global {
 	string dataset <- "../Datasets/Castanet Tolosan/"; // default
 	
-	
+	map<predicate,rgb> colors_per_act <- [staying_at_home::#blue, working::#red, leisure::#magenta, visiting_friend::#pink, eating::#orange, shopping::#gold, practicing_sport::#cyan, doing_other_act::#gray];
 	file road_shapefile <- shape_file(dataset+"roads.shp");
 	file building_shapefile <- shape_file(dataset+"buildings.shp");
 	file node_shapefile <- shape_file(dataset+"nodes.shp");
@@ -21,7 +21,7 @@ global {
 	//date (et heure) de début de la simulation : 7/4/2020 à 6h00 0"
 	date starting_date <- date(2020,4,7,8,20,0);
 	
-	bool debug_mode <- true;
+	bool debug_mode <- false;
 	list<string> type_mode <- ["car","bus","bike","walk"];
 	list<string> criteria <- ["comfort", "safety", "price","ecology","simplicity","time"];
 	//Step value
