@@ -47,7 +47,7 @@ species Road {
 	//				= false if not
 	bool has_bike_lane <- false;
 	
-	//list of current vehicules present in the road [[time_to_leave,Transport,target.location]]
+	//list of current vehicules present in the road [[time_to_leave,Transport]]
 	//Note that target.location store the location of car target if this road is the last road
 	//if this road is not the trip car last road then target.location = nil
 	list<list> present_bikes <- [];
@@ -61,22 +61,29 @@ species Road {
 	
 	// if there is a bike lane, bikes don't consume road capacity
 	action queueInRoad(Bike b, float time_left){
-		if not has_bike_lane {
-			current_capacity <- current_capacity - b.size;
+		if not has_bike_lane { current_capacity <- current_capacity - b.size; }
+		ask b{ do enterRoad(myself); }
+		float travel_time <- getRoadTravelTime(b);
+		if travel_time < time_left {
+			list<list> temp_list <- [[time+time_left,b]];
+			do dequeue(temp_list);
+			if not empty(temp_list){present_bikes << [time+travel_time-time_left,b];}
+		}else{
+			present_bikes << [time+travel_time-time_left,b];	
 		}
-		ask b{ 
-			do enterRoad(myself);
-		}
-		present_bikes << [time+getRoadTravelTime(b)-time_left,b];
 	}
 	
 	action queueInRoad(Transport t, float time_left){
 		current_capacity <- current_capacity - t.size;
-		ask t{ 
-			do enterRoad(myself);
+		ask t{ do enterRoad(myself); }
+		float travel_time <- getRoadTravelTime(t);
+		if travel_time < time_left {
+			list<list> temp_list <- [[time+time_left,t]];
+			do dequeue(temp_list);
+			if not empty(temp_list){present_transports << [time+travel_time-time_left,t];}
+		}else{
+			present_transports << [time+travel_time-time_left,t];	
 		}
-		present_transports << [time+getRoadTravelTime(t)-time_left,t];
-		
 	}
 	
 	bool canAcceptTransport(Transport t){

@@ -26,6 +26,16 @@ global {
 	Crossroad A;Crossroad B;Crossroad C;Crossroad D;
 	Crossroad E;Crossroad F;Crossroad G;Crossroad H;
 	
+	float speed_AB <- road_speed;
+	float speed_BC <- road_speed;
+	float speed_CD <- road_speed;
+	float speed_CE <- road_speed;
+	float speed_BF <- road_speed;
+	float speed_FG <- road_speed;
+	float speed_FH <- road_speed;
+	
+	int vehicule_in_A <- 10;
+	
 	init{
 		create logger with: [store_individual_dest::true]{the_logger <- self;}
 		//logger.data["D"] <- []; logger.data["E"] <- []; logger.data["G"] <- []; logger.data["H"] <- [];
@@ -42,21 +52,21 @@ global {
 		F <- Crossroad first_with (each.type = "F");
 		G <- Crossroad first_with (each.type = "G");
 		H <- Crossroad first_with (each.type = "H");
-		create Road{type <- "AB"; start_node <- A; end_node <- B; max_speed <- road_speed; shape <- line([A.location,B.location]); do init;}
-		create Road{type <- "BC"; start_node <- B; end_node <- C; max_speed <- road_speed; shape <- line([B.location,C.location]); do init;}
-		create Road{type <- "CD"; start_node <- C; end_node <- D; max_speed <- road_speed; shape <- line([C.location,D.location]); do init;}
-		create Road{type <- "CE"; start_node <- C; end_node <- E; max_speed <- road_speed; shape <- line([C.location,E.location]); do init;}
-		create Road{type <- "BF"; start_node <- B; end_node <- F; max_speed <- road_speed; shape <- line([B.location,F.location]); do init;}
-		create Road{type <- "FG"; start_node <- F; end_node <- G; max_speed <- road_speed; shape <- line([F.location,G.location]); do init;}
-		create Road{type <- "FH"; start_node <- F; end_node <- H; max_speed <- road_speed; shape <- line([F.location,H.location]); do init;}
+		create Road{type <- "AB"; start_node <- A; end_node <- B; max_speed <- speed_AB; shape <- line([A.location,B.location]); do init;}
+		create Road{type <- "BC"; start_node <- B; end_node <- C; max_speed <- speed_BC; shape <- line([B.location,C.location]); do init;}
+		create Road{type <- "CD"; start_node <- C; end_node <- D; max_speed <- speed_CD; shape <- line([C.location,D.location]); do init;}
+		create Road{type <- "CE"; start_node <- C; end_node <- E; max_speed <- speed_CE; shape <- line([C.location,E.location]); do init;}
+		create Road{type <- "BF"; start_node <- B; end_node <- F; max_speed <- speed_BF; shape <- line([B.location,F.location]); do init;}
+		create Road{type <- "FG"; start_node <- F; end_node <- G; max_speed <- speed_FG; shape <- line([F.location,G.location]); do init;}
+		create Road{type <- "FH"; start_node <- F; end_node <- H; max_speed <- speed_FH; shape <- line([F.location,H.location]); do init;}
 		road_network <- directed(as_edge_graph(Road,Crossroad));
 		create transport_generator;
 	}
 	
-	reflex print_data{
+	/*reflex print_data{
 		write the_logger.data_to_string;
 		ask the_logger {do reset_data;}
-	}
+	}*/
 }
 
 species transport_generator {
@@ -64,7 +74,7 @@ species transport_generator {
 
     reflex send_car {
         int nb_transport_sent <- 0;
-        int nb_transport_to_send <- 10;
+        int nb_transport_to_send <- vehicule_in_A;
         loop while: nb_transport_sent < nb_transport_to_send {
             create Car {
                 location <- A.location;
@@ -86,7 +96,7 @@ species transport_generator {
                     do die;
                 }else{
                     ask nextRoad {
-                        do queueInRoad(myself);
+                        do queueInRoad(myself,0.0);
                     }
                 }
             }
@@ -98,8 +108,18 @@ species transport_generator {
 
 experiment RoadTest type: gui {
 	float minimum_cycle_duration <- 0.1;
-	output {
-		layout #split parameters: false navigator: false editors: false consoles: true toolbars: false tray: true tabs: true;	
+	
+	parameter "AB speed limit " var: speed_AB min: 0.0 max: 130.0 category: "Speed" ;
+	parameter "BC speed limit " var: speed_BC min: 0.0 max: 130.0 category: "Speed" ;
+	parameter "CD speed limit " var: speed_CD min: 0.0 max: 130.0 category: "Speed" ;
+	parameter "CE speed limit " var: speed_CE min: 0.0 max: 130.0 category: "Speed" ;
+	parameter "BF speed limit " var: speed_BF min: 0.0 max: 130.0 category: "Speed" ;
+	parameter "FG speed limit " var: speed_FG min: 0.0 max: 130.0 category: "Speed" ;
+	parameter "FH speed limit " var: speed_FH min: 0.0 max: 130.0 category: "Speed" ;
+	
+	parameter "vehicule arriving in A each cyle " var: vehicule_in_A min: 0 max: 100 category: "Flow" ;
+	
+	output {	
 		display map background: #white type: opengl {
 			species Crossroad aspect: roadTest;
 			species Road aspect: roadTest;
