@@ -56,7 +56,24 @@ global {
 	
 	Outside the_outside;
 	
+	list<int> first_activity_h;
+	bool is_fast_step <- false;
 	
+	
+	reflex end_simulation when: current_date = end_date {
+		do pause;
+	} 
+	reflex manage_step when: every(#h) {
+		if (not is_fast_step and (current_date.hour < first_activity_h[current_date.day_of_week])) {
+			step <- fast_step;
+			is_fast_step <- true;
+		} 
+		if (is_fast_step  and (current_date.hour >= first_activity_h[current_date.day_of_week])) {
+			step <- normal_step;
+			is_fast_step <- false;
+		}
+		
+	}
 	action global_init  {
 		//Initialization of the building using the shapefile of buildings
 		create Building from: building_shapefile;
@@ -126,6 +143,17 @@ global {
 		do write_message("Individual created");
 		
 		do define_agenda();
+		
+		loop times: 7 {first_activity_h << 24;}
+		ask Individual {
+			loop i from: 0 to: 6 {
+				if not empty(agenda_week[i]) {
+					int min_act <- agenda_week[i].keys min_of each[0];
+			 		first_activity_h[i] <- min(first_activity_h[i], min_act);
+				}
+				
+			}
+		}
 		
 		do write_message("Agenda generated");
 		
