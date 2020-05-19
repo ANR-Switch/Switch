@@ -88,7 +88,7 @@ global {
 				home_building::Building[int(get("home_pl"))]
 				
 			];
-			if (num_individuals > -1.0) {
+			if (num_individuals > -1.0 and (num_individuals < length(Individual))) {
 				ask (length(Individual) - num_individuals) among Individual{
 					do die;
 				}

@@ -49,13 +49,27 @@ experiment "Abstract Experiment" virtual:true{
 	output {
 		display "default_display" synchronized: false type: opengl background: background virtual: true draw_env: false {
 			
-			overlay position: { 5, 5 } size: { 700 #px, 200 #px }  transparency: 1
+			overlay position: { 5, 5 } size: { 400 #px, 600 #px }  transparency: 0.5
             {
-           		draw world.name  font: default at: { 20#px, 20#px} anchor: #top_left color:text_color;
+           		//draw world.name  font: default at: { 20#px, 20#px} anchor: #top_left color:text_color;
            		draw ("Day " + int((current_date - starting_date) /  #day))   font: default at: { 20#px, 50#px} anchor: #top_left color:text_color;
             	string dispclock <- current_date.hour <10 ? "0"+current_date.hour : ""+current_date.hour;
             	dispclock <- current_date.minute <10 ? dispclock+"h0"+current_date.minute : dispclock +"h"+current_date.minute;
             	draw dispclock font: default at: { 20#px, 80#px} anchor: #top_left color:text_color;
+            	
+            	float y <- 170#px;
+                loop type over: colors_per_act.keys 
+                {
+                    draw square(15#px) at: { 20#px, y } color: colors_per_act[type] border: #white;
+                    draw type.name at: { 40#px, y + 4#px } color: # white font: default;
+                    y <- y + 35#px;
+                }
+                loop type over: colors_per_mobility_mode.keys
+                {
+                    draw square(15#px) at: { 20#px, y } color: colors_per_mobility_mode[type] border: #white;
+                    draw type at: { 40#px, y + 4#px } color: # white font: default;
+                    y <- y + 35#px;
+                }
             }
 			image file:  file_exists(dataset+"/satellite.png") ? (dataset+"/satellite.png"): dataset_folder+"Default/satellite.png" transparency: 0.5 refresh: false;
 			

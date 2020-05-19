@@ -260,7 +260,7 @@ species Individual skills: [moving] control:simple_bdi{
 		agenda_d <- agenda_week[current_date.day_of_week - 1];
 	}
 	
-	reflex executeAgenda {
+	reflex executeAgenda when: every(#mn){
 		pair act_p <- agenda_d[[current_date.hour,current_date.minute]];
 		if (act_p.key != nil) {
 			current_activity <- act_p.key;
@@ -395,16 +395,17 @@ species Individual skills: [moving] control:simple_bdi{
 		
 		switch status{
 			match "go to trip"{
-				switch transport_trip[trip_pointer][0]{
+				string mobility_mode <- transport_trip[trip_pointer][0];
+				color <-colors_per_mobility_mode[mobility_mode]; 
+					
+				switch mobility_mode{
 					match "walk"{do walk(transport_trip[trip_pointer][2]);}
 					match "car"{do useCar([self],transport_trip[trip_pointer][2]);}
 					match "bike"{do useBike([self],transport_trip[trip_pointer][2]);}
 					default{write "error execute_trip transport mode switch";}
 				}
 			}
-			/*match_one ["driving","passenger"]{ 
-				do remove_belief(at_subtarget);
-			}*/
+		
 			match "arrived"{
 				if trip_pointer = length(transport_trip)-1{
 					color <- colors_per_act[current_activity];
@@ -424,7 +425,6 @@ species Individual skills: [moving] control:simple_bdi{
 	action useCar(list<Individual> passengers_, point pos_target_){
 		ask world {do write_message(myself.name + " - drive: location" + myself.location + " target: "+ pos_target_);}
 		if (current_car = nil) {
-			color <- #yellow; 
 			create Car {
 				myself.current_car <- self;
                 location <- myself.location;
@@ -469,12 +469,6 @@ species Individual skills: [moving] control:simple_bdi{
 	}
 	
 	aspect default {
-		switch status{
-			match "driving"{ color <- #yellow; }
-			match "passenger"{ color <- #lightblue; }
-			match "arrived"{ color <- #green; }
-		}
-		 
 		draw circle(5) color: color rotate: heading border: #black;
 	}	
 		
