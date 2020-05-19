@@ -34,7 +34,7 @@ species Individual skills: [moving] control:simple_bdi{
 	list<Individual> friends;
 	list<Individual> colleagues;
 	
-	map<predicate,map<string, list<Building>>> building_targets;
+	map<predicate, map<string,list<Building>>> building_targets;
 	
 	point car_place;
 	point bike_place;
@@ -63,6 +63,7 @@ species Individual skills: [moving] control:simple_bdi{
 	float price_bus;
 	
 	action initialization{
+		target_building <- home_building;
 		car_place <- any_location_in(Road closest_to self);
 		bike_place <-location;
 		loop i from: 0 to: length(criteria)-1{
@@ -295,6 +296,33 @@ species Individual skills: [moving] control:simple_bdi{
 		do current_intention_on_hold();
 		
 	}
+	
+	string building_type_choice(predicate pred) {
+		list<string> possible_building_types <- activities[pred.name];
+		if (weight_bd_type_per_age_sex_class = nil ) or empty(weight_bd_type_per_age_sex_class) {
+			return any(possible_building_types);
+		}
+		loop a over: weight_bd_type_per_age_sex_class.keys {
+			if (age >= a[0]) and (age <= a[1]) {
+				map<string, float> weight_bds <-  weight_bd_type_per_age_sex_class[a][gender];
+				list<float> proba_bds <- possible_building_types collect ((each in weight_bds.keys) ? weight_bds[each]:1.0 );
+				if (sum(proba_bds) = 0) {return any(possible_building_types);}
+				return possible_building_types[rnd_choice(proba_bds)];
+			}
+		}
+		return any(possible_building_types);
+		
+	}
+	
+	Building choice_a_target(predicate pred) {
+		string type <- building_type_choice(pred);
+		list<Building> bds <- building_targets[pred][type];
+		if (empty(bds)) {
+			return the_outside;
+		} else {	
+			return one_of(bds);
+		}
+	}
 	plan do_work intention: working{
 		if (not has_belief(at_target)) {
 			do prepare_trip(work_building);
@@ -315,7 +343,7 @@ species Individual skills: [moving] control:simple_bdi{
 	
 	plan do_shopping intention: shopping{
 		if (not has_belief(at_target)) {
-			Building bd <- one_of(Building);
+			Building bd <- choice_a_target(shopping);
 			do prepare_trip(bd);	
 		}
 	}
@@ -323,37 +351,38 @@ species Individual skills: [moving] control:simple_bdi{
 	
 	plan do_eating_restaurant intention: eating {
 		if (not has_belief(at_target)) {
-			Building bd <- one_of(Building);
+			Building bd <- choice_a_target(eating);
 			do prepare_trip(bd);	
 		}
 	}
 	
 	plan do_a_leisure_activity intention: leisure {
 		if (not has_belief(at_target)) {
-			Building bd <- one_of(Building);
+			Building bd <- choice_a_target(leisure);
 			do prepare_trip(bd);	
 		}
 	}
 	
 	plan meet_a_friend intention: visiting_friend priority: rnd(1.0){
 		if (not has_belief(at_target)) {
-			target_building <- one_of(Building);
+			list<Individual> available_friends <- friends where (each.current_activity != working);
+			target_building <- one_of(available_friends collect each.target_building);
 			do add_subintention(get_current_intention(),at_target, true);
 			do current_intention_on_hold();
 		}
 	}
 	
 	plan practice_sport intention: practicing_sport{
-		Building bd <- one_of(Building);
 		if (not has_belief(at_target)) {
+			Building bd <- choice_a_target(practicing_sport);
 			do prepare_trip(bd);	
 		}
 	}
 	
 	
 	plan do_other_activity intention: shopping{
-		Building bd <- one_of(Building);
 		if (not has_belief(at_target)) {
+			Building bd <- choice_a_target(shopping);
 			do prepare_trip(bd);	
 		}
 	}
