@@ -19,20 +19,20 @@ global {
 	file crossroad_shapefile <- shape_file(datasettest+"roadTest.shp");
 	geometry shape <- envelope(crossroad_shapefile);
 	float step <- 5 #sec;
-	float road_speed <- 50.0;
+	float param_road_speed <- 50.0;
 	list<string> crossroads;
 	
 	graph<Crossroad,Road> road_network;
 	Crossroad A;Crossroad B;Crossroad C;Crossroad D;
 	Crossroad E;Crossroad F;Crossroad G;Crossroad H;
 	
-	float speed_AB <- road_speed;
-	float speed_BC <- road_speed;
-	float speed_CD <- road_speed;
-	float speed_CE <- road_speed;
-	float speed_BF <- road_speed;
-	float speed_FG <- road_speed;
-	float speed_FH <- road_speed;
+	float speed_AB <- param_road_speed;
+	float speed_BC <- param_road_speed;
+	float speed_CD <- param_road_speed;
+	float speed_CE <- param_road_speed;
+	float speed_BF <- param_road_speed;
+	float speed_FG <- param_road_speed;
+	float speed_FH <- param_road_speed;
 	
 	int vehicule_in_A <- 10;
 	
@@ -63,10 +63,7 @@ global {
 		create transport_generator;
 	}
 	
-	/*reflex print_data{
-		write the_logger.data_to_string;
-		ask the_logger {do reset_data;}
-	}*/
+	reflex manage_step when: every(#h) {}
 }
 
 species transport_generator {
@@ -96,7 +93,7 @@ species transport_generator {
                     do die;
                 }else{
                     ask nextRoad {
-                        do queueInRoad(myself,0.0);
+                        do queueInRoad(myself);
                     }
                 }
             }

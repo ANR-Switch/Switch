@@ -48,6 +48,67 @@ global {
 	list<string> OSM_work_place <- ['office',"estate_agent","public","civic","government","manufacture","company"];
 	list<string> OSM_school <- ["school"];
 	
+	// ************Traffic Constants**********************
+	
+	// this map give a speed limit for a specific type of road with an urban and weather context
+	map<list<string>,int> road_speed <- 
+				  [["motorway","interurban","sunny"]::130,
+				   ["motorway","urban","sunny"]::90,
+				   ["motorway","interurban","rainy"]::110,
+				   ["motorway","urban","rainy"]::80,
+				   ["motorway","interurban","stormy"]::80,
+				   ["motorway","urban","stormy"]::50,
+				   ["trunk","interurban","sunny"]::110,
+				   ["trunk","urban","sunny"]::110,
+				   ["trunk","interurban","rainy"]::100,
+				   ["trunk","urban","rainy"]::100,
+				   ["trunk","interurban","stormy"]::80,
+				   ["trunk","urban","stormy"]::80,
+				   ["primary","interurban","sunny"]::90,
+				   ["primary","urban","sunny"]::50,
+				   ["primary","interurban","rainy"]::80,
+				   ["primary","urban","rainy"]::50,
+				   ["primary","interurban","stormy"]::50,
+				   ["primary","urban","stormy"]::30,
+				   ["secondary","interurban","sunny"]::90,
+				   ["secondary","urban","sunny"]::50,
+				   ["secondary","interurban","rainy"]::80,
+				   ["secondary","urban","rainy"]::50,
+				   ["secondary","interurban","stormy"]::50,
+				   ["secondary","urban","stormy"]::30,
+				   ["tertiary","interurban","sunny"]::90,
+				   ["tertiary","urban","sunny"]::50,
+				   ["tertiary","interurban","rainy"]::80,
+				   ["tertiary","urban","rainy"]::50,
+				   ["tertiary","interurban","stormy"]::50,
+				   ["tertiary","urban","stormy"]::30,
+				   ["residential","interurban","sunny"]::50,
+				   ["residential","urban","sunny"]::50,
+				   ["residential","interurban","rainy"]::50,
+				   ["residential","urban","rainy"]::50,
+				   ["residential","interurban","stormy"]::30,
+				   ["residential","urban","stormy"]::30,
+				   ["living_street","interurban","sunny"]::20,
+				   ["living_street","urban","sunny"]::20,
+				   ["living_street","interurban","rainy"]::20,
+				   ["living_street","urban","rainy"]::20,
+				   ["living_street","interurban","stormy"]::20,
+				   ["living_street","urban","stormy"]::20
+				  ];
+	// this map give for a specific road type a coefficient like:
+	// average_speed = coefficient * speed_limit
+	map<string,float> road_speed_avg_coef <- 
+			       ["motorway"::1.2,
+			        "trunk"::0.5,
+			        "primary"::0.5,
+			        "secondary"::0.5,
+			        "tertiary"::0.8,
+			        "residential"::0.6,
+			        "living_street"::1.0
+			       ];
+	
+	//***********************************************************
+	
 	//Type of model for building choice during activity
 	string random <- "random";
 	string gravity <- "gravity";

@@ -445,7 +445,7 @@ species Individual skills: [moving] control:simple_bdi{
                 	path_to_target <- list<Road>(the_path.edges);  
 	                nextRoad <- path_to_target[road_pointer];
 	                do getIn(passengers_);
-	                ask nextRoad {do queueInRoad(myself,0.0);}
+	                ask nextRoad {do queueInRoad(myself);}
                 }
                 
 			}
@@ -463,7 +463,7 @@ species Individual skills: [moving] control:simple_bdi{
 	
 	
 	action useBike(list<Individual> passengers_, point pos_target_){
-		create Bike returns: created_car{
+		create Bike{
                 location <- myself.location;
                 pos_target <- pos_target_;
                 available_graph <- road_network;
@@ -471,7 +471,7 @@ species Individual skills: [moving] control:simple_bdi{
                 path_to_target <- list<Road>(path_between(available_graph, location, pos_target).edges);
                 nextRoad <- path_to_target[road_pointer];
                 do getIn(passengers_);
-                ask nextRoad {do queueInRoad(myself,0.0);}
+                ask nextRoad {do queueInRoad(myself);}
 		}
 	}
 	

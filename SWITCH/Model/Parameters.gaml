@@ -56,7 +56,7 @@ global {
 
 	int num_individuals <- 1000;
 	
-	bool road_speed_in_km_h <- true;
+	bool road_speed_in_km_h <- false;
 	
 	//Acvitity parameters 
 	string choice_of_target_mode <- gravity among: ["random", "gravity","closest"]; // model used for the choice of building for an activity 

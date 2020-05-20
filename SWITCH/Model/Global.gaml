@@ -44,7 +44,7 @@ global {
 	//time
 	float bus_freq; //intervalle en minute
 	
-	string weather among: ["sunny","rainy","stormy",nil];
+	string weather <- "sunny" among: ["sunny","rainy","stormy",nil];
 	
 	
 	logger the_logger;
@@ -63,6 +63,7 @@ global {
 	reflex end_simulation when: current_date = end_date {
 		do pause;
 	} 
+	
 	reflex manage_step when: every(#h) {
 		if (not is_fast_step and (current_date.hour < first_activity_h[current_date.day_of_week])) {
 			step <- fast_step;
@@ -74,6 +75,7 @@ global {
 		}
 		
 	}
+	
 	action global_init  {
 		//Initialization of the building using the shapefile of buildings
 		create Building from: building_shapefile;

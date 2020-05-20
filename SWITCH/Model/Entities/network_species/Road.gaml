@@ -15,6 +15,7 @@ species Road {
 	
 	//type of road (the OpenStreetMap highway feature: https://wiki.openstreetmap.org/wiki/Map_Features)
 	string type;
+	string urban_context <- "urban" among: ["urban","interurban","sunny", nil];
 	
 	//is roundabout or not (OSM information)
 	string junction;
@@ -41,7 +42,13 @@ species Road {
 	float max_capacity <- size * nb_lanes min: 10.0;
 	
 	//actual free space capacity of the road (in meters)
-	float current_capacity <- max_capacity;
+	float current_capacity <- max_capacity min:0.0 max:max_capacity;
+	
+	//the out flow capacity, number of transports that can leave the road in a second (in meters)
+	float max_output_capacity <- road_speed.keys contains [type,urban_context,weather] ? road_speed[[type,urban_context,weather]]*road_speed_avg_coef[type]  #km/#h : 50 #km/#h;
+	//actual free out flow
+	float current_output_capacity <- max_output_capacity min: 0.0 max: max_output_capacity * step;
+	
 	
 	//has_bike_lane = true if there is a specific lane for bikes in this road
 	//				= false if not
@@ -59,21 +66,7 @@ species Road {
     	current_capacity <- max_capacity;
     }
 	
-	// if there is a bike lane, bikes don't consume road capacity
-	action queueInRoad(Bike b, float time_left){
-		if not has_bike_lane { current_capacity <- current_capacity - b.size; }
-		ask b{ do enterRoad(myself); }
-		float travel_time <- getRoadTravelTime(b);
-		if travel_time < time_left {
-			list<list> temp_list <- [[time+time_left,b]];
-			do dequeue(temp_list);
-			if not empty(temp_list){present_bikes << [time+travel_time-time_left,b];}
-		}else{
-			present_bikes << [time+travel_time-time_left,b];	
-		}
-	}
-	
-	action queueInRoad(Transport t, float time_left){
+	/*action queueInRoad(Transport t, float time_left){
 		current_capacity <- current_capacity - t.size;
 		ask t{ do enterRoad(myself); }
 		float travel_time <- getRoadTravelTime(t);
@@ -84,13 +77,29 @@ species Road {
 		}else{
 			present_transports << [time+travel_time-time_left,t];	
 		}
+	}*/
+	// if there is a bike lane, bikes don't consume road capacity
+	action queueInRoad(Bike b){
+		if not has_bike_lane { current_capacity <- current_capacity - b.size; }
+		ask b{ do enterRoad(myself); }
+		float travel_time <- getRoadTravelTime(b);
+		present_bikes << [time+travel_time,b];
 	}
+	
+	action queueInRoad(Transport t){
+		current_capacity <- current_capacity - t.size;
+		ask t{ do enterRoad(myself); }
+		float travel_time <- getRoadTravelTime(t);
+		present_transports << [time+travel_time,t];
+	}
+	
 	
 	bool canAcceptTransport(Transport t){
 		return current_capacity > t.size;
 	}
 	
 	reflex dequeueFromRoad when: not empty(present_transports) and (float(present_transports[0][0]) <= time){
+		current_output_capacity <- max_output_capacity * step;
 		do dequeue(present_transports);
 	}
 	
@@ -99,34 +108,31 @@ species Road {
 	}
 	
 	action dequeue(list<list> transportList){
-		int count <- 0;
-		float time_to_leave <- float(transportList[count][0]);
-		Transport t <- Transport(transportList[count][1]);
-		loop while: not empty(transportList) and (time_to_leave<=time) and count < length(transportList){
-			//****** Metrics purpose *************
-			if (t.test_target != nil) and (not t.already_reached_end_road) {ask t{do addPointReachedEndRoad;}}
-			//************************************
+		//road_locked = true if the head transport can't access its next road
+		bool road_locked <- false;
+		Transport t;
+		float time_to_leave;
+		loop while: not empty(transportList) and (float(transportList[0][0])<=time) and (not road_locked) and (Transport(transportList[0][1]).size < current_output_capacity){
+			Transport t <- Transport(transportList[0][1]);
+			time_to_leave <- float(transportList[0][0]);
 			if t.nextRoad != nil{
 				//the transport isn't on its last road so we check if its next road can accept it 
 				if t.nextRoad.canAcceptTransport(t){
 					//if the next road is ok then it takes the transport in charge
-					ask t.nextRoad { do queueInRoad(t,time-time_to_leave); }
+					ask t.nextRoad { do queueInRoad(t); }
 					//this road can free space in its queue
 					current_capacity <- current_capacity + t.size;
-					remove [time_to_leave,t] from: transportList;
-					count <- count - 1;
+					current_output_capacity <- current_output_capacity - t.size;
+					remove transportList[0] from: transportList;
+				}else{
+					road_locked <- true;
 				}
-				count <- count + 1;
 			}else{
 				//this road can free space in its queue
 				current_capacity <- current_capacity + t.size;
-				remove [time_to_leave,t]  from: transportList;
+				remove transportList[0] from: transportList;
 				ask t{ do endTrip; }
 			}
-			if(not empty(transportList) and count < length(transportList)){
-				time_to_leave <- float(transportList[count][0]);
-				t <- Transport(transportList[count][1]);
-			}		
 		}
 	}
 	

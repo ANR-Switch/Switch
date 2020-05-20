@@ -21,7 +21,7 @@ global {
 	float mean_area_flats <- 200.0;
 	float min_area_buildings <- 20.0;
 	
-	float default_road_speed <- 50#km/#h;
+	float default_road_speed <- 50.0;
 	int default_num_lanes <- 1;
 	
 	bool display_google_map <- true parameter:"Display google map image";
@@ -152,6 +152,7 @@ global {
 									lanes <- lanesbackw > 0 ? lanesbackw : max([1, int(myself.lanes / 2.0)]);
 									shape <- polyline(reverse(myself.shape.points));
 									maxspeed <- myself.maxspeed;
+									type <- myself.type;
 								}
 								lanes <- lanesforwa > 0 ? lanesbackw : int(lanes / 2.0 + 0.5);
 							}
