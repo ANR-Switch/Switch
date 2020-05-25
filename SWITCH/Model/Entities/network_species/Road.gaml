@@ -44,7 +44,7 @@ species Road {
 	//actual free space capacity of the road (in meters)
 	float current_capacity <- max_capacity min:0.0 max:max_capacity;
 	
-	//the out flow capacity, number of transports that can leave the road in a second (in meters)
+	//the out flow capacity, number of transports that can leave the road in a second (in meters/s)
 	float max_output_capacity <- road_speed.keys contains [type,urban_context,weather] ? road_speed[[type,urban_context,weather]]*road_speed_avg_coef[type]  #km/#h : 50 #km/#h;
 	//actual free out flow
 	float current_output_capacity <- max_output_capacity min: 0.0 max: max_output_capacity * step;
