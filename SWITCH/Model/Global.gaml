@@ -46,6 +46,7 @@ global {
 	
 	string weather <- "sunny" among: ["sunny","rainy","stormy",nil];
 	
+	EventManager event_m;
 	
 	logger the_logger;
 	

@@ -8,11 +8,13 @@
 model SWITCH
 
 import "../../Model/logger.gaml"
+import "../../Model/Global.gaml"
 import "../../Model/Entities/network_species/Road.gaml"
 import "../../Model/Entities/network_species/Crossroad.gaml"
 import "../../Model/Entities/transport_species/Transport.gaml"
 import "../../Model/Entities/transport_species/PrivateTransport.gaml"
 import "../../Model/Entities/transport_species/Car.gaml"
+import "../../Model/Entities/EventManager.gaml"
 
 global { 
 	string datasettest <- "../Datasets/Road test/"; // default
@@ -61,6 +63,8 @@ global {
 		create Road{type <- "FH"; start_node <- F; end_node <- H; max_speed <- speed_FH; shape <- line([F.location,H.location]); do init;}
 		road_network <- directed(as_edge_graph(Road,Crossroad));
 		create transport_generator;
+		create EventManager;
+		event_m <- first(EventManager);
 	}
 	
 	reflex manage_step when: every(#h) {}
@@ -87,15 +91,6 @@ species transport_generator {
                 pos_target <- c.location;
                 available_graph <- road_network;
                 path_to_target <- list<Road>(path_between(available_graph, location, pos_target).edges);
-                nextRoad <- path_to_target[road_pointer];
-                if (not nextRoad.canAcceptTransport(self)){
-                    nb_transport_sent <- nb_transport_to_send;
-                    do die;
-                }else{
-                    ask nextRoad {
-                        do queueInRoad(myself);
-                    }
-                }
             }
             nb_transport_sent <- nb_transport_sent + 1;
         }

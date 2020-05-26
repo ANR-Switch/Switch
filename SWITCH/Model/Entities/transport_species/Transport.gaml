@@ -9,11 +9,14 @@
 model SWITCH
 
 import "../../logger.gaml"
-
+import "../../Global.gaml"
+import "../../../Experiments/Tests/Road Test.gaml"
 import "../network_species/Road.gaml"
 import "../Individual.gaml"
 
 species Transport skills: [moving]{
+	
+	string status <- "starting trip" among: ["starting trip", "waiting space in road", "waiting to enter road", "moving", "waiting to leave road"];
 	
 	// maximum speed for a transport (km/h)
 	float max_speed;
@@ -39,10 +42,12 @@ species Transport skills: [moving]{
 	
 	//indicate the actual road in path_to_target list
 	int road_pointer <- 0;
-	bool startedTrip <- false;
 	
-	//Next road to travel on
-	Road nextRoad;
+	//last entry_time received
+	int last_entry_time <- 0;
+	
+	//last road occupation ratio observed by the transport
+	float last_occup_ratio <- 0.0;
 	
 	//******* /!\ TESTING ATTRIBUTES and ACTION **********
 	string test_target;
@@ -64,24 +69,48 @@ species Transport skills: [moving]{
 	}
 	//****************************************************
 	
-	
-	// this action is called by road accepting this transport
-	action enterRoad(Road r){
-		road_pointer <- startedTrip ? road_pointer + 1 : 0;	
-		startedTrip <- true;
-		//****** Metrics purpose *************	
-		if (test_target != nil) {do addPointEnterRoad();}
-		//************************************
-		if road_pointer = length(path_to_target)-1{
-			//if the current road is the last road of the trip then the transport can join the target
-			nextRoad <- nil;
-		}else{
-			nextRoad <- path_to_target[road_pointer+1];
+	action setSignal{
+		switch status{
+			match "waiting to enter road"{
+				ask path_to_target[road_pointer]{ do leave(myself); }
+				road_pointer <- road_pointer +1;
+				ask path_to_target[road_pointer]{ 
+					do queueInRoad(myself);
+					myself.last_occup_ratio <- (max_capacity-current_capacity)/max_capacity;
+				}
+				status <- "moving";
+			}
+			match "waiting to leave road"{
+				if road_pointer < length(path_to_target)-1 {
+					do sendEnterRequest;
+				}else{
+					//the transport is arrived
+					do endTrip;
+				}
+			}
 		}
-		loop passenger over:passengers{
-			passenger.location <- first(r.shape.points);
-		}
+		
 	}
+	
+	action sendEnterRequest{
+		ask path_to_target[road_pointer+1]{ do enterRequest(myself); }
+		status <- "waiting space in road";
+	}
+	
+	action setEntryTime(int entry_time){
+		ask event_m { do registerEvent(entry_time,myself);}
+		status <- "waiting to enter road";
+		last_entry_time <- entry_time;
+		//we say to the road that a space will be free at entry_time
+		ask path_to_target[road_pointer]{ do willLeave(entry_time,myself); }
+	}
+	
+	action setLeaveTime(int leave_time){
+		ask event_m { do registerEvent(leave_time,myself);}
+		status <- "waiting to leave road";
+	}
+
+	action enterRoad{}
 	
 	action endTrip{}
 	

@@ -15,7 +15,7 @@ species Road {
 	
 	//type of road (the OpenStreetMap highway feature: https://wiki.openstreetmap.org/wiki/Map_Features)
 	string type;
-	string urban_context <- "urban" among: ["urban","interurban","sunny", nil];
+	string urban_context <- "urban" among: ["urban","interurban", nil];
 	
 	//is roundabout or not (OSM information)
 	string junction;
@@ -57,105 +57,58 @@ species Road {
 	//list of current vehicules present in the road [[time_to_leave,Transport]]
 	//Note that target.location store the location of car target if this road is the last road
 	//if this road is not the trip car last road then target.location = nil
-	list<list> present_bikes <- [];
-    list<list> present_transports <- [];
+	list<Bike> present_bikes <- [];
+    list<Transport> present_transports <- [];
+    
+    //This list store all the incoming transports requests
+    list<Transport> waiting_transports <- [];
     
     action init{
     	size <- shape.perimeter;
     	max_capacity <- size * nb_lanes;
     	current_capacity <- max_capacity;
     }
-	
-	/*action queueInRoad(Transport t, float time_left){
-		current_capacity <- current_capacity - t.size;
-		ask t{ do enterRoad(myself); }
-		float travel_time <- getRoadTravelTime(t);
-		if travel_time < time_left {
-			list<list> temp_list <- [[time+time_left,t]];
-			do dequeue(temp_list);
-			if not empty(temp_list){present_transports << [time+travel_time-time_left,t];}
-		}else{
-			present_transports << [time+travel_time-time_left,t];	
-		}
-	}*/
+    
 	// if there is a bike lane, bikes don't consume road capacity
 	action queueInRoad(Bike b){
-		if not has_bike_lane { current_capacity <- current_capacity - b.size; }
-		ask b{ do enterRoad(myself); }
-		float travel_time <- getRoadTravelTime(b);
-		present_bikes << [time+travel_time,b];
+		present_bikes << b;
 	}
 	
 	action queueInRoad(Transport t){
-		current_capacity <- current_capacity - t.size;
-		ask t{ do enterRoad(myself); }
-		float travel_time <- getRoadTravelTime(t);
-		present_transports << [time+travel_time,t];
+		present_transports << t;
 	}
 	
-	
-	bool canAcceptTransport(Transport t){
-		return current_capacity > t.size;
+	action enterRequest(Transport t){
+		waiting_transports << t;
+		do acceptTransport(int(time));
 	}
 	
-	reflex dequeueFromRoad when: not empty(present_transports) and (float(present_transports[0][0]) <= time){
-		current_output_capacity <- max_output_capacity * step;
-		do dequeue(present_transports);
-	}
-	
-	reflex dequeueBikeFromRoad when: not empty(present_bikes) and (float(present_bikes[0][0]) <= time){
-		do dequeue(present_bikes);
-	}
-	
-	action dequeue(list<list> transportList){
-		//road_locked = true if the head transport can't access its next road
-		bool road_locked <- false;
-		Transport t;
-		float time_to_leave;
-		loop while: not empty(transportList) and (float(transportList[0][0])<=time) and (not road_locked) and (Transport(transportList[0][1]).size < current_output_capacity){
-			Transport t <- Transport(transportList[0][1]);
-			time_to_leave <- float(transportList[0][0]);
-			if t.nextRoad != nil{
-				//the transport isn't on its last road so we check if its next road can accept it 
-				if t.nextRoad.canAcceptTransport(t){
-					//if the next road is ok then it takes the transport in charge
-					ask t.nextRoad { do queueInRoad(t); }
-					//this road can free space in its queue
-					current_capacity <- current_capacity + t.size;
-					current_output_capacity <- current_output_capacity - t.size;
-					remove transportList[0] from: transportList;
-				}else{
-					road_locked <- true;
-				}
-			}else{
-				//this road can free space in its queue
-				current_capacity <- current_capacity + t.size;
-				remove transportList[0] from: transportList;
-				ask t{ do endTrip; }
-			}
+	action acceptTransport(int entry_time){
+		Transport t <- waiting_transports[0];
+		if current_capacity > t.size {
+			ask t { do setEntryTime(entry_time); }
+			remove t from: waiting_transports;
+			current_capacity <- current_capacity - t.size;
 		}
+	}
+	
+	//action called by transport when they know the time they'll enter the next road
+	action willLeave(int leave_time, Transport t){
+		current_capacity <- current_capacity + t.size;
+		do acceptTransport(leave_time);
+	}
+	
+	//action called when a transport leave the road
+	action leave(Transport t){
+		remove present_transports[0] from: present_transports;
 	}
 	
 	// compute the travel of incoming transports
 	// The formula used is BPR equilibrium formula
-	float getRoadTravelTime(Transport t){
+	float getRoadTravelTime(Transport t, float occup_ratio){
 		float max_speed_formula <- max([t.speed,max_speed]) #km/#h;
 		float free_flow_travel_time <- size/max_speed_formula;
-		float travel_time <- free_flow_travel_time *  (1.0 + 0.15 * ((max_capacity-current_capacity)/max_capacity)^4);
-		return travel_time;
-	}
-	
-	//this function is called when the transport want to reach its target and not pass the road.
-	//the function also use BPR formula but the free flow travel time is computed using 
-	//start_node to transport's target distance instead of road size
-	float getTargetTravelTime(Transport t, point target){
-		float max_speed_formula <- max([t.speed,max_speed]) #m/#sec;
-		float free_flow_travel_time <- (start_node distance_to target)/max_speed_formula;
-		// here the capacity is in meters so the traffic flow is defined by the quantity of vehicule
-		// (in meters) that can pass trough the road in a step duration
-		float vehicule_flow <- max_speed_formula * (step #sec);
-		float capacity_ratio <- current_capacity / max_capacity;
-		float travel_time <- free_flow_travel_time *  (1.0 + 0.15 * (vehicule_flow/capacity_ratio)^4);
+		float travel_time <- free_flow_travel_time *  (1.0 + 0.15 * occup_ratio^4);
 		return travel_time;
 	}
 	
@@ -187,12 +140,12 @@ species Road {
             float y0 <- end_node.location.y;
             float d <- sqrt(((x1 - x0) * (x1 - x0)) + ((y1 - y0) * (y1 - y0)));
             loop i from: 0 to: length(present_transports) - 1 {
-                Transport trans <- Transport(present_transports[i][1]);
+                Transport trans <- present_transports[i];
                 float dt <- (i * trans.size) + i * spacing;
                 float t <- dt / d;
                 float xt <- ((1 - t) * x0 + t * x1);
                 float yt <- ((1 - t) * y0 + t * y1);
-                float time_to_leave <- float(present_transports[i][0]);
+                float time_to_leave <- 0.0; // NOT CORRECT DUE TO CHANGES ON ROAD BEHAVIOUR 
                 
                 int nbStepToLeave <- round(int(time_to_leave - time)*step);
                 

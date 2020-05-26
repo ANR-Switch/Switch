@@ -293,7 +293,6 @@ species Individual skills: [moving] control:simple_bdi{
 		ask world {do write_message(myself.name + " - transport trip: " + myself.transport_trip);}
 	}
 	
-	
 	action prepare_trip (Building target_bd){
 		target_building <- target_bd;
 		do compute_transport_trip(any_location_in(target_building));
@@ -329,6 +328,7 @@ species Individual skills: [moving] control:simple_bdi{
 			return one_of(bds);
 		}
 	}
+	
 	plan do_work intention: working{
 		if (not has_belief(at_target)) {
 			do prepare_trip(work_building);
@@ -353,7 +353,6 @@ species Individual skills: [moving] control:simple_bdi{
 			do prepare_trip(bd);	
 		}
 	}
-	
 	
 	plan do_eating_restaurant intention: eating {
 		if (not has_belief(at_target)) {
@@ -384,17 +383,13 @@ species Individual skills: [moving] control:simple_bdi{
 			do prepare_trip(bd);	
 		}
 	}
-	
-	
+		
 	plan do_other_activity intention: shopping{
 		if (not has_belief(at_target)) {
 			Building bd <- choice_a_target(shopping);
 			do prepare_trip(bd);	
 		}
 	}
-	
-	
-	
 	
 	plan execute_trip intention: at_target{
 		ask world {do write_message(myself.name + " - status: " + myself.status + " trip_pointer: " + myself.trip_pointer);}
@@ -426,8 +421,6 @@ species Individual skills: [moving] control:simple_bdi{
 		}
 	}
 	
-	
-	
 	action useCar(list<Individual> passengers_, point pos_target_){
 		ask world {do write_message(myself.name + " - drive: location" + myself.location + " target: "+ pos_target_);}
 		if (current_car = nil) {
@@ -443,15 +436,14 @@ species Individual skills: [moving] control:simple_bdi{
                 	myself.status <- "arrived";
                 } else {
                 	path_to_target <- list<Road>(the_path.edges);  
-	                nextRoad <- path_to_target[road_pointer];
 	                do getIn(passengers_);
-	                ask nextRoad {do queueInRoad(myself);}
                 }
                 
 			}
 		}
 		
 	}
+	
 	action walk( point pos_target_){
 		ask world {do write_message(myself.name + " - walk: location" + myself.location + " target: "+ pos_target_);}
 		
@@ -461,7 +453,6 @@ species Individual skills: [moving] control:simple_bdi{
 		}
 	}
 	
-	
 	action useBike(list<Individual> passengers_, point pos_target_){
 		create Bike{
                 location <- myself.location;
@@ -469,9 +460,7 @@ species Individual skills: [moving] control:simple_bdi{
                 available_graph <- road_network;
                 path p <- path_between(available_graph, location, pos_target);
                 path_to_target <- list<Road>(path_between(available_graph, location, pos_target).edges);
-                nextRoad <- path_to_target[road_pointer];
                 do getIn(passengers_);
-                ask nextRoad {do queueInRoad(myself);}
 		}
 	}
 	
