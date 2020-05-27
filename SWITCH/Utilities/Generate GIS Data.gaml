@@ -9,14 +9,17 @@ model switch_utilities_gis
 global {
 	
 	//define the path to the dataset folder
-	string dataset_path <- "../Datasets/Castanet Tolosan/";
+	string dataset_path <- "../Datasets/Bordeaux/";
 		
 	//define the bounds of the studied area
 	file data_file <-shape_file(dataset_path + "boundary.shp");
 	
-	
+
 	//optional
 	string osm_file_path <- dataset_path + "map.osm";
+	string ign_building_file_path <-  dataset_path + "bati_ign.shp"; 
+	
+	list<string> type_to_specify <- [nil, "yes", ""];
 		
 	float mean_area_flats <- 200.0;
 	float min_area_buildings <- 20.0;
@@ -104,6 +107,41 @@ global {
 		ask Building where (each.type = nil or each.type = "") {
 			do die;
 		}
+		
+		
+		if (file_exists(ign_building_file_path)) {
+			file ign_file <-  file(ign_building_file_path);
+			create Building_ign from: ign_file {
+				if not (self overlaps world) {
+					do die;
+				}
+			}
+			write "Nombre buildings ign created : "+ length(Building_ign);
+			ask Building {
+				 list<Building_ign> neigh <- Building_ign overlapping self;
+				 if not empty(neigh) {
+				 	Building_ign bestCand;
+				 	if (length(neigh) = 1) {
+				 		bestCand <- first(neigh);
+				 	} else {
+				 		bestCand <- neigh with_max_of (each inter self).area;
+				 		if (bestCand = nil) {
+				 			bestCand <- neigh with_min_of (each.location distance_to location);
+				 		}
+				 	}
+				 	if ((type in type_to_specify) and bestCand.USAGE_1 != nil and bestCand.USAGE_1 != ""){ 
+				 		write "avant: " + type + " apres: "+ bestCand.USAGE_1 ;
+				 		type <- bestCand.USAGE_1;
+				 	}
+				 	if (bestCand.NOMBRE_D_E != nil and bestCand.NOMBRE_D_E > 0){ levels <- bestCand.NOMBRE_D_E;}
+				 	if (bestCand.NOMBRE_DE != nil and bestCand.NOMBRE_DE > 0){ flats <- bestCand.NOMBRE_DE;}
+				 }
+			 
+			 }
+			 
+			 	
+		}
+		
 		ask Building {
 			if (flats = 0) {
 				if type in ["apartments","hotel"] {
@@ -292,6 +330,24 @@ species Road{
 } 
 grid cell width: 1500 height:1500 use_individual_shapes: false use_regular_agents: false use_neighbors_cache: false;
 
+
+species Building_ign {
+	/*nature du bati; valeurs possibles: 
+	* Indifférenciée | Arc de triomphe | Arène ou théâtre antique | Industriel, agricole ou commercial |
+Chapelle | Château | Eglise | Fort, blockhaus, casemate | Monument | Serre | Silo | Tour, donjon | Tribune | Moulin à vent
+	*/
+	string NATURE;
+	
+	/*
+	 * Usage du bati; valeurs possibles:  Agricole | Annexe | Commercial et services | Industriel | Religieux | Sportif | Résidentiel |
+Indifférencié
+	 */
+	string USAGE_1; //usage principale
+	string USAGE_2; //usage secondaire
+	int NOMBRE_DE; //nombre de logements;
+	int NOMBRE_D_E;// nombre d'étages
+	float HAUTEUR; 
+}
 species Building {
 	string type;
 	string building_att;
