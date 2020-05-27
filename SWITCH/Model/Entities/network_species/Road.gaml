@@ -29,6 +29,9 @@ species Road {
 	//maximum legal speed on this road
 	float max_speed;
 	
+	//average speed on this road
+	float avg_speed <- road_speed.keys contains [type,urban_context,weather] ? road_speed[[type,urban_context,weather]]*road_speed_avg_coef[type] : 50;
+	
 	//number of motorized vehicule lane in this road
 	int nb_lanes <- 1;
 	
@@ -44,11 +47,8 @@ species Road {
 	//actual free space capacity of the road (in meters)
 	float current_capacity <- max_capacity min:0.0 max:max_capacity;
 	
-	//the out flow capacity, number of transports that can leave the road in a second (in meters/s)
-	float max_output_capacity <- road_speed.keys contains [type,urban_context,weather] ? road_speed[[type,urban_context,weather]]*road_speed_avg_coef[type]  #km/#h : 50 #km/#h;
-	//actual free out flow
-	float current_output_capacity <- max_output_capacity min: 0.0 max: max_output_capacity * step;
-	
+	//the minimal timestamp when the next transport can leave the road (transcription of maximal output capacity)
+	int min_leave_time <- 0;
 	
 	//has_bike_lane = true if there is a specific lane for bikes in this road
 	//				= false if not
@@ -76,19 +76,24 @@ species Road {
 	
 	action queueInRoad(Transport t){
 		present_transports << t;
+		if length(present_transports) = 1{
+			int leave_time <- int(floor(max([min_leave_time, t.last_entry_time + getRoadTravelTime(t,t.last_occup_ratio)])));
+			ask t{ do setLeaveTime(leave_time); }
+		}
 	}
 	
 	action enterRequest(Transport t){
 		waiting_transports << t;
-		do acceptTransport(int(time));
+		do acceptTransport(t.last_leave_time);
 	}
 	
 	action acceptTransport(int entry_time){
 		Transport t <- waiting_transports[0];
-		if current_capacity > t.size {
+		loop while: current_capacity > t.size {
 			ask t { do setEntryTime(entry_time); }
 			remove t from: waiting_transports;
 			current_capacity <- current_capacity - t.size;
+			t <- waiting_transports[0];
 		}
 	}
 	
@@ -98,9 +103,18 @@ species Road {
 		do acceptTransport(leave_time);
 	}
 	
-	//action called when a transport leave the road
-	action leave(Transport t){
+	//action called by a transport when it leaves the road
+	action leave(Transport t,int leave_time){
 		remove present_transports[0] from: present_transports;
+		//the time spend by transport t to leave the road is computed based on its size and the avg speed on this road 
+		min_leave_time <- int(floor(leave_time + avg_speed #km/#h * t.size));
+		if not empty(present_transports){
+			Transport tp <- present_transports[0];
+			//the leave time for the next transport is the maximum between the time when the previous car leaves the road and 
+			//the time computed by the bpr function
+			int leave_time <- int(floor(max([min_leave_time, t.last_entry_time + getRoadTravelTime(tp,tp.last_occup_ratio)])));
+			ask tp{ do setLeaveTime(leave_time); }
+		}
 	}
 	
 	// compute the travel of incoming transports

@@ -46,6 +46,9 @@ species Transport skills: [moving]{
 	//last entry_time received
 	int last_entry_time <- 0;
 	
+	//last leave_time received
+	int last_leave_time<- int(time);
+	
 	//last road occupation ratio observed by the transport
 	float last_occup_ratio <- 0.0;
 	
@@ -72,7 +75,7 @@ species Transport skills: [moving]{
 	action setSignal{
 		switch status{
 			match "waiting to enter road"{
-				ask path_to_target[road_pointer]{ do leave(myself); }
+				if road_pointer > 0 { ask path_to_target[road_pointer]{ do leave(myself,myself.last_leave_time); } }
 				road_pointer <- road_pointer +1;
 				ask path_to_target[road_pointer]{ 
 					do queueInRoad(myself);
@@ -108,6 +111,7 @@ species Transport skills: [moving]{
 	action setLeaveTime(int leave_time){
 		ask event_m { do registerEvent(leave_time,myself);}
 		status <- "waiting to leave road";
+		last_leave_time <- leave_time;
 	}
 
 	action enterRoad{}
