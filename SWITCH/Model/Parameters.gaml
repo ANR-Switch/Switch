@@ -9,7 +9,7 @@ model SWITCH
 import "Constants.gaml"
 
 global {
-	string dataset <- "../Datasets/Dijon/"; // default
+	string dataset <- "../Datasets/Castanet Tolosan/"; // default
 	
 	map<predicate,rgb> colors_per_act <- [staying_at_home::#blue, working::#red, studying:: #chartreuse, leisure::#magenta, visiting_friend::#pink, eating::#orange, shopping::#gold, practicing_sport::#cyan, doing_other_act::#gray];
 	map<string,rgb> colors_per_mobility_mode <- ["car"::#olivedrab, "bike"::#maroon, "bus"::#palegreen, "walk"::#blueviolet];
