@@ -54,9 +54,7 @@ species Road {
 	//				= false if not
 	bool has_bike_lane <- false;
 	
-	//list of current vehicules present in the road [[time_to_leave,Transport]]
-	//Note that target.location store the location of car target if this road is the last road
-	//if this road is not the trip car last road then target.location = nil
+	//list of current vehicules present in the road 
 	list<Bike> present_bikes <- [];
     list<Transport> present_transports <- [];
     
@@ -84,6 +82,7 @@ species Road {
 	action enterRequest(Transport t, int time_request){
 		if current_capacity > t.size{
 			ask t { do setEntryTime(time_request); }
+			remove t from: waiting_transports;
 			current_capacity <- current_capacity - t.size;
 		}else{
 			waiting_transports << [time_request, t];
@@ -105,7 +104,7 @@ species Road {
 	//action called by transport when they know the time they'll enter the next road
 	action willLeave(int leave_time, Transport t){
 		current_capacity <- current_capacity + t.size;
-		do acceptTransport(leave_time + getRoadTravelTime(t));
+		do acceptTransport(leave_time);
 	}
 	
 	//action called by a transport when it leaves the road
