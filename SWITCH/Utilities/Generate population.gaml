@@ -7,7 +7,6 @@
 
 model Generatepopulation
 
-import "../Model/Constants.gaml"
 
 import "../Model/Entities/network_species/Building.gaml"
 
@@ -15,14 +14,11 @@ import "../Model/Entities/Individual.gaml"
 
 
 global {
-	//define the path to the dataset folder
-	string dataset_path <- "../Datasets/Castanet Tolosan/";
-
-	//GIS data
-	file shp_buildings <- file_exists(dataset_path+"buildings.shp") ? shape_file(dataset_path+"buildings.shp"):nil;
+		//GIS data
+	file shp_buildings <- file_exists(dataset+"buildings.shp") ? shape_file(dataset+"buildings.shp"):nil;
 	geometry shape <- envelope(shp_buildings);
 		
-	
+	bool parallel <- true;
 	
 	// ------------------------------------------- //
 	// SYNTHETIC POPULATION FROM COMOKIT ALGORITHM //
@@ -62,7 +58,7 @@ global {
 		do create_social_networks(min_student_age, max_student_age);	
 		write "social network created";
 		
-		save Individual type: shp to:dataset_path + "individuals.shp" attributes: [
+		save Individual type: shp to:dataset + "individuals.shp" attributes: [
 			"age":: age,
 			"gender"::gender,
 			"category"::category,
@@ -195,7 +191,7 @@ global {
 	//Initialiase social network of the agents (colleagues, friends)
 	action initialise_social_network(map<Building,list<Individual>> working_places, map<Building,list<Individual>> schools, map<int,list<Individual>> ind_per_age_cat) {
 		
-		ask Individual {
+		ask Individual parallel:parallel {
 			int nb_friends <- max(0,round(gauss(nb_friends_mean,nb_friends_std)));
 			loop i over: ind_per_age_cat.keys {
 				if age < i {
@@ -281,7 +277,7 @@ global {
 		// Assign to each individual a school and working_place depending of its age.
 		// in addition, school and working_place can be outside.
 		// Individuals too young or too old, do not have any working_place or school 
-		ask Individual {
+		ask Individual parallel: true{
 			if (age >= min_student_age) {
 				if (age < max_student_age) {
 					category <- student;

@@ -9,7 +9,7 @@ model SWITCH
 import "Constants.gaml"
 
 global {
-	string dataset <- "../Datasets/Castanet Tolosan/"; // default
+	string dataset <- "../Datasets/Dijon/"; // default
 	
 	map<predicate,rgb> colors_per_act <- [staying_at_home::#blue, working::#red, studying:: #chartreuse, leisure::#magenta, visiting_friend::#pink, eating::#orange, shopping::#gold, practicing_sport::#cyan, doing_other_act::#gray];
 	map<string,rgb> colors_per_mobility_mode <- ["car"::#olivedrab, "bike"::#maroon, "bus"::#palegreen, "walk"::#blueviolet];
@@ -177,12 +177,13 @@ global {
 	float proba_work_at_home <- 0.05; //probability to work at home;
 	float proba_unemployed_M <- 0.03; // probability for a M individual to be unemployed.
 	float proba_unemployed_F <-0.03; // probability for a F individual to be unemployed.
-	list<string> possible_homes <- remove_duplicates(OSM_home + ["", "home", "hostel"]);  //building type that will be considered as home
+	list<string> possible_homes <- remove_duplicates(OSM_home + ["",'Annexe', "home", "hostel", "Résidentiel", "Indifférencié"]);  //building type that will be considered as home
 	
 	 //building type that will be considered as home - for each type, the coefficient to apply to this type for this choice of working place
 	 //weight of a working place = area * this coefficient
 	map<string, float> possible_workplaces <- (OSM_work_place as_map (each::2.0)) + map(["office"::3.0, "admin"::2.0, "industry"::1.0, "store"::1.0, "shop"::1.0,"bookstore"::1.0,
-		"gamecenter"::1.0, "restaurant"::1.0,"coffeeshop"::1.0,"caphe"::1.0, "caphe-karaoke"::1.0,"farm"::0.1, "repairshop"::1.0,"hostel"::1.0
+		"gamecenter"::1.0, "restaurant"::1.0,"coffeeshop"::1.0,"caphe"::1.0, "caphe-karaoke"::1.0,"farm"::0.1, "repairshop"::1.0,"hostel"::1.0,
+		"Agricole"::0.1, "Annexe"::0.1,"Commercial et services"::2.0, "Industriel"::1.0, "Indifférencié"::0.5
 	]);
 	
 	// building type that will considered as school (ou university) - for each type, the min and max age to go to this type of school.

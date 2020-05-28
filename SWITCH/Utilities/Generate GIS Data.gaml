@@ -16,7 +16,7 @@ global {
 	
 
 	//optional
-	string osm_file_path <- dataset_path + "map.osm";
+	string osm_file_path <- dataset_path + "map.pbf";
 	string ign_building_file_path <-  dataset_path + "bati_ign.shp"; 
 	
 	list<string> type_to_specify <- [nil, "yes", ""];
@@ -28,7 +28,7 @@ global {
 	int default_num_lanes <- 1;
 	
 	bool display_google_map <- true parameter:"Display google map image";
-	
+	bool parallel <- true;
 	//-----------------------------------------------------------------------------------------------------------------------------
 	
 	list<rgb> color_bds <- [rgb(241,243,244), rgb(255,250,241)];
@@ -49,6 +49,7 @@ global {
 			point top_left <- CRS_transform({0,0}, "EPSG:4326").location;
 			point bottom_right <- CRS_transform({shape.width, shape.height}, "EPSG:4326").location;
 			string adress <-"http://overpass.openstreetmap.ru/cgi/xapi_meta?*[bbox="+top_left.x+"," + bottom_right.y + ","+ bottom_right.x + "," + top_left.y+"]";
+			write "adress: " + adress;
 			osmfile <- osm_file<geometry> (adress, filtering);
 		}
 		
@@ -61,11 +62,14 @@ global {
 			office_att::get("office"), military_att::get("military"),sport_att::get("sport"),leisure_att::get("lesure"),
 			height::float(get("height")), flats::int(get("building:flats")), levels::int(get("building:levels"))
 		];
+		write "Building created";
 		ask Building {
 			if (shape = nil) or empty(Boundary overlapping self) {do die;} 
 		}
+		
+		write "useless buildings removed";
 		list<Building> bds <- Building where (each.shape.area > 0);
-		ask Building where ((each.shape.area = 0) and (each.shape.perimeter = 0)) {
+		ask Building where ((each.shape.area = 0) and (each.shape.perimeter = 0)) parallel: parallel {
 			list<Building> bd <- bds overlapping self;
 			ask bd {
 				sport_att  <- myself.sport_att;
@@ -76,12 +80,18 @@ global {
 				shop_att  <- myself.shop_att;
 				historic_att <- myself.historic_att;
 			}
-			do die; 
 		}
-		ask Building where (each.shape.area < min_area_buildings) {
+		ask Building where ((each.shape.area = 0) and (each.shape.perimeter = 0)) {
 			do die;
 		}
-		ask Building {
+		write "information from other layers integrated";
+		
+		ask Building where (each.shape.area < min_area_buildings){
+			do die;
+		}
+		write "small building removed ";
+	
+		ask Building parallel: parallel{
 			if (amenity_att != nil) {
 				type <- amenity_att;
 			}else if (shop_att != nil) {
@@ -104,9 +114,12 @@ global {
 			} 
 		}
 		
+		write "building type set ";
+		
 		ask Building where (each.type = nil or each.type = "") {
 			do die;
 		}
+		write "building with no type removed";
 		
 		
 		if (file_exists(ign_building_file_path)) {
@@ -117,7 +130,7 @@ global {
 				}
 			}
 			write "Nombre buildings ign created : "+ length(Building_ign);
-			ask Building {
+			ask Building parallel: parallel{
 				 list<Building_ign> neigh <- Building_ign overlapping self;
 				 if not empty(neigh) {
 				 	Building_ign bestCand;
@@ -130,11 +143,12 @@ global {
 				 		}
 				 	}
 				 	if ((type in type_to_specify) and bestCand.USAGE_1 != nil and bestCand.USAGE_1 != ""){ 
-				 		write "avant: " + type + " apres: "+ bestCand.USAGE_1 ;
 				 		type <- bestCand.USAGE_1;
 				 	}
 				 	if (bestCand.NOMBRE_D_E != nil and bestCand.NOMBRE_D_E > 0){ levels <- bestCand.NOMBRE_D_E;}
-				 	if (bestCand.NOMBRE_DE != nil and bestCand.NOMBRE_DE > 0){ flats <- bestCand.NOMBRE_DE;}
+				 	if (bestCand.NOMBRE_DE_ != nil and bestCand.NOMBRE_DE_ > 0){ 
+				 		flats <- bestCand.NOMBRE_DE_;
+				 	}
 				 }
 			 
 			 }
@@ -142,7 +156,7 @@ global {
 			 	
 		}
 		
-		ask Building {
+		ask Building parallel: parallel{
 			if (flats = 0) {
 				if type in ["apartments","hotel"] {
 					if (levels = 0) {levels <- 1;}
@@ -210,7 +224,7 @@ global {
 		}
 		
 		graph network<- main_connected_component(as_edge_graph(Road));
-		ask Road {
+		ask Road  {
 			if not (self in network.edges) {
 				do die;
 			}
@@ -218,7 +232,7 @@ global {
 		
 		write "Road and node agents created";
 		
-		ask Road {
+		ask Road  {
 			point ptF <- first(shape.points);
 			if (not(ptF in nodes_map.keys)) {
 				create Node with:[location::ptF] {
@@ -245,7 +259,7 @@ global {
 		save Road type:"shp" to:dataset_path +"roads.shp" attributes:["junction"::junction, "type"::type, "lanes"::self.lanes, "maxspeed"::maxspeed, "oneway"::oneway] ;
 		
 		save Node type:"shp" to:dataset_path +"nodes.shp" attributes:["type"::type, "crossing"::crossing] ;
-		
+		 
 		do load_satellite_image;
 	}
 	
@@ -344,7 +358,7 @@ Indifférencié
 	 */
 	string USAGE_1; //usage principale
 	string USAGE_2; //usage secondaire
-	int NOMBRE_DE; //nombre de logements;
+	int NOMBRE_DE_; //nombre de logements;
 	int NOMBRE_D_E;// nombre d'étages
 	float HAUTEUR; 
 }
