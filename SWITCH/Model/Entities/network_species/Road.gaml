@@ -84,7 +84,9 @@ species Road {
 	
 	action enterRequest(Transport t){
 		waiting_transports << t;
-		do acceptTransport(t.last_leave_time);
+		if length(waiting_transports) = 1{
+			do acceptTransport(t.last_leave_time);
+		}
 	}
 	
 	action acceptTransport(int entry_time){

@@ -85,7 +85,7 @@ species Transport skills: [moving]{
 			}
 			match "waiting to leave road"{
 				if road_pointer < length(path_to_target)-1 {
-					do sendEnterRequest;
+					do sendEnterRequest(road_pointer+1);
 				}else{
 					//the transport is arrived
 					do endTrip;
@@ -95,8 +95,9 @@ species Transport skills: [moving]{
 		
 	}
 	
-	action sendEnterRequest{
-		ask path_to_target[road_pointer+1]{ do enterRequest(myself); }
+	//the parameter should point toward the next road in path_to_target
+	action sendEnterRequest(int road_to_request){
+		ask path_to_target[road_to_request]{ do enterRequest(myself); }
 		status <- "waiting space in road";
 	}
 	
@@ -104,8 +105,10 @@ species Transport skills: [moving]{
 		ask event_m { do registerEvent(entry_time,myself);}
 		status <- "waiting to enter road";
 		last_entry_time <- entry_time;
-		//we say to the road that a space will be free at entry_time
-		ask path_to_target[road_pointer]{ do willLeave(entry_time,myself); }
+		//we say to the road that a space will be free at entry_time (time when the transport will enter the next road)
+		 if road_pointer >0 {
+		 	ask path_to_target[road_pointer]{ do willLeave(entry_time,myself); } 
+		 }
 	}
 	
 	action setLeaveTime(int leave_time){
@@ -113,8 +116,20 @@ species Transport skills: [moving]{
 		status <- "waiting to leave road";
 		last_leave_time <- leave_time;
 	}
-
-	action enterRoad{}
+	
+	//this function return a convenient string corresponding to a time (in second)
+	string timestamp (int time_to_print){
+		int nb_heure <- floor(time_to_print/3600);
+      	int nb_min <- floor((time_to_print-nb_heure*3600)/60);
+      	int nb_sec <- floor(time_to_print-nb_heure*3600-nb_min*60);
+      	string s <- "";
+      	if nb_heure < 10 {s <- s +"0";}
+      	s <- s + nb_heure + "h";
+      	if nb_min < 10 {s <- s +"0";}
+      	s <- s + nb_min;
+      	if nb_sec < 10 {s <- s +"0"+nb_sec;}
+      	return s;
+	}
 	
 	action endTrip{}
 	

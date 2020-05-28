@@ -8,7 +8,6 @@
 model SWITCH
 
 import "../../Model/logger.gaml"
-import "../../Model/Global.gaml"
 import "../../Model/Entities/network_species/Road.gaml"
 import "../../Model/Entities/network_species/Crossroad.gaml"
 import "../../Model/Entities/transport_species/Transport.gaml"
@@ -20,7 +19,7 @@ global {
 	string datasettest <- "../Datasets/Road test/"; // default
 	file crossroad_shapefile <- shape_file(datasettest+"roadTest.shp");
 	geometry shape <- envelope(crossroad_shapefile);
-	float step <- 5 #sec;
+	float step <- 60 #sec;
 	float param_road_speed <- 50.0;
 	list<string> crossroads;
 	
@@ -36,7 +35,7 @@ global {
 	float speed_FG <- param_road_speed;
 	float speed_FH <- param_road_speed;
 	
-	int vehicule_in_A <- 10;
+	int vehicule_in_A <- 1;
 	
 	init{
 		create logger with: [store_individual_dest::true]{the_logger <- self;}
@@ -67,7 +66,23 @@ global {
 		event_m <- first(EventManager);
 	}
 	
-	reflex manage_step when: every(#h) {}
+	reflex print_time{
+		write "***********"+timestamp(time)+"*****************" color:#red;
+	}
+	
+	//this function return a convenient string corresponding to a time (in second)
+	string timestamp (int time_to_print){
+		int nb_heure <- floor(time_to_print/3600);
+      	int nb_min <- floor((time_to_print-nb_heure*3600)/60);
+      	int nb_sec <- floor(time_to_print-nb_heure*3600-nb_min*60);
+      	string s <- "";
+      	if nb_heure < 10 {s <- s +"0";}
+      	s <- s + nb_heure + "h";
+      	if nb_min < 10 {s <- s +"0";}
+      	s <- s + nb_min + "s";
+      	if nb_sec < 10 {s <- s +"0"+nb_sec;}
+      	return s;
+	}
 }
 
 species transport_generator {
@@ -80,17 +95,10 @@ species transport_generator {
             create Car {
                 location <- A.location;
                 Crossroad c <- one_of([D, E, G, H]);
-                if flip(0.1){
-                	switch c{
-                		match D{test_target <- "D";}
-                		match E{test_target <- "E";}
-                		match G{test_target <- "G";}
-                		match H{test_target <- "H";}
-                	}
-                }
                 pos_target <- c.location;
                 available_graph <- road_network;
                 path_to_target <- list<Road>(path_between(available_graph, location, pos_target).edges);
+                do sendEnterRequest(0);
             }
             nb_transport_sent <- nb_transport_sent + 1;
         }
