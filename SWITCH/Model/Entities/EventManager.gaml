@@ -30,6 +30,7 @@ species EventManager {
 	}
 	
 	reflex sendSignal{
+		write events;
 		loop while: not empty(events) and getEventTime(0) <= time{
 			ask getEventTransport(0){do setSignal(myself.getEventTime(0),myself.getEventType(0));}
 			remove events[0] from: events;

@@ -83,19 +83,22 @@ species Road {
 	
 	action enterRequest(Transport t, int time_request){
 		if current_capacity > t.size{
-			do queueInRoad(t,time_request);
+			ask t { do setEntryTime(time_request); }
+			current_capacity <- current_capacity - t.size;
 		}else{
 			waiting_transports << [time_request, t];
 		}
 	}
 	
 	action acceptTransport(int entry_time){
-		Transport t <- waiting_transports[0][1];
-		loop while: current_capacity > t.size and not empty(waiting_transports){
-			ask t { do setEntryTime(entry_time); }
-			remove t from: waiting_transports;
-			current_capacity <- current_capacity - t.size;
-			if not empty(waiting_transports){ t <- waiting_transports[0][1]; }
+		if not empty(waiting_transports){
+			Transport t <- waiting_transports[0][1];
+			loop while: current_capacity > t.size and not empty(waiting_transports){
+				ask t { do setEntryTime(entry_time); }
+				remove t from: waiting_transports;
+				current_capacity <- current_capacity - t.size;
+				if not empty(waiting_transports){ t <- waiting_transports[0][1]; }
+			}
 		}
 	}
 	
@@ -130,6 +133,7 @@ species Road {
 	aspect advanced {
         geometry geom_display <- (shape + (2.0));
         draw geom_display border: #gray color: rgb(255*(max_capacity-current_capacity)/max_capacity,0,0);
+        draw "" + type + " - " + length(present_transports) + " PCU" at: location + point([15, -5]) size: 10 color: #black;
     }
 	
 	aspect roadTest {

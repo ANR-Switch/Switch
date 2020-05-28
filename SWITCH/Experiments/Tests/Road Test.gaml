@@ -19,7 +19,7 @@ global {
 	string datasettest <- "../Datasets/Road test/"; // default
 	file crossroad_shapefile <- shape_file(datasettest+"roadTest.shp");
 	geometry shape <- envelope(crossroad_shapefile);
-	float step <- 60 #sec;
+	float step <- 10 #sec;
 	float param_road_speed <- 50.0;
 	list<string> crossroads;
 	
@@ -64,12 +64,20 @@ global {
 		create transport_generator;
 		create EventManager;
 		event_m <- first(EventManager);
+		create Car {
+                location <- A.location;
+                Crossroad c <- one_of([D, E, G, H]);
+                pos_target <- c.location;
+                available_graph <- road_network;
+                path_to_target <- list<Road>(path_between(available_graph, location, pos_target).edges);
+                do sendEnterRequest(0,int(time));
+        }
 	}
 	
 	reflex manage_step when: every(#h) {}
 	
 	reflex print_time{
-		write "***********"+timestamp(time)+"*****************" color:#red;
+		write "***********"+time+"*****************" color:#red;
 	}
 	
 	//this function return a convenient string corresponding to a time (in second)
@@ -90,7 +98,7 @@ global {
 species transport_generator {
     
 
-    reflex send_car {
+    /*reflex send_car{
         int nb_transport_sent <- 0;
         int nb_transport_to_send <- vehicule_in_A;
         loop while: nb_transport_sent < nb_transport_to_send {
@@ -104,12 +112,12 @@ species transport_generator {
             }
             nb_transport_sent <- nb_transport_sent + 1;
         }
-    }
+    }*/
 
 }
 
 experiment RoadTest type: gui {
-	float minimum_cycle_duration <- 0.1;
+	float minimum_cycle_duration <- 0.7;
 	
 	parameter "AB speed limit " var: speed_AB min: 0.0 max: 130.0 category: "Speed" ;
 	parameter "BC speed limit " var: speed_BC min: 0.0 max: 130.0 category: "Speed" ;
@@ -124,7 +132,7 @@ experiment RoadTest type: gui {
 	output {	
 		display map background: #white type: opengl {
 			species Crossroad aspect: roadTest;
-			species Road aspect: roadTest;
+			species Road aspect: advanced;
 		}
 		/*display chart_D refresh: every (5 #cycles){
 			chart "traveled distance by car going to D" type: series{
