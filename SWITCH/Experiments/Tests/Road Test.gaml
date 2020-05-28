@@ -66,6 +66,8 @@ global {
 		event_m <- first(EventManager);
 	}
 	
+	reflex manage_step when: every(#h) {}
+	
 	reflex print_time{
 		write "***********"+timestamp(time)+"*****************" color:#red;
 	}
@@ -79,7 +81,7 @@ global {
       	if nb_heure < 10 {s <- s +"0";}
       	s <- s + nb_heure + "h";
       	if nb_min < 10 {s <- s +"0";}
-      	s <- s + nb_min + "s";
+      	s <- s + nb_min + "m";
       	if nb_sec < 10 {s <- s +"0"+nb_sec;}
       	return s;
 	}

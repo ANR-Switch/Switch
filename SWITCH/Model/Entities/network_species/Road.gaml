@@ -61,7 +61,8 @@ species Road {
     list<Transport> present_transports <- [];
     
     //This list store all the incoming transports requests
-    list<Transport> waiting_transports <- [];
+    //waiting_transports = [[int time_request, Transport t]]
+    list<list> waiting_transports <- [];
     
     action init{
     	size <- shape.perimeter;
@@ -76,33 +77,32 @@ species Road {
 	
 	action queueInRoad(Transport t,int entry_time){
 		present_transports << t;
-		if length(present_transports) = 1{
-			int leave_time <- int(floor(max([min_leave_time, entry_time + getRoadTravelTime(t)])));
-			ask t{ do setLeaveTime(leave_time); }
-		}
+		int leave_time <- int(floor(max([min_leave_time, entry_time + getRoadTravelTime(t)])));
+		ask t{ do setLeaveTime(leave_time); }
 	}
 	
 	action enterRequest(Transport t, int time_request){
-		waiting_transports << t;
-		if length(waiting_transports) = 1{
-			do acceptTransport(time_request);
+		if current_capacity > t.size{
+			do queueInRoad(t,time_request);
+		}else{
+			waiting_transports << [time_request, t];
 		}
 	}
 	
 	action acceptTransport(int entry_time){
-		Transport t <- waiting_transports[0];
-		loop while: current_capacity > t.size {
+		Transport t <- waiting_transports[0][1];
+		loop while: current_capacity > t.size and not empty(waiting_transports){
 			ask t { do setEntryTime(entry_time); }
 			remove t from: waiting_transports;
 			current_capacity <- current_capacity - t.size;
-			t <- waiting_transports[0];
+			if not empty(waiting_transports){ t <- waiting_transports[0][1]; }
 		}
 	}
 	
 	//action called by transport when they know the time they'll enter the next road
 	action willLeave(int leave_time, Transport t){
 		current_capacity <- current_capacity + t.size;
-		do acceptTransport(leave_time);
+		do acceptTransport(leave_time + getRoadTravelTime(t));
 	}
 	
 	//action called by a transport when it leaves the road
@@ -114,11 +114,11 @@ species Road {
 	
 	// compute the travel of incoming transports
 	// The formula used is BPR equilibrium formula
-	float getRoadTravelTime(Transport t){
+	int getRoadTravelTime(Transport t){
 		float max_speed_formula <- max([t.speed,max_speed]) #km/#h;
 		float free_flow_travel_time <- size/max_speed_formula;
 		float travel_time <- free_flow_travel_time *  (1.0 + 0.15 * ((max_capacity-current_capacity)/max_capacity)^4);
-		return travel_time;
+		return int(floor(travel_time));
 	}
 	
 	aspect default {
