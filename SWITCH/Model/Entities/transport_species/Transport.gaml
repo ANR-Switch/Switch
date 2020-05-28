@@ -39,7 +39,7 @@ species Transport skills: [moving]{
 	list<Road> path_to_target;
 	
 	//indicate the actual road in path_to_target list
-	int road_pointer <- 0;
+	int road_pointer <- -1;
 	
 	//******* /!\ TESTING ATTRIBUTES and ACTION **********
 	string test_target;
@@ -64,21 +64,22 @@ species Transport skills: [moving]{
 	action setSignal(int signal_time, string signal_type){
 		switch signal_type{
 			match "enter road"{
-				write "entering road at "+signal_time;
+				write "entering road at "+ timestamp(signal_time);
 				//if we are leaving a road by entering another the transports averts the first road 
 				//it is leaving and when it is leaving
-				if road_pointer > 0 { ask path_to_target[road_pointer]{ do leave(myself,signal_time); } }
+				if road_pointer >= 0 { ask path_to_target[road_pointer]{ do leave(myself,signal_time); } }
 				road_pointer <- road_pointer +1;
 				ask path_to_target[road_pointer]{ 
 					do queueInRoad(myself,signal_time);
 				}
 			}
 			match "leave road"{
-				write "can leave road at "+signal_time;
+				write "can leave road at "+ timestamp(signal_time);
 				if road_pointer < length(path_to_target)-1 {
 					do sendEnterRequest(road_pointer+1,signal_time);
 				}else{
 					//the transport is arrived
+					write "end trip";
 					ask path_to_target[road_pointer]{ do leave(myself,signal_time); } 
 					do endTrip;
 				}
@@ -89,13 +90,13 @@ species Transport skills: [moving]{
 	
 	//the parameter should point toward the next road in path_to_target
 	action sendEnterRequest(int road_to_request,int time_request){
-		write "entry request send at: "+time_request;
+		write "entry request send at: "+timestamp(time_request);
 		ask path_to_target[road_to_request]{ do enterRequest(myself,time_request); }
 		
 	}
 	
 	action setEntryTime(int entry_time){
-		write "event enter road registered for: "+entry_time;
+		write "event enter road registered for: "+timestamp(entry_time);
 		ask event_m { do registerEvent(entry_time,myself,"enter road");}
 		//we say to the road that a space will be free at entry_time (time when the transport will enter the next road)
 		 if road_pointer >0 {
@@ -104,7 +105,7 @@ species Transport skills: [moving]{
 	}
 	
 	action setLeaveTime(int leave_time){
-		write "event leave road registered for: "+leave_time;
+		write "event leave road registered for: "+timestamp(leave_time);
 		ask event_m { do registerEvent(leave_time,myself,"leave road");}
 	}
 	
@@ -113,13 +114,13 @@ species Transport skills: [moving]{
 		int nb_heure <- floor(time_to_print/3600);
       	int nb_min <- floor((time_to_print-nb_heure*3600)/60);
       	int nb_sec <- floor(time_to_print-nb_heure*3600-nb_min*60);
-      	string s <- "";
-      	if nb_heure < 10 {s <- s +"0";}
-      	s <- s + nb_heure + "h";
-      	if nb_min < 10 {s <- s +"0";}
-      	s <- s + nb_min;
-      	if nb_sec < 10 {s <- s +"0"+nb_sec;}
-      	return s;
+      	string buff <- "";
+      	if nb_heure < 10 {buff <- buff +"0";}
+      	buff <- buff + nb_heure + "h";
+      	if nb_min < 10 {buff <- buff +"0";}
+      	buff <- buff + nb_min + "m";
+      	if nb_sec < 10 {buff <- buff + "0";}
+      	return buff + nb_sec +"s";
 	}
 	
 	action endTrip{}

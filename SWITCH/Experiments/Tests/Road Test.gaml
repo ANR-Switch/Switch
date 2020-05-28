@@ -19,7 +19,7 @@ global {
 	string datasettest <- "../Datasets/Road test/"; // default
 	file crossroad_shapefile <- shape_file(datasettest+"roadTest.shp");
 	geometry shape <- envelope(crossroad_shapefile);
-	float step <- 10 #sec;
+	float step <- 60 #sec;
 	float param_road_speed <- 50.0;
 	list<string> crossroads;
 	
@@ -77,7 +77,7 @@ global {
 	reflex manage_step when: every(#h) {}
 	
 	reflex print_time{
-		write "***********"+time+"*****************" color:#red;
+		write "***********"+timestamp(time)+"*****************" color:#red;
 	}
 	
 	//this function return a convenient string corresponding to a time (in second)
@@ -85,20 +85,20 @@ global {
 		int nb_heure <- floor(time_to_print/3600);
       	int nb_min <- floor((time_to_print-nb_heure*3600)/60);
       	int nb_sec <- floor(time_to_print-nb_heure*3600-nb_min*60);
-      	string s <- "";
-      	if nb_heure < 10 {s <- s +"0";}
-      	s <- s + nb_heure + "h";
-      	if nb_min < 10 {s <- s +"0";}
-      	s <- s + nb_min + "m";
-      	if nb_sec < 10 {s <- s +"0"+nb_sec;}
-      	return s;
+      	string buff <- "";
+      	if nb_heure < 10 {buff <- buff +"0";}
+      	buff <- buff + nb_heure + "h";
+      	if nb_min < 10 {buff <- buff +"0";}
+      	buff <- buff + nb_min + "m";
+      	if nb_sec < 10 {buff <- buff + "0";}
+      	return buff + nb_sec +"s";
 	}
 }
 
 species transport_generator {
     
 
-    /*reflex send_car{
+    reflex send_car when: every(60.0){
         int nb_transport_sent <- 0;
         int nb_transport_to_send <- vehicule_in_A;
         loop while: nb_transport_sent < nb_transport_to_send {
@@ -108,11 +108,11 @@ species transport_generator {
                 pos_target <- c.location;
                 available_graph <- road_network;
                 path_to_target <- list<Road>(path_between(available_graph, location, pos_target).edges);
-                do sendEnterRequest(0,time);
+                do sendEnterRequest(0,int(time));
             }
             nb_transport_sent <- nb_transport_sent + 1;
         }
-    }*/
+    }
 
 }
 
