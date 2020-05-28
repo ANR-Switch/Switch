@@ -15,9 +15,7 @@ import "../network_species/Road.gaml"
 import "../Individual.gaml"
 
 species Transport skills: [moving]{
-	
-	string status <- "starting trip" among: ["starting trip", "waiting space in road", "waiting to enter road", "moving", "waiting to leave road"];
-	
+		
 	// maximum speed for a transport (km/h)
 	float max_speed;
 	
@@ -43,15 +41,6 @@ species Transport skills: [moving]{
 	//indicate the actual road in path_to_target list
 	int road_pointer <- 0;
 	
-	//last entry_time received
-	int last_entry_time <- 0;
-	
-	//last leave_time received
-	int last_leave_time<- int(time);
-	
-	//last road occupation ratio observed by the transport
-	float last_occup_ratio <- 0.0;
-	
 	//******* /!\ TESTING ATTRIBUTES and ACTION **********
 	string test_target;
 	bool already_reached_end_road <- false;
@@ -72,20 +61,20 @@ species Transport skills: [moving]{
 	}
 	//****************************************************
 	
-	action setSignal{
-		switch status{
-			match "waiting to enter road"{
-				if road_pointer > 0 { ask path_to_target[road_pointer]{ do leave(myself,myself.last_leave_time); } }
+	action setSignal(int signal_time, string signal_type){
+		switch signal_type{
+			match "enter road"{
+				//if we are leaving a road by entering another the transports averts the first road 
+				//it is leaving and when it is leaving
+				if road_pointer > 0 { ask path_to_target[road_pointer]{ do leave(myself,signal_time); } }
 				road_pointer <- road_pointer +1;
 				ask path_to_target[road_pointer]{ 
-					do queueInRoad(myself);
-					myself.last_occup_ratio <- (max_capacity-current_capacity)/max_capacity;
+					do queueInRoad(myself,signal_time);
 				}
-				status <- "moving";
 			}
-			match "waiting to leave road"{
+			match "leave road"{
 				if road_pointer < length(path_to_target)-1 {
-					do sendEnterRequest(road_pointer+1);
+					do sendEnterRequest(road_pointer+1,signal_time);
 				}else{
 					//the transport is arrived
 					do endTrip;
@@ -96,15 +85,12 @@ species Transport skills: [moving]{
 	}
 	
 	//the parameter should point toward the next road in path_to_target
-	action sendEnterRequest(int road_to_request){
-		ask path_to_target[road_to_request]{ do enterRequest(myself); }
-		status <- "waiting space in road";
+	action sendEnterRequest(int road_to_request,int time_request){
+		ask path_to_target[road_to_request]{ do enterRequest(myself,time_request); }
 	}
 	
 	action setEntryTime(int entry_time){
-		ask event_m { do registerEvent(entry_time,myself);}
-		status <- "waiting to enter road";
-		last_entry_time <- entry_time;
+		ask event_m { do registerEvent(entry_time,myself,"enter road");}
 		//we say to the road that a space will be free at entry_time (time when the transport will enter the next road)
 		 if road_pointer >0 {
 		 	ask path_to_target[road_pointer]{ do willLeave(entry_time,myself); } 
@@ -112,9 +98,7 @@ species Transport skills: [moving]{
 	}
 	
 	action setLeaveTime(int leave_time){
-		ask event_m { do registerEvent(leave_time,myself);}
-		status <- "waiting to leave road";
-		last_leave_time <- leave_time;
+		ask event_m { do registerEvent(leave_time,myself,"leave road");}
 	}
 	
 	//this function return a convenient string corresponding to a time (in second)

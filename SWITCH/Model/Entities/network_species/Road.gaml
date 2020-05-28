@@ -74,18 +74,18 @@ species Road {
 		present_bikes << b;
 	}
 	
-	action queueInRoad(Transport t){
+	action queueInRoad(Transport t,int entry_time){
 		present_transports << t;
 		if length(present_transports) = 1{
-			int leave_time <- int(floor(max([min_leave_time, t.last_entry_time + getRoadTravelTime(t,t.last_occup_ratio)])));
+			int leave_time <- int(floor(max([min_leave_time, entry_time + getRoadTravelTime(t)])));
 			ask t{ do setLeaveTime(leave_time); }
 		}
 	}
 	
-	action enterRequest(Transport t){
+	action enterRequest(Transport t, int time_request){
 		waiting_transports << t;
 		if length(waiting_transports) = 1{
-			do acceptTransport(t.last_leave_time);
+			do acceptTransport(time_request);
 		}
 	}
 	
@@ -106,25 +106,18 @@ species Road {
 	}
 	
 	//action called by a transport when it leaves the road
-	action leave(Transport t,int leave_time){
+	action leave(Transport t,int t_leave_time){
 		remove present_transports[0] from: present_transports;
 		//the time spend by transport t to leave the road is computed based on its size and the avg speed on this road 
-		min_leave_time <- int(floor(leave_time + avg_speed #km/#h * t.size));
-		if not empty(present_transports){
-			Transport tp <- present_transports[0];
-			//the leave time for the next transport is the maximum between the time when the previous car leaves the road and 
-			//the time computed by the bpr function
-			int leave_time <- int(floor(max([min_leave_time, t.last_entry_time + getRoadTravelTime(tp,tp.last_occup_ratio)])));
-			ask tp{ do setLeaveTime(leave_time); }
-		}
+		min_leave_time <- int(floor(t_leave_time + avg_speed #km/#h * t.size));
 	}
 	
 	// compute the travel of incoming transports
 	// The formula used is BPR equilibrium formula
-	float getRoadTravelTime(Transport t, float occup_ratio){
+	float getRoadTravelTime(Transport t){
 		float max_speed_formula <- max([t.speed,max_speed]) #km/#h;
 		float free_flow_travel_time <- size/max_speed_formula;
-		float travel_time <- free_flow_travel_time *  (1.0 + 0.15 * occup_ratio^4);
+		float travel_time <- free_flow_travel_time *  (1.0 + 0.15 * ((max_capacity-current_capacity)/max_capacity)^4);
 		return travel_time;
 	}
 	

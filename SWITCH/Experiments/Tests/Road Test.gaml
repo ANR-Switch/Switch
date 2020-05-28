@@ -98,7 +98,7 @@ species transport_generator {
                 pos_target <- c.location;
                 available_graph <- road_network;
                 path_to_target <- list<Road>(path_between(available_graph, location, pos_target).edges);
-                do sendEnterRequest(0);
+                do sendEnterRequest(0,time);
             }
             nb_transport_sent <- nb_transport_sent + 1;
         }
