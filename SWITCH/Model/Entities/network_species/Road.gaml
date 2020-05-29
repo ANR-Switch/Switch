@@ -30,7 +30,7 @@ species Road {
 	float max_speed;
 	
 	//average speed on this road
-	float avg_speed <- road_speed.keys contains [type,urban_context,weather] ? road_speed[[type,urban_context,weather]]*road_speed_avg_coef[type] : 50;
+	float avg_speed <- road_speed.keys contains [type,urban_context,weather] ? road_speed[[type,urban_context,weather]]*road_speed_avg_coef[type] : 50.0;
 	
 	//number of motorized vehicule lane in this road
 	int nb_lanes <- 1;
@@ -55,8 +55,9 @@ species Road {
 	bool has_bike_lane <- false;
 	
 	//list of current vehicules present in the road 
-	list<Bike> present_bikes <- [];
-    list<Transport> present_transports <- [];
+	//list = [[int time_to_leave, Transport t]]
+	list<list> present_bikes <- [];
+    list<list> present_transports <- [];
     
     //This list store all the incoming transports requests
     //waiting_transports = [[int time_request, Transport t]]
@@ -68,35 +69,52 @@ species Road {
     	current_capacity <- max_capacity;
     }
     
+    int getPresentTransportLeaveTime(int index){
+    	return int(present_transports[index][0]);
+    }
+    
+    Transport getPresentTransport(int index){
+    	return Transport(present_transports[index][1]);
+    }
+
+    int getWaitingTimeRequest(int index){
+    	return int(waiting_transports[index][0]);
+    }
+    
+    Transport getWaitingTransport(int index){
+    	return Transport(waiting_transports[index][1]);
+    }
+    
 	// if there is a bike lane, bikes don't consume road capacity
 	action queueInRoad(Bike b){
 		present_bikes << b;
 	}
 	
 	action queueInRoad(Transport t,int entry_time){
-		present_transports << t;
-		int leave_time <- int(floor(max([min_leave_time, entry_time + getRoadTravelTime(t)])));
-		ask t{ do setLeaveTime(leave_time); }
+		int leave_time <- int(floor(entry_time + getRoadTravelTime(t)));
+		present_transports << [leave_time,t];
+		if length(present_transports) = 1{
+			ask getPresentTransport(0){ do setLeaveTime(leave_time); }
+		}
 	}
 	
-	action enterRequest(Transport t, int time_request){
+	action enterRequest(Transport t, int request_time){
 		if current_capacity > t.size{
-			ask t { do setEntryTime(time_request); }
-			remove t from: waiting_transports;
+			ask t { do setEntryTime(request_time); }
 			current_capacity <- current_capacity - t.size;
 		}else{
-			waiting_transports << [time_request, t];
+			waiting_transports << [request_time, t];
 		}
 	}
 	
 	action acceptTransport(int entry_time){
 		if not empty(waiting_transports){
-			Transport t <- waiting_transports[0][1];
+			Transport t <- getWaitingTransport(0);
 			loop while: current_capacity > t.size and not empty(waiting_transports){
 				ask t { do setEntryTime(entry_time); }
-				remove t from: waiting_transports;
+				remove waiting_transports[0]  from: waiting_transports;
 				current_capacity <- current_capacity - t.size;
-				if not empty(waiting_transports){ t <- waiting_transports[0][1]; }
+				if not empty(waiting_transports){ t <- getWaitingTransport(0); }
 			}
 		}
 	}
@@ -108,10 +126,11 @@ species Road {
 	}
 	
 	//action called by a transport when it leaves the road
-	action leave(Transport t,int t_leave_time){
+	action leave{
 		remove present_transports[0] from: present_transports;
-		//the time spend by transport t to leave the road is computed based on its size and the avg speed on this road 
-		min_leave_time <- int(floor(t_leave_time + avg_speed #km/#h * t.size));
+		if not empty(present_transports){
+			ask getPresentTransport(0){ do setLeaveTime(myself.getPresentTransportLeaveTime(0)); }
+		}
 	}
 	
 	// compute the travel of incoming transports

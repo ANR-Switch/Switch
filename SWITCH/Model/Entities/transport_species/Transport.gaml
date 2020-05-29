@@ -67,7 +67,7 @@ species Transport skills: [moving]{
 				//write "entering road at "+ timestamp(signal_time);
 				//if we are leaving a road by entering another the transports averts the first road 
 				//it is leaving and when it is leaving
-				if road_pointer >= 0 { ask path_to_target[road_pointer]{ do leave(myself,signal_time); } }
+				if road_pointer >= 0 { ask path_to_target[road_pointer]{ do leave; } }
 				road_pointer <- road_pointer +1;
 				ask path_to_target[road_pointer]{ 
 					do queueInRoad(myself,signal_time);
@@ -80,7 +80,7 @@ species Transport skills: [moving]{
 				}else{
 					//the transport is arrived
 					//write "end trip";
-					ask path_to_target[road_pointer]{ do leave(myself,signal_time); } 
+					ask path_to_target[road_pointer]{ do leave; } 
 					do endTrip;
 				}
 			}
@@ -89,9 +89,9 @@ species Transport skills: [moving]{
 	}
 	
 	//the parameter should point toward the next road in path_to_target
-	action sendEnterRequest(int road_to_request,int time_request){
+	action sendEnterRequest(int road_to_request,int request_time){
 		//write "entry request send at: "+timestamp(time_request);
-		ask path_to_target[road_to_request]{ do enterRequest(myself,time_request); }
+		ask path_to_target[road_to_request]{ do enterRequest(myself,request_time); }
 		
 	}
 	
@@ -100,6 +100,7 @@ species Transport skills: [moving]{
 		ask event_m { do registerEvent(entry_time,myself,"enter road");}
 		//we say to the road that a space will be free at entry_time (time when the transport will enter the next road)
 		 if road_pointer >=0 {
+		 	write "leave road nb"+road_pointer; 
 		 	ask path_to_target[road_pointer]{ do willLeave(entry_time,myself); } 
 		 }
 	}
@@ -107,6 +108,10 @@ species Transport skills: [moving]{
 	action setLeaveTime(int leave_time){
 		//write "event leave road registered for: "+timestamp(leave_time);
 		ask event_m { do registerEvent(leave_time,myself,"leave road");}
+		if road_pointer = length(path_to_target)-1 {
+			write "leave road nb"+road_pointer; 
+		 	ask path_to_target[road_pointer]{ do willLeave(leave_time,myself); } 
+		}
 	}
 	
 	//this function return a convenient string corresponding to a time (in second)
