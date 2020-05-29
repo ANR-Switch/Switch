@@ -25,6 +25,9 @@ species Individual skills: [moving] control:simple_bdi{
 	
 	map<string,int> grades;//how agent care for differents criteria	
 	map<string, float> priority_modes;//priority for each mode
+	int n update: n +1;
+	float habit_coeff update: ln(n);
+	
 	
 	Building work_building;
 	Building home_building;
@@ -69,6 +72,8 @@ species Individual skills: [moving] control:simple_bdi{
 		loop i from: 0 to: length(criteria)-1{
       		grades[criteria[i]]<- rnd(9);
 	  	}
+		
+		n<-3;
 		
 		
 		loop i from: 0 to: length(type_mode)-1{
@@ -246,8 +251,8 @@ species Individual skills: [moving] control:simple_bdi{
 		loop i from: 0 to: length(criteria)-1{
 			val <- grades[criteria[i]]*compute_value(type,criteria[i]);
 		}
-	
-		return val/length(criteria);
+		n<-0;
+		return val/length(criteria) + habit_coeff*priority_modes[type];
 	}
 	
 	bool has_car{
