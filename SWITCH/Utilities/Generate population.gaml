@@ -15,8 +15,8 @@ import "../Model/Entities/Individual.gaml"
 
 global {
 		//GIS data
-	file shp_buildings <- file_exists(dataset+"buildings.shp") ? shape_file(dataset+"buildings.shp"):nil;
-	geometry shape <- envelope(shp_buildings);
+	list<file> shp_buildings <- define_shapefiles("buildings");
+	geometry shape <- envelope(union(shp_buildings collect envelope(each)));
 		
 	bool parallel <- true;
 	
@@ -28,11 +28,22 @@ global {
 	
 	init {
 	 	//Initialization of the building using the shapefile of buildings
-		create Building from: building_shapefile;
+	 	loop shp_building over:shp_buildings {
+			create Building from: shp_building with: [types::(string(get("types")) split_with ",")];
+		}
 		
 		create Outside {the_outside <- self;}
-		list<Building> homes <- Building where (each.type in possible_homes);
-		map<string,list<Building>> buildings_per_activity <- Building group_by (each.type);
+		list<Building> homes <- Building where not empty(each.types inter possible_homes);
+		map<string,list<Building>> buildings_per_activity ;
+		list<string> tps <- remove_duplicates(Building accumulate each.types) ;
+		loop t over: tps {
+			buildings_per_activity[t] <- [];
+		}
+		ask Building {
+			loop t over: types {
+				buildings_per_activity[t] << self;
+			}
+		}
 		
 		map<Building,float> working_places;
 		loop wp over: possible_workplaces.keys {
@@ -57,18 +68,22 @@ global {
 		
 		do create_social_networks(min_student_age, max_student_age);	
 		write "social network created";
-		
-		save Individual type: shp to:dataset + "individuals.shp" attributes: [
+		map<string,list<Individual>> inds <- Individual group_by each.sub_area;
+		loop sa over: inds.keys {
+			save inds[sa] type: shp to:dataset+ sa  + "/individuals.shp" attributes: [
+			"sub_area"::sub_area,
 			"age":: age,
 			"gender"::gender,
 			"category"::category,
-			"work_pl":: (work_building = the_outside) ? -1 : int(work_building),
-			"home_pl":: int(home_building),
+			"work_pl":: work_building = nil ? -2 :((work_building = the_outside) ? -1 : work_building.id),
+			"home_pl":: home_building.id,
 			"rels"::string(relatives collect int(each)),
 			"frs"::string(friends collect int(each)),
 			"colls"::string(colleagues collect int(each))
 			] ;
 	
+		}
+		
 	/*	save "id, agenda" type:text to:dataset_path + "agenda.csv";
 		ask Individual {
 			string ag <- "";
@@ -125,6 +140,7 @@ global {
 						gender <- "M";
 						home_building <- myself;
 						household << self;
+						sub_area <- myself.sub_area;
 					} 
 					//mother
 					create Individual {
@@ -132,6 +148,7 @@ global {
 						gender <- "F";
 						home_building <- myself;
 						household << self;
+						sub_area <- myself.sub_area;
 					
 					}
 					//children
@@ -143,6 +160,7 @@ global {
 							gender <- one_of(["M", "F"]);
 							home_building <- myself;
 							household << self;
+							sub_area <- myself.sub_area;
 						}
 					}
 					if (flip(proba_grandfather)) {
@@ -152,6 +170,7 @@ global {
 							gender <- "M";
 							home_building <- myself;
 							household << self;
+							sub_area <- myself.sub_area;
 						}
 					}	
 					if (flip(proba_grandmother)) {
@@ -161,6 +180,7 @@ global {
 							gender <- "F";
 							home_building <- myself;
 							household << self;
+							sub_area <- myself.sub_area;
 						}
 					}
 				} else {
@@ -170,6 +190,7 @@ global {
 						home_building <- myself;
 						household << self;
 						category <- age > retirement_age ? retired : none;
+						sub_area <- myself.sub_area;
 					} 
 				}
 				

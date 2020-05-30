@@ -11,20 +11,26 @@ import "Constants.gaml"
 global {
 	string dataset <- "../Datasets/Castanet Tolosan/"; // default
 	
+	
+	//if empty, all;
+	list<string> sub_areas <- [];
+	//list<string> sub_areas <- ["MERVILLA"];
+	
+		
 	map<predicate,rgb> colors_per_act <- [staying_at_home::#blue, working::#red, studying:: #chartreuse, leisure::#magenta, visiting_friend::#pink, eating::#orange, shopping::#gold, practicing_sport::#cyan, doing_other_act::#gray];
 	map<string,rgb> colors_per_mobility_mode <- ["car"::#olivedrab, "bike"::#maroon, "bus"::#palegreen, "walk"::#blueviolet];
 	
 	
-	file road_shapefile <- shape_file(dataset+"roads.shp");
-	file building_shapefile <- shape_file(dataset+"buildings.shp");
-	file node_shapefile <- shape_file(dataset+"nodes.shp");
+	//file road_shapefile <- shape_file(dataset+"roads.shp");
+	//file building_shapefile <- shape_file(dataset+"buildings.shp");
+	//file node_shapefile <- shape_file(dataset+"nodes.shp");
 	
-	file individual_shapefile <- file_exists(dataset +"individuals.shp") ? shape_file(dataset+"individuals.shp") : nil;
+	//file individual_shapefile <- file_exists(dataset +"individuals.shp") ? shape_file(dataset+"individuals.shp") : nil;
 	
 	//date (et heure) de début de la simulation : 7/4/2020 à 6h00 0"
 	date starting_date <- date(2020,4,7,0,0,0);
 	
-	bool debug_mode <- false;
+	bool debug_mode <- true;
 	list<string> type_mode <- ["car","bus","bike","walk"];
 	list<string> criteria <- ["comfort", "safety", "price","ecology","simplicity","time"];
 	//Step value

@@ -8,11 +8,14 @@
 model SWITCH
 
 species Building {
-	
+	int id;
 	string type <- "default";
+	string sub_area;
+	list<string> types <- [];
 	//Number of households in the building
 	int nb_households <- 1;
 	float size <- shape.perimeter;
+	
 	
 	aspect default {
 		switch type{

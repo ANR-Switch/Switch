@@ -48,9 +48,9 @@ global {
 	
 	
 	logger the_logger;
+	list<file> shp_roads <-  define_shapefiles("roads");
+	geometry shape <- envelope(union(shp_roads collect envelope(each)));
 	
-	
-	geometry shape <- envelope(road_shapefile);
 	//Graph of the road network
 	graph<Crossroad,Road> road_network;
 	
@@ -77,41 +77,78 @@ global {
 	}
 	
 	action global_init  {
+		
 		//Initialization of the building using the shapefile of buildings
-		create Building from: building_shapefile;
+		list<file> shp_buildings <- define_shapefiles("buildings");
+		loop shp_building over:shp_buildings {
+			create Building from: shp_building with: [types::list("types")];
+		}
 		create Outside {the_outside <- self;}
 		
 		weather <- "sunny";
 		
 		do write_message("Building created");
-		
+	
 		//Initialization of the road using the shapefile of roads
-		create Road from: road_shapefile with: [
-			type::string(get("type")),
-			oneway::string(get("oneway")),
-			junction::string(get("junction")),
-			nb_lanes::int(get("lanes")),
-			max_speed:: float(get("maxspeed")) * (road_speed_in_km_h ? #km/#h : 1.0)
-		];
-		
-		//Initialization of the nodes using the shapefile of nodes
-		create Crossroad from: node_shapefile  with:[
-			type::string(get("type")),
-			crossing::string(get("crossing"))
-		];
-		
+		loop shp_road over:shp_roads {
+			create Road from: shp_road with: [
+				type::string(get("type")),
+				oneway::string(get("oneway")),
+				junction::string(get("junction")),
+				nb_lanes::int(get("lanes")),
+				max_speed:: float(get("maxspeed")) * (road_speed_in_km_h ? #km/#h : 1.0)
+			];
+		}
 		
 		do write_message("Road created");
+	
 		
-		if (individual_shapefile != nil) {
-			create Individual from: individual_shapefile with: [
-				age:: int(get("age")),
-				gender::string(get("gender")),
-				category::string(get("category")),
-				work_building::int(get("work_pl")) = -1 ? the_outside : (int(get("work_pl")) = 0 ? nil : Building[int(get("work_pl"))]),
-				home_building::Building[int(get("home_pl"))]
-				
+		list<file> shp_nodes <-  define_shapefiles("nodes");
+	
+		//Initialization of the nodes using the shapefile of nodes
+		loop shp_node over:shp_nodes {
+			create Crossroad from: shp_node  with:[
+				type::string(get("type")),
+				crossing::string(get("crossing")),
+				sub_areas:: string(get("sub_areas")) split_with ","
 			];
+		}
+		do write_message("Nodes created");
+	
+		map<point, list<Crossroad>> crossRs;
+		ask Crossroad where (length(each.sub_areas) > 1) {
+			if not(location in crossRs.keys) {
+				crossRs[location] <- [self];
+			} else {
+				crossRs[location] << self;
+			}
+		}
+		loop cr over:crossRs.values {
+			if (length(cr) > 1) {
+				loop i from: 1 to: length(cr) - 1 {
+					ask cr[i] {do die;}
+				}
+			}
+			
+		}
+		do write_message("Nodes filtered");
+	
+		
+		list<file> shp_individuals <-  define_shapefiles("individuals");
+	
+		
+		if (not empty(shp_individuals)) {
+			map<int,Building> bds <- Building as_map (each.id::each);
+			loop shp_individual over:shp_individuals {
+				create Individual from: shp_individual with: [
+					age:: int(get("age")),
+					gender::string(get("gender")),
+					category::string(get("category")),
+					work_building::get_working_place(int(get("work_pl")),bds),
+					home_building::get_living_place(int(get("home_pl")),bds)
+					
+				];
+			}
 			if (num_individuals > -1.0 and (num_individuals < length(Individual))) {
 				ask (length(Individual) - num_individuals) among Individual{
 					do die;
@@ -235,6 +272,20 @@ global {
 		}
 	}
 	
+	Building get_living_place(int id_bd,map<int,Building> bds) {
+		return bds[id_bd];
+	}
+	
+	Building get_working_place(int id_bd, map<int,Building> bds) {
+		if (id_bd = -2){ return nil;}
+		Building bd <- bds[id_bd];
+		if (bd = nil) {
+			return the_outside;
+		}
+		return bd;
+		
+	}
+	
 	action update_weather{
 		int t <- rnd(3);
 		if(t = 0){
@@ -258,6 +309,38 @@ global {
 			}
 		}
 		return ind;
+	}
+	
+	list<file> define_shapefiles(string file_name) {
+		list<file> f;
+		list<string> sa ;
+		if empty(sub_areas) {
+			sa <- gather_dataset_names(dataset);
+		} else {
+			sa <- sub_areas;
+		}
+		loop fd over: sa {
+			string p <- dataset + fd + "/" + file_name + ".shp";
+			if (file_exists(p)) {
+				f << file(p);
+			}
+		}
+		return f;
+	}
+	
+	
+	list<string> gather_dataset_names (string _datasets_folder_path ) {
+		string dfp <- with_path_termination(_datasets_folder_path);
+		if not (folder_exists(dfp)) {
+			error "Datasets folder does not exist : " + dfp;
+		}
+		list<string> dirs <- folder(dfp).contents;
+		dirs <- dirs where folder_exists(dfp + each);
+		return dirs;
+	}
+	
+	string with_path_termination(string p) {
+		return last(p) = "/" ? p : p+"/";
 	}
 }
 

@@ -16,6 +16,7 @@ import "transport_species/Bike.gaml"
 
 species Individual skills: [moving] control:simple_bdi{
 	
+	string sub_area;
 	list<map<list<int>, pair<predicate,list<Individual>>>> agenda_week;
 	map<list<int>, pair<predicate,list<Individual>>> agenda_d;
 	path my_path;
@@ -64,6 +65,7 @@ species Individual skills: [moving] control:simple_bdi{
 	
 	float price_car;
 	float price_bus;
+	
 	
 	action initialization{
 		target_building <- home_building;
