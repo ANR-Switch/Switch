@@ -71,17 +71,14 @@ species Transport skills: [moving] {
 				do changeRoad(signal_time);
 			}
 
-			match "leave road" {
+			match "First in queue" {
 			//write "can leave road at "+ timestamp(signal_time);
 				if hasNextRoad() {
 					do sendEnterRequest(signal_time);
 				} else {
 				//the transport is arrived
 				//write "end trip";
-					ask getCurrentRoad() {
-						do leave(signal_time);
-					}
-
+					ask getCurrentRoad(){ do leave(signal_time);}
 					do endTrip;
 				}
 
@@ -92,17 +89,19 @@ species Transport skills: [moving] {
 	}
 
 	action changeRoad (int signal_time) {
-		if getCurrentRoad() != nil {
-			ask getCurrentRoad() {
+		Road current <- getCurrentRoad();
+		Road next <- getNextRoad();
+		if current != nil {
+			ask current {
 				do leave(signal_time);
 			}
 			traveled_dist <- traveled_dist + getCurrentRoad().size;
-
 		}
-
 		remove first(path_to_target) from: path_to_target;
-		ask getCurrentRoad() {
-			do queueInRoad(myself, signal_time);
+		if(next != nil){
+			ask next {
+				do queueInRoad(myself, signal_time);
+			}
 		}
 
 	}
@@ -112,6 +111,9 @@ species Transport skills: [moving] {
 	}
 
 	Road getNextRoad {
+		if(not hasNextRoad()){
+			return nil;
+		}
 		return path_to_target[1];
 	}
 
@@ -126,7 +128,6 @@ species Transport skills: [moving] {
 			ask getNextRoad() {
 				do enterRequest(myself, request_time);
 			}
-
 		}
 
 	}
@@ -136,31 +137,13 @@ species Transport skills: [moving] {
 		ask event_m {
 			do registerEvent(entry_time, myself, "enter road");
 		}
-		//we say to the road that a space will be free at entry_time (time when the transport will enter the next road)
-		if getCurrentRoad() != nil {
-			write "leave road nb" + getCurrentRoad().name;
-			ask getCurrentRoad() {
-				do willLeave(entry_time, myself);
-			}
-
-		}
-
 	}
 
 	action setLeaveTime (int leave_time) {
 	//write "event leave road registered for: "+timestamp(leave_time);
 		ask event_m {
-			do registerEvent(leave_time, myself, "leave road");
+			do registerEvent(leave_time, myself, "First in queue");
 		}
-
-		if not hasNextRoad() {
-			write "leave road nb" + getCurrentRoad().name;
-			ask getCurrentRoad() {
-				do willLeave(leave_time, myself);
-			}
-
-		}
-
 	}
 
 	//this function return a convenient string corresponding to a time (in second)

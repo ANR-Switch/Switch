@@ -99,8 +99,10 @@ species Road {
 	}
 	
 	action enterRequest(Transport t, int request_time){
-		if current_capacity > t.size{
-			ask t { do setEntryTime(request_time); }
+		if hasCapacity(t.size){
+			ask t { 
+				do setEntryTime(request_time);
+			}
 			current_capacity <- current_capacity - t.size;
 		}else{
 			waiting_transports << [request_time, t];
