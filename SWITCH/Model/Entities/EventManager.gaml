@@ -21,18 +21,34 @@ species EventManager {
 		//Dichotomic search of the insertion index
 		int insert_index <- indexSearch(signal_time);
 		if insert_index = -1{
+			ask signal_target{
+			listactions <- listactions + " " + signal_time + " " + signal_type + " has been added \n";
+		}
 			add [signal_time,signal_target, signal_type] at:0 to: events;
 		}else if insert_index= length(events)-1{
+			ask signal_target{
+			listactions <- listactions + " " + signal_time + " " + signal_type + " has been added \n";
+		}
 			events << [signal_time,signal_target,signal_type];
 		}else{
+			ask signal_target{
+			listactions <- listactions + " " + signal_time + " " + signal_type + " has been added \n";
+		}
 			add [signal_time,signal_target,signal_type] at: insert_index+1 to: events;
 		}
 	}
 	
 	reflex sendSignal{
+		ask Car{
+			listactions <- listactions + " NEW TIME STEP \n";
+		}
 		write events;
 		loop while: not empty(events) and getEventTime(0) <= time{
-			ask getEventTransport(0){do setSignal(myself.getEventTime(0),myself.getEventType(0));}
+			ask getEventTransport(0){
+				listactions <- listactions + " " + myself.getEventTime(0) + " " +myself.getEventType(0) + " has been executed \n";
+				listEventManager <- listEventManager + " \n "+ myself.getEventTime(0)+":"+myself.getEventType(0);
+				do setSignal(myself.getEventTime(0),myself.getEventType(0));
+			}
 			remove events[0] from: events;
 		}	
 	}

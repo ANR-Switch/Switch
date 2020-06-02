@@ -92,12 +92,15 @@ species Road {
 	
 	action queueInRoad(Transport t,int entry_time){
 		int leave_time <- int(floor(entry_time + getRoadTravelTime(t)));
-		write t.name + " : " + leave_time;
+		//write t.name + " : " + leave_time;
 		ask t{
-			listactions <- listactions  + " " + entry_time + " Will leave at " + leave_time + "(" + path_to_target +")";
+			listactions <- listactions  + " " + entry_time + " Will leave at " + leave_time + "(" + path_to_target +")\n";
 		}
 		present_transports << [leave_time,t];
 		if length(present_transports) = 1{
+			ask t{
+				listactions <- listactions  + " " + entry_time + " I'm alone, so i'll leave at " + leave_time + "(" + path_to_target +")\n";
+			}
 			ask getPresentTransport(0){ do setLeaveTime(leave_time); }
 		}
 	}
@@ -105,6 +108,7 @@ species Road {
 	action enterRequest(Transport t, int request_time){
 		if hasCapacity(t.size){
 			ask t { 
+				listactions <- listactions  + " " + request_time + " I'll be entering at " + request_time + "(" + path_to_target +")\n";
 				do setEntryTime(request_time);
 			}
 			current_capacity <- current_capacity - t.size;
@@ -122,7 +126,10 @@ species Road {
 			Transport t <- getWaitingTransport(0);
 			int delay <- 0;
 			loop while: hasCapacity(t.size) and not empty(waiting_transports){
-				ask t { do setEntryTime(entry_time+delay); }
+				ask t { 
+					listactions <- listactions  + " " + entry_time + " AcceptTransport " + entry_time+delay + "(" + path_to_target +")\n";
+					do setEntryTime(entry_time+delay);
+				}
 				remove waiting_transports[0]  from: waiting_transports;
 				current_capacity <- current_capacity - t.size;
 				if not empty(waiting_transports){ 
@@ -145,7 +152,10 @@ species Road {
 		remove present_transports[0] from: present_transports;
 		do acceptTransport(signal_time);
 		if not empty(present_transports){
-			ask getPresentTransport(0){ do setLeaveTime(myself.getPresentTransportLeaveTime(0)+10); }
+			ask getPresentTransport(0){ 
+				listactions <- listactions  + " " + signal_time + " The car in front of me has left the road. Will leave the road at " + (myself.getPresentTransportLeaveTime(0)+10) + "(" + path_to_target +")\n";
+				do setLeaveTime(myself.getPresentTransportLeaveTime(0)+10);
+			}
 		}
 	}
 	

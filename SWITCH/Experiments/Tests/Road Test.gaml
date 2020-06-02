@@ -129,11 +129,11 @@ experiment RoadTest type: gui {
 			species Crossroad aspect: roadTest;
 			species Road aspect: advanced;
 		}
-		display chart_D {
-            chart "traveled distance by car going to D" type: series {
-                datalist legend:(list(Car) collect each.name) value: (list(Car) collect each.traveled_dist);
-              }
-          }
+//		display chart_D {
+//            chart "traveled distance by car going to D" type: series {
+//                datalist legend:(list(Car) collect each.name) value: (list(Car) collect each.traveled_dist);
+//              }
+//          }
 		/*display chart_D refresh: every (5 #cycles){
 			chart "traveled distance by car going to D" type: series{
 				write "test";
