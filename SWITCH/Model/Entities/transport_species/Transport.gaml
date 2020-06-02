@@ -63,7 +63,6 @@ species Transport skills: [moving] {
 	}
 	//****************************************************
 	action setSignal (int signal_time, string signal_type) {
-		write "Here";
 		switch signal_type {
 			match "enter road" {
 			//write "entering road at "+ timestamp(signal_time);
@@ -80,7 +79,7 @@ species Transport skills: [moving] {
 				//the transport is arrived
 				//write "end trip";
 					ask getCurrentRoad() {
-						do leave;
+						do leave(signal_time);
 					}
 
 					do endTrip;
@@ -95,9 +94,12 @@ species Transport skills: [moving] {
 	action changeRoad (int signal_time) {
 		if getCurrentRoad() != nil {
 			ask getCurrentRoad() {
-				do leave;
-			}	
-		} 
+				do leave(signal_time);
+			}
+			traveled_dist <- traveled_dist + getCurrentRoad().size;
+
+		}
+
 		remove first(path_to_target) from: path_to_target;
 		ask getCurrentRoad() {
 			do queueInRoad(myself, signal_time);
@@ -106,14 +108,14 @@ species Transport skills: [moving] {
 	}
 
 	bool hasNextRoad {
-		return not (getCurrentRoad() != nil) or (length(path_to_target) > 1);
+		return length(path_to_target) > 1;
 	}
 
 	Road getNextRoad {
 		return path_to_target[1];
 	}
-	
-	Road getCurrentRoad{
+
+	Road getCurrentRoad {
 		return path_to_target[0];
 	}
 
@@ -124,6 +126,7 @@ species Transport skills: [moving] {
 			ask getNextRoad() {
 				do enterRequest(myself, request_time);
 			}
+
 		}
 
 	}
@@ -184,6 +187,7 @@ species Transport skills: [moving] {
 	}
 
 	action endTrip {
+		do die;
 	}
 
 	aspect default {

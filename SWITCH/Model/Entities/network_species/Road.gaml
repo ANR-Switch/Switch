@@ -107,29 +107,37 @@ species Road {
 		}
 	}
 	
+	bool hasCapacity(float capacity){
+		return current_capacity > capacity;
+	}
+	
 	action acceptTransport(int entry_time){
 		if not empty(waiting_transports){
 			Transport t <- getWaitingTransport(0);
-			loop while: current_capacity > t.size and not empty(waiting_transports){
+			loop while: hasCapacity(t.size) and not empty(waiting_transports){
 				ask t { do setEntryTime(entry_time); }
 				remove waiting_transports[0]  from: waiting_transports;
 				current_capacity <- current_capacity - t.size;
-				if not empty(waiting_transports){ t <- getWaitingTransport(0); }
+				if not empty(waiting_transports){ 
+					t <- getWaitingTransport(0);
+				}
 			}
 		}
 	}
 	
 	//action called by transport when they know the time they'll enter the next road
 	action willLeave(int leave_time, Transport t){
-		current_capacity <- current_capacity + t.size;
-		do acceptTransport(leave_time);
+		//do acceptTransport(leave_time);
 	}
 	
 	//action called by a transport when it leaves the road
-	action leave{
+	action leave(int signal_time){
+		float gainedCapacity <- getPresentTransport(0).size;
+		current_capacity <- current_capacity + gainedCapacity;
 		remove present_transports[0] from: present_transports;
+		do acceptTransport(signal_time);
 		if not empty(present_transports){
-			ask getPresentTransport(0){ do setLeaveTime(myself.getPresentTransportLeaveTime(0)); }
+			ask getPresentTransport(0){ do setLeaveTime(myself.getPresentTransportLeaveTime(0)+10); }
 		}
 	}
 	

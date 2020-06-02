@@ -93,7 +93,8 @@ species transport_generator {
     reflex send_car when: every(5.0){
         int nb_transport_sent <- 0;
         int nb_transport_to_send <- vehicule_in_A;
-        loop while: nb_transport_sent < nb_transport_to_send {
+        int delay <-0;
+        loop while: nb_transport_sent < nb_transport_to_send{
             create Car {
                 location <- A.location;
                 Crossroad c <- one_of([D, E, G, H]);
@@ -101,7 +102,8 @@ species transport_generator {
                 available_graph <- road_network;
                 path_to_target <- list<Road>(path_between(available_graph, location, pos_target).edges);
                 add nil to:path_to_target at:0;
-                do sendEnterRequest(int(time));
+                do sendEnterRequest(int(time+delay));
+                delay <- delay+1;
             }
             nb_transport_sent <- nb_transport_sent + 1;
         }
@@ -127,6 +129,11 @@ experiment RoadTest type: gui {
 			species Crossroad aspect: roadTest;
 			species Road aspect: advanced;
 		}
+		display chart_D {
+            chart "traveled distance by car going to D" type: series {
+                datalist legend:(list(Car) collect each.name) value: (list(Car) collect each.traveled_dist);
+              }
+          }
 		/*display chart_D refresh: every (5 #cycles){
 			chart "traveled distance by car going to D" type: series{
 				write "test";
