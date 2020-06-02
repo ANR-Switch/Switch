@@ -135,7 +135,7 @@ species Road {
 				if not empty(waiting_transports){ 
 					t <- getWaitingTransport(0);
 				}
-				delay <- delay +10;
+				delay <- delay +1;
 			}
 		}
 	}
@@ -153,8 +153,8 @@ species Road {
 		do acceptTransport(signal_time);
 		if not empty(present_transports){
 			ask getPresentTransport(0){ 
-				listactions <- listactions  + " " + signal_time + " The car in front of me has left the road. Will leave the road at " + signal_time+10 + "(" + path_to_target +")\n";
-				do setLeaveTime(signal_time+10);
+				listactions <- listactions  + " " + signal_time + " The car in front of me has left the road. Will leave the road at " + (signal_time+1) + "(" + path_to_target +")\n";
+				do setLeaveTime(signal_time+1);
 			}
 		}
 	}
