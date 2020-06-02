@@ -39,10 +39,12 @@ species EventManager {
 	}
 	
 	reflex sendSignal{
+		//write events;
 		ask Car{
 			listactions <- listactions + " NEW TIME STEP \n";
 		}
 		loop while: not empty(events) and getEventTime(0) <= time{
+			//write ""+getEventTransport(0)+" " +getEventTime(0) + " " +getEventType(0);
 			int eventTime <- getEventTime(0);
 			string eventType <- getEventType(0);
 			Transport eventTransport <- getEventTransport(0);

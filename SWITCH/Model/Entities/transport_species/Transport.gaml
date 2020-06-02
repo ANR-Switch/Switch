@@ -204,6 +204,7 @@ species Transport skills: [moving] {
 	}
 
 	action endTrip {
+		//		write listactions;
 		do die;
 	}
 

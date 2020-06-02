@@ -153,8 +153,8 @@ species Road {
 		do acceptTransport(signal_time);
 		if not empty(present_transports){
 			ask getPresentTransport(0){ 
-				listactions <- listactions  + " " + signal_time + " The car in front of me has left the road. Will leave the road at " + (myself.getPresentTransportLeaveTime(0)+10) + "(" + path_to_target +")\n";
-				do setLeaveTime(myself.getPresentTransportLeaveTime(0)+10);
+				listactions <- listactions  + " " + signal_time + " The car in front of me has left the road. Will leave the road at " + signal_time+10 + "(" + path_to_target +")\n";
+				do setLeaveTime(signal_time+10);
 			}
 		}
 	}
