@@ -44,12 +44,15 @@ species EventManager {
 		}
 		write events;
 		loop while: not empty(events) and getEventTime(0) <= time{
-			ask getEventTransport(0){
+			int eventTime <- getEventTime(0);
+			string eventType <- getEventType(0);
+			Transport eventTransport <- getEventTransport(0);
+			ask eventTransport{
 				listactions <- listactions + " " + myself.getEventTime(0) + " " +myself.getEventType(0) + " has been executed \n";
 				listEventManager <- listEventManager + " \n "+ myself.getEventTime(0)+":"+myself.getEventType(0);
-				do setSignal(myself.getEventTime(0),myself.getEventType(0));
+				do setSignal(eventTime,eventType);
 			}
-			remove events[0] from: events;
+			remove [eventTime,eventTransport,eventType] from: events;
 		}	
 	}
 	
