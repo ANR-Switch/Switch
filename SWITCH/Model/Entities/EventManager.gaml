@@ -42,7 +42,6 @@ species EventManager {
 		ask Car{
 			listactions <- listactions + " NEW TIME STEP \n";
 		}
-		write events;
 		loop while: not empty(events) and getEventTime(0) <= time{
 			int eventTime <- getEventTime(0);
 			string eventType <- getEventType(0);
