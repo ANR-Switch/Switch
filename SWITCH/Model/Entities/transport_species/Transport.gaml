@@ -21,6 +21,9 @@ species Transport skills: [moving] {
 
 	//passenger capacity 
 	int max_passenger;
+	
+	//estimated_travel_timestep
+	int estimated_travel_timestep <- 0;
 
 	//passengers present in the transport
 	// the fisrt passenger of the list is considered as the driver
@@ -204,7 +207,7 @@ species Transport skills: [moving] {
 	}
 
 	action endTrip {
-		//		write listactions;
+//		write listactions;
 		do die;
 	}
 

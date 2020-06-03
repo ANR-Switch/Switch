@@ -39,7 +39,7 @@ species EventManager {
 	}
 	
 	reflex sendSignal{
-		//write events;
+		write events;
 		ask Car{
 			listactions <- listactions + " NEW TIME STEP \n";
 		}
