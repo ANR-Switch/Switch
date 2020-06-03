@@ -323,6 +323,17 @@ global {
 			string p <- dataset + fd + "/" + file_name + ".shp";
 			if (file_exists(p)) {
 				f << file(p);
+			} else {
+				int i <- 1;
+				loop while: true {
+					string p <- dataset + fd + "/" + file_name + "_"+ i+ ".shp";
+					if (file_exists(p)) {
+						f << file(p);
+						i <- i + 1;
+					} else {
+						break;
+					}
+				}
 			}
 		}
 		return f;

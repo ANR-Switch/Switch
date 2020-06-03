@@ -17,7 +17,8 @@ global {
 		//GIS data
 	list<file> shp_buildings <- define_shapefiles("buildings");
 	geometry shape <- envelope(union(shp_buildings collect envelope(each)));
-		
+	int nb_for_individual_shapefile_split <- 50000;
+	
 	bool parallel <- true;
 	
 	// ------------------------------------------- //
@@ -79,18 +80,38 @@ global {
 		write "social network created";
 		map<string,list<Individual>> inds <- Individual group_by each.sub_area;
 		loop sa over: inds.keys {
-			save inds[sa] type: shp to:dataset+ sa  + "/individuals.shp" attributes: [
-			"sub_area"::sub_area,
-			"age":: age,
-			"gender"::gender,
-			"category"::category,
-			"work_pl":: work_building = nil ? -2 :((work_building = the_outside) ? -1 : work_building.id),
-			"home_pl":: home_building.id,
-			"rels"::string(relatives collect int(each)),
-			"frs"::string(friends collect int(each)),
-			"colls"::string(colleagues collect int(each))
-			] ;
-	
+			list<Individual> bds <- inds[sa] ;
+			if (length(bds) > nb_for_individual_shapefile_split) {
+				int i <- 1;
+				loop while: not empty(bds)  {
+					list<Individual> bds_ <- nb_for_individual_shapefile_split first bds;
+						save bds_ type: shp to:dataset+ sa  + "/individuals_" +i+".shp" attributes: [
+					"sub_area"::sub_area,
+					"age":: age,
+					"gender"::gender,
+					"category"::category,
+					"work_pl":: work_building = nil ? -2 :((work_building = the_outside) ? -1 : work_building.id),
+					"home_pl":: home_building.id,
+					"rels"::string(relatives collect int(each)),
+					"frs"::string(friends collect int(each)),
+					"colls"::string(colleagues collect int(each))];
+					bds <- bds - bds_;
+					i <- i + 1;
+				}
+			} else {
+			
+				save bds type: shp to:dataset+ sa  + "/individuals.shp" attributes: [
+				"sub_area"::sub_area,
+				"age":: age,
+				"gender"::gender,
+				"category"::category,
+				"work_pl":: work_building = nil ? -2 :((work_building = the_outside) ? -1 : work_building.id),
+				"home_pl":: home_building.id,
+				"rels"::string(relatives collect int(each)),
+				"frs"::string(friends collect int(each)),
+				"colls"::string(colleagues collect int(each))
+				] ;
+			}
 		}
 		
 	/*	save "id, agenda" type:text to:dataset_path + "agenda.csv";
