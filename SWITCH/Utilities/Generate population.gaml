@@ -62,6 +62,15 @@ global {
 			schools[l] <- (type in buildings_per_activity.keys) ? buildings_per_activity[type] : list<Building>([]);
 		}
 		do create_population(working_places, schools, homes, min_student_age, max_student_age);
+		if (max_individuals > -1.0 and (max_individuals < length(Individual))) {
+			ask (length(Individual) - max_individuals) among Individual{
+				do die;
+			}
+			ask Individual parallel: parallel{
+				relatives <- relatives where (not dead(each));
+			}
+		}
+	
 		write "Individual created";
 		do assign_school_working_place(working_places,schools, min_student_age, max_student_age);
 		write "Working placed assigned";
@@ -294,11 +303,10 @@ global {
 	//   min_student_age : minimum age to be in a school
 	//   max_student_age : maximum age to go to a school
 	action assign_school_working_place(map<Building,float> working_places,map<list<int>,list<Building>> schools, int min_student_age, int max_student_age) {
-		
 		// Assign to each individual a school and working_place depending of its age.
 		// in addition, school and working_place can be outside.
 		// Individuals too young or too old, do not have any working_place or school 
-		ask Individual parallel: true{
+		ask Individual parallel: parallel{
 			if (age >= min_student_age) {
 				if (age < max_student_age) {
 					category <- student;

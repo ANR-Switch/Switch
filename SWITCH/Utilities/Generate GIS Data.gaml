@@ -10,12 +10,12 @@ global {
 	
 	
 	//define the path to the dataset folder
-	string dataset_path <- "../Datasets/Castanet Tolosan/";
+	string dataset_path <- "../Datasets/Bordeaux/";
 	
 	//define the bounds of the studied area
 	file data_file <-shape_file(dataset_path + "boundary.shp");
 	
-	string boundary_name_field <- "nom_comm";//"NOM_COM";
+	string boundary_name_field <-"NOM_COM_M";  //"nom_comm";
 	list<string> residential_types <- ["apartments", "hotel", "Résidentiel"]; 
 	
 	float simplification_dist <- 1.0;
@@ -353,7 +353,7 @@ global {
 		
 		//save Node type:"shp" to:dataset_path +"nodes.shp" attributes:["type"::type, "crossing"::crossing] ;
 		 
-		do load_satellite_image;
+		do load_satellite_image; 
 	}
 	
 	
