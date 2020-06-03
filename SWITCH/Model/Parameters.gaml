@@ -51,7 +51,7 @@ global {
 	float subscription_price <- 30.0; //prix par mois
 		
 	float number_of_users <- 0.0;
-	float percentage_of_drivers <- 0.0;
+	float percentage_of_drivers <- 80.0;
 	
 
 	//speed
@@ -60,7 +60,7 @@ global {
 	float bike_speed <- 8.0#km/#h;
 	float walk_speed <- 3.0 #km/#h;
 
-	int num_individuals <- 1;
+	int num_individuals <- 10;
 	
 	bool road_speed_in_km_h <- false;
 	

@@ -97,7 +97,7 @@ species Individual skills: [moving] control:simple_bdi{
 		
 		price_bus <- subscription_price/(21.8*2); //21.8 est le nombre moyen de jour "de semaine" par mois
 		price_car <- (7.2*distance/100*gas_price)/(21.8*2);
-		price_car <- 0.8;
+		
 	
 		float x <- update_priority(); //x is useless
 		
@@ -133,10 +133,10 @@ species Individual skills: [moving] control:simple_bdi{
 						val <-0.0;
 					}
 					match "simplicity"{
-						val <- 1.0;
+						val <- 0.8;
 					}
 					match "safety"{
-						val <- percentage_of_drivers/100;
+						val <- 1 - percentage_of_drivers/100;
 						
 						//eventuellement prendre en compte la capacité de la route ? est-ce une info à la quelle on a accès ?
 					}
@@ -256,6 +256,7 @@ species Individual skills: [moving] control:simple_bdi{
 		}
 		n<-0;
 		return val/length(criteria) + habit_coeff*priority_modes[type];
+		
 	}
 	
 	float update_priority{
