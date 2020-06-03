@@ -91,13 +91,6 @@ species Transport skills: [moving] {
 				//write "end trip";
 					listactions <- listactions + " " + signal_time + " There is no next road (" + path_to_target + ")\n";
 					
-					
-					if (length(path_to_target) < 1) {
-						write self.name + " " + listactions;
-						write self.name + " " + listEvent;
-						write self.name + " " + listEventManager;
-					}
-					
 					ask getCurrentRoad() {
 						do leave(signal_time);
 					}
