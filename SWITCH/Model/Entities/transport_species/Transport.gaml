@@ -101,7 +101,7 @@ species Transport skills: [moving] {
 					ask getCurrentRoad() {
 						do leave(signal_time);
 					}
-					write ""+self+" fini son trajet à "+signal_time+" sur la route:"+getCurrentRoad().type;
+//					write ""+self+" fini son trajet à "+signal_time+" sur la route:"+getCurrentRoad().type;
 					do endTrip;
 				}
 

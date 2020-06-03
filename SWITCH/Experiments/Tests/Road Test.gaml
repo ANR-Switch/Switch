@@ -91,7 +91,6 @@ species transport_generator {
     reflex send_car{
         int nb_transport_sent <- 0;
         loop delay from: 0 to: vehicule_in_A{
-        	write delay;
             create Car {
                 location <- A.location;
                 Crossroad c <- one_of([D, E, G, H]);
@@ -103,8 +102,6 @@ species transport_generator {
             }
             nb_transport_sent <- nb_transport_sent + 1;
         }
-        write nb_transport_sent;
-        write vehicule_in_A;
     }
 
 }
