@@ -95,7 +95,7 @@ experiment "Abstract Experiment" virtual:true{
 		display mobility_charts refresh: every(24 #h){
 			chart "number of agent using bike or car" type: histogram size: {1.0,0.5} background: #darkgray {
 				loop mode over: type_mode {
-					data mode color: colors_per_mobility_mode[mode] value: Individual count (each.get_max_priority_mode = mode);
+					data mode color: colors_per_mobility_mode[mode] value: Individual count (each.get_max_priority_mode() = mode);
 				}
 			}
 		}
