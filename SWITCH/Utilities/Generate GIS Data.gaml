@@ -15,7 +15,7 @@ global {
 	//define the bounds of the studied area
 	file data_file <-shape_file(dataset_path + "boundary.shp");
 	
-	string boundary_name_field <- "nom_comm";//"NOM_COM";
+	string boundary_name_field <-"NOM_COM_M";  //"nom_comm";
 	list<string> residential_types <- ["apartments", "hotel", "Résidentiel"]; 
 	
 	float simplification_dist <- 1.0;
@@ -27,6 +27,9 @@ global {
 		
 	float mean_area_flats <- 200.0;
 	float min_area_buildings <- 20.0;
+	int nb_for_road_shapefile_split <- 20000;
+	int nb_for_node_shapefile_split <- 100000;
+	int nb_for_building_shapefile_split <- 50000;
 	
 	float default_road_speed <- 50.0;
 	int default_num_lanes <- 1;
@@ -206,7 +209,18 @@ global {
 		}
 		map<Boundary, list<Building>> buildings_per_boundary <- Building group_by (each.boundary);
 		loop bd over: buildings_per_boundary.keys {
-			save buildings_per_boundary[bd] to:dataset_path+ bd.name +"/buildings.shp" type: shp attributes: ["id"::id,"sub_area"::boundary.name,"type"::type, "types"::types_str , "flats"::flats,"height"::height, "levels"::levels];
+			list<Building> bds <- buildings_per_boundary[bd];
+			if (length(bds) > nb_for_building_shapefile_split) {
+				int i <- 1;
+				loop while: not empty(bds)  {
+					list<Building> bds_ <- nb_for_building_shapefile_split first bds;
+					save bds_ to:(dataset_path+ bd.name +"/buildings_" +i+".shp") type: shp attributes: ["id"::id,"sub_area"::boundary.name,"type"::type, "types"::types_str , "flats"::flats,"height"::height, "levels"::levels];
+					bds <- bds - bds_;
+					i <- i + 1;
+				}
+			} else {
+				save bds to:dataset_path+ bd.name +"/buildings.shp" type: shp attributes: ["id"::id,"sub_area"::boundary.name,"type"::type, "types"::types_str , "flats"::flats,"height"::height, "levels"::levels];
+			}
 		}
 		
 		map<point, Node> nodes_map;
@@ -313,9 +327,22 @@ global {
 		write "node agents filtered";
 		map<Boundary, list<Road>> roads_per_boundary <- Road group_by (each.boundary);
 		loop bd over: roads_per_boundary.keys {
-			save roads_per_boundary[bd] type:"shp" to:dataset_path+ bd.name +"/roads.shp" attributes:[
-			"junction"::junction, "type"::type, "lanes"::self.lanes, "maxspeed"::maxspeed, "oneway"::oneway,
-			"foot"::foot, "bicycle"::bicycle, "access"::access, "bus"::bus, "parking_lane"::parking_lane, "sidewalk"::sidewalk, "cycleway"::cycleway] ;
+			list<Road> bds <- roads_per_boundary[bd];
+			if (length(bds) > nb_for_road_shapefile_split) {
+				int i <- 1;
+				loop while: not empty(bds)  {
+					list<Road> bds_ <- nb_for_road_shapefile_split first bds;
+					save bds_ type:"shp" to:dataset_path+ bd.name +"/roads_" +i+".shp" attributes:[
+					"junction"::junction, "type"::type, "lanes"::self.lanes, "maxspeed"::maxspeed, "oneway"::oneway,
+					"foot"::foot, "bicycle"::bicycle, "access"::access, "bus"::bus, "parking_lane"::parking_lane, "sidewalk"::sidewalk, "cycleway"::cycleway] ;
+					bds <- bds - bds_;
+					i <- i + 1;
+				}
+			} else {
+				save bds type:"shp" to:dataset_path+ bd.name +"/roads.shp" attributes:[
+				"junction"::junction, "type"::type, "lanes"::self.lanes, "maxspeed"::maxspeed, "oneway"::oneway,
+				"foot"::foot, "bicycle"::bicycle, "access"::access, "bus"::bus, "parking_lane"::parking_lane, "sidewalk"::sidewalk, "cycleway"::cycleway] ;
+			}
 		}
 		write "road agents saved";
 		
@@ -345,7 +372,18 @@ global {
 		loop bd over: nodes_per_boundary.keys {
 			list<Node> nds <- nodes_per_boundary[bd];
 			if not empty(nds) {
-				save nds type:"shp" to:dataset_path + bd.name +"/nodes.shp" attributes:["type"::type, "crossing"::crossing, "sub_areas"::boundaries_str] ;
+				list<Node> bds <- nodes_per_boundary[bd];
+				if (length(bds) > nb_for_node_shapefile_split) {
+					int i <- 1;
+					loop while: not empty(bds)  {
+						list<Node> bds_ <- nb_for_node_shapefile_split first bds;
+						save bds_ type:"shp" to:dataset_path + bd.name +"/nodes_" +i+ ".shp" attributes:["type"::type, "crossing"::crossing, "sub_areas"::boundaries_str] ;
+						bds <- bds - bds_;
+						i <- i + 1;
+					}
+				} else {
+					save nds type:"shp" to:dataset_path + bd.name +"/nodes.shp" attributes:["type"::type, "crossing"::crossing, "sub_areas"::boundaries_str] ;
+				}
 			}
 		}
 		write "Node agents saved";
@@ -353,7 +391,7 @@ global {
 		
 		//save Node type:"shp" to:dataset_path +"nodes.shp" attributes:["type"::type, "crossing"::crossing] ;
 		 
-		do load_satellite_image;
+		do load_satellite_image; 
 	}
 	
 	

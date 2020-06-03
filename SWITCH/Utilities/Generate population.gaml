@@ -17,7 +17,8 @@ global {
 		//GIS data
 	list<file> shp_buildings <- define_shapefiles("buildings");
 	geometry shape <- envelope(union(shp_buildings collect envelope(each)));
-		
+	int nb_for_individual_shapefile_split <- 50000;
+	
 	bool parallel <- true;
 	
 	// ------------------------------------------- //
@@ -62,6 +63,15 @@ global {
 			schools[l] <- (type in buildings_per_activity.keys) ? buildings_per_activity[type] : list<Building>([]);
 		}
 		do create_population(working_places, schools, homes, min_student_age, max_student_age);
+		if (max_individuals > -1.0 and (max_individuals < length(Individual))) {
+			ask (length(Individual) - max_individuals) among Individual{
+				do die;
+			}
+			ask Individual parallel: parallel{
+				relatives <- relatives where (not dead(each));
+			}
+		}
+	
 		write "Individual created";
 		do assign_school_working_place(working_places,schools, min_student_age, max_student_age);
 		write "Working placed assigned";
@@ -70,18 +80,38 @@ global {
 		write "social network created";
 		map<string,list<Individual>> inds <- Individual group_by each.sub_area;
 		loop sa over: inds.keys {
-			save inds[sa] type: shp to:dataset+ sa  + "/individuals.shp" attributes: [
-			"sub_area"::sub_area,
-			"age":: age,
-			"gender"::gender,
-			"category"::category,
-			"work_pl":: work_building = nil ? -2 :((work_building = the_outside) ? -1 : work_building.id),
-			"home_pl":: home_building.id,
-			"rels"::string(relatives collect int(each)),
-			"frs"::string(friends collect int(each)),
-			"colls"::string(colleagues collect int(each))
-			] ;
-	
+			list<Individual> bds <- inds[sa] ;
+			if (length(bds) > nb_for_individual_shapefile_split) {
+				int i <- 1;
+				loop while: not empty(bds)  {
+					list<Individual> bds_ <- nb_for_individual_shapefile_split first bds;
+						save bds_ type: shp to:dataset+ sa  + "/individuals_" +i+".shp" attributes: [
+					"sub_area"::sub_area,
+					"age":: age,
+					"gender"::gender,
+					"category"::category,
+					"work_pl":: work_building = nil ? -2 :((work_building = the_outside) ? -1 : work_building.id),
+					"home_pl":: home_building.id,
+					"rels"::string(relatives collect int(each)),
+					"frs"::string(friends collect int(each)),
+					"colls"::string(colleagues collect int(each))];
+					bds <- bds - bds_;
+					i <- i + 1;
+				}
+			} else {
+			
+				save bds type: shp to:dataset+ sa  + "/individuals.shp" attributes: [
+				"sub_area"::sub_area,
+				"age":: age,
+				"gender"::gender,
+				"category"::category,
+				"work_pl":: work_building = nil ? -2 :((work_building = the_outside) ? -1 : work_building.id),
+				"home_pl":: home_building.id,
+				"rels"::string(relatives collect int(each)),
+				"frs"::string(friends collect int(each)),
+				"colls"::string(colleagues collect int(each))
+				] ;
+			}
 		}
 		
 	/*	save "id, agenda" type:text to:dataset_path + "agenda.csv";
@@ -294,11 +324,10 @@ global {
 	//   min_student_age : minimum age to be in a school
 	//   max_student_age : maximum age to go to a school
 	action assign_school_working_place(map<Building,float> working_places,map<list<int>,list<Building>> schools, int min_student_age, int max_student_age) {
-		
 		// Assign to each individual a school and working_place depending of its age.
 		// in addition, school and working_place can be outside.
 		// Individuals too young or too old, do not have any working_place or school 
-		ask Individual parallel: true{
+		ask Individual parallel: parallel{
 			if (age >= min_student_age) {
 				if (age < max_student_age) {
 					category <- student;
