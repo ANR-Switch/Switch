@@ -78,25 +78,29 @@ species Individual skills: [moving] control:simple_bdi{
 		n<-3;
 		
 		
-		loop i from: 0 to: length(type_mode)-1{
-			priority_modes[type_mode[i]]<- compute_priority_mobility_mode(type_mode[i]);
-		}
+		
 		
 		//People agents are located anywhere in one of the building
 		location <- any_location_in(home_building);
+		if (work_building = nil){
+			
+		}
 		if (work_building != nil) {
 			distance <- home_building distance_to work_building;
-			time_bike <- distance/bike_speed;
-			time_car <- distance/car_speed;
-			time_bus <- distance/bus_speed;
-			time_walk <- distance/walk_speed;
+		} else {
+			distance <- 10.0;
 		}
+		time_bike <- distance/bike_speed+0.1;
+		time_car <- distance/car_speed+0.1;
+		time_bus <- distance/bus_speed+0.1;
+		time_walk <- distance/walk_speed+0.1;
 		
 		price_bus <- subscription_price/(21.8*2); //21.8 est le nombre moyen de jour "de semaine" par mois
 		price_car <- (7.2*distance/100*gas_price)/(21.8*2);
-		price_bus<- 0.68;
 		price_car <- 0.8;
 	
+		float x <- update_priority(); //x is useless
+		
 		do add_belief(at_target);
 		do add_desire(staying_at_home);
 		
@@ -116,15 +120,14 @@ species Individual skills: [moving] control:simple_bdi{
 					}
 					match "price" {
 						//on considère qu'une voiture dépense 7,2 litres pour 100 km(moyenne sur 2019)
-						val <- 0.5;
-						//val <- 1- (price_car/max([price_car,price_bus]));
+						
+						val <- 1 - (price_car/max([price_car,price_bus]));
 					}
 					match "time" {
 						//on considère que la voiture à une allure moyenne de 25km/h
-						time_car <- distance/25.0;
-						//val<- time_car/max([time_car,time_bike, time_bus, time_walk]);
-						val <-0.5;
-
+						//write max(time_car,time_bike, time_bus, time_walk);
+						val<- 1 - time_car/max(time_car,time_bike, time_bus, time_walk);
+						
 					}
 					match "ecology"{
 						val <-0.0;
@@ -155,20 +158,19 @@ species Individual skills: [moving] control:simple_bdi{
 						val <- 1.0;
 					}
 					match "time" {
-						//val<-time_bike/max([time_car,time_bike, time_bus, time_walk]);
-						val <-0.5;
-
+						val<- 1 - time_bike/max(time_car,time_bike, time_bus, time_walk);
+					
 					}
 					match "ecology"{
 						val <- 1.0;
 					}
 					match "simplicity"{
 						// dans le trajet effectué, voir pourcentage route cyclables + distance au dessus de 20min pas cool (voir papiers socio)
-						val <-0.5;
+						val <-ratio_cycleway;
 					}
 					match "safety"{
 						//dans le trajet effectué pourcentage de route non partagée avec automobilistes
-						val <-0.5;
+						val <-ratio_cycleway;
 					}			
 				}
 			}//end match bike
@@ -181,13 +183,12 @@ species Individual skills: [moving] control:simple_bdi{
 						val <- val1/((30/bus_freq)* bus_capacity);
 					}
 					match "price" {
-					 	val <-0.5;
-					 	//val <- price_bus/max(price_car,price_bus);
+					 	//val <- 1- price_bus/max(price_car,price_bus);
+					
 					}
 					match "time" {
 						// On considère qu'un bus se déplace à 10km/h
-						//val<-time_bus/max(time_car,time_bike, time_bus, time_walk);
-						val <-0.5;
+						val<- 1 - time_bus/max(time_car,time_bike, time_bus, time_walk);
 
 					}
 					match "ecology"{
@@ -220,8 +221,8 @@ species Individual skills: [moving] control:simple_bdi{
 						val <- 1.0;
 					}
 					match "time" {
-						//val<-time_walk/max(time_car,time_bike, time_bus, time_walk);
-						val <-0.5;
+						val<- 1 - time_walk/max(time_car,time_bike, time_bus, time_walk);
+						
 					}
 					match "ecology"{
 						val <- 1.0;
@@ -257,6 +258,15 @@ species Individual skills: [moving] control:simple_bdi{
 		return val/length(criteria) + habit_coeff*priority_modes[type];
 	}
 	
+	float update_priority{
+		loop i from: 0 to: length(type_mode)-1{
+			priority_modes[type_mode[i]]<- compute_priority_mobility_mode(type_mode[i]);
+		}
+		write "max priority = : " + get_max_priority_mode() ;
+		return 1.0;
+		
+	}
+	
 	bool has_car{
 		return not (car_place = nil);
 	}
@@ -267,6 +277,25 @@ species Individual skills: [moving] control:simple_bdi{
 	
 	bool is_time(int hour, int minute) {
 		return current_date.hour = hour and current_date.minute = minute;
+	}
+	
+	string get_max_priority_mode{
+		float p <- max(priority_modes);
+		switch p{
+			match priority_modes["car"]{
+				return "car";
+			}
+			match priority_modes["bike"]{
+				return "bike";
+			}
+			match priority_modes["walk"]{
+				return "walk";
+			}
+			match priority_modes["bus"]{
+				return "bus";
+			}
+		}
+		
 	}
 	
 	reflex define_agenda_day when: every(#day) {
@@ -291,11 +320,31 @@ species Individual skills: [moving] control:simple_bdi{
 		// for the moment this function is only returning a car trip
 		//
 		transport_trip <- [];
-		transport_trip << ["walk",location, car_place];
-		point target_parking <- any_location_in(Road closest_to target_);
-		transport_trip << ["car",car_place,target_parking];
-		transport_trip << ["walk",target_parking,target_];
-		
+		float p <- max(priority_modes);
+		switch p {
+			match priority_modes["car"]{
+				transport_trip << ["walk",location, car_place];
+				point target_parking <- any_location_in(Road closest_to target_);
+				transport_trip << ["car",car_place,target_parking];
+				transport_trip << ["walk",target_parking,target_];
+			}
+			
+			match priority_modes["bike"]{
+				transport_trip << ["walk",location, bike_place];
+				point target_parking <- any_location_in(Road closest_to target_);
+				transport_trip << ["bike",bike_place,target_parking];
+				transport_trip << ["walk",target_parking,target_];
+			}
+			
+			match priority_modes["bus"]{
+				
+			}
+			
+			match priority_modes ["walk"]{
+				transport_trip << ["walk",location, target_];
+			}
+			
+		}
 		trip_pointer <- 0;
 		ask world {do write_message(myself.name + " - transport trip: " + myself.transport_trip);}
 	}

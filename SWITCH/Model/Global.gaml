@@ -32,6 +32,7 @@ global {
 	float number_of_users;
 	map<list<int>, int> number_of_users_per_hour;
 	//routes & pistes cyclables collées à voir
+	float ratio_cycleway;
 	
 	//ecology
 	float air_pollution;
@@ -44,7 +45,7 @@ global {
 	//time
 	float bus_freq; //intervalle en minute
 	
-	string weather <- "sunny" among: ["sunny","rainy","stormy",nil];
+	string weather <- "sunny" among: ["sunny","rainy","stormy",nil];// update: update_weather(); faut que ce soit une ou deux fois par jour
 	
 	
 	logger the_logger;
@@ -65,11 +66,11 @@ global {
 	} 
 	
 	reflex manage_step when: every(#h) {
-		if (not is_fast_step and (current_date.hour < first_activity_h[current_date.day_of_week])) {
+		if (not is_fast_step and (current_date.hour < first_activity_h[current_date.day_of_week-1])) {
 			step <- fast_step;
 			is_fast_step <- true;
 		} 
-		if (is_fast_step  and (current_date.hour >= first_activity_h[current_date.day_of_week])) {
+		if (is_fast_step  and (current_date.hour >= first_activity_h[current_date.day_of_week-1])) {
 			step <- normal_step;
 			is_fast_step <- false;
 		}
@@ -87,6 +88,7 @@ global {
 		
 		weather <- "sunny";
 		
+		
 		do write_message("Building created");
 	
 		//Initialization of the road using the shapefile of roads
@@ -101,7 +103,6 @@ global {
 		}
 		
 		do write_message("Road created");
-	
 		
 		list<file> shp_nodes <-  define_shapefiles("nodes");
 	
@@ -264,6 +265,8 @@ global {
       		start_node <- road_network source_of self;
       		end_node <- road_network target_of self;
       	}
+      	
+      	
 	}
 	
 	action write_message(string mess) {
