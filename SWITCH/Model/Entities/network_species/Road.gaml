@@ -113,9 +113,9 @@ species Road {
 		if hasCapacity(t.size){
 			ask t { 
 				listactions <- listactions  + " " + request_time + " I'll be entering at " + request_time + "(" + path_to_target +")\n";
+				myself.current_capacity <- myself.current_capacity - t.size;
 				do setEntryTime(request_time);
 			}
-			current_capacity <- current_capacity - t.size;
 		}else{
 			waiting_transports << [request_time, t];
 		}
@@ -132,10 +132,11 @@ species Road {
 			loop while: hasCapacity(t.size) and not empty(waiting_transports){
 				ask t { 
 					listactions <- listactions  + " " + entry_time + " AcceptTransport " + entry_time+delay + "(" + path_to_target +")\n";
+					myself.current_capacity <- myself.current_capacity - t.size;
 					do setEntryTime(entry_time+delay);
 				}
 				remove waiting_transports[0]  from: waiting_transports;
-				current_capacity <- current_capacity - t.size;
+				
 				if not empty(waiting_transports){ 
 					t <- getWaitingTransport(0);
 				}

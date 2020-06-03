@@ -88,14 +88,11 @@ global {
 }
 
 species transport_generator {
-    
-
     reflex send_car{
         int nb_transport_sent <- 0;
         int nb_transport_to_send <- vehicule_in_A;
-        int delay <-0;
-        loop while: nb_transport_sent < nb_transport_to_send and delay <step{
-            create Car {
+        loop delay from: 0 to: nb_transport_to_send{
+            create Car number:100 {
                 location <- A.location;
                 Crossroad c <- one_of([D, E, G, H]);
                 pos_target <- c.location;
@@ -103,10 +100,10 @@ species transport_generator {
                 path_to_target <- list<Road>(path_between(available_graph, location, pos_target).edges);
                 add nil to:path_to_target at:0;
                 do sendEnterRequest(int(time+delay));
-                delay <- delay+1;
             }
             nb_transport_sent <- nb_transport_sent + 1;
         }
+        write nb_transport_sent;
     }
 
 }
