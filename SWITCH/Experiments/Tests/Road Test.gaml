@@ -19,7 +19,7 @@ global {
 	string datasettest <- "../Datasets/Road test/"; // default
 	file crossroad_shapefile <- shape_file(datasettest+"roadTest.shp");
 	geometry shape <- envelope(crossroad_shapefile);
-	float step <-  10#mn;
+	float step <-  60#mn;
 	float param_road_speed <- 50.0;
 	list<string> crossroads;
 	
@@ -35,7 +35,7 @@ global {
 	float speed_FG <- param_road_speed;
 	float speed_FH <- param_road_speed;
 	
-	int vehicule_in_A <- 10000;
+	int vehicule_in_A <- 3600;
 	
 	init{
 		create logger with: [store_individual_dest::true]{the_logger <- self;}
@@ -90,9 +90,9 @@ global {
 species transport_generator {
     reflex send_car{
         int nb_transport_sent <- 0;
-        int nb_transport_to_send <- vehicule_in_A;
-        loop delay from: 0 to: nb_transport_to_send{
-            create Car number:100 {
+        loop delay from: 0 to: vehicule_in_A{
+        	write delay;
+            create Car {
                 location <- A.location;
                 Crossroad c <- one_of([D, E, G, H]);
                 pos_target <- c.location;
@@ -104,6 +104,7 @@ species transport_generator {
             nb_transport_sent <- nb_transport_sent + 1;
         }
         write nb_transport_sent;
+        write vehicule_in_A;
     }
 
 }
@@ -119,7 +120,7 @@ experiment RoadTest type: gui {
 	parameter "FG speed limit " var: speed_FG min: 0.0 max: 130.0 category: "Speed" ;
 	parameter "FH speed limit " var: speed_FH min: 0.0 max: 130.0 category: "Speed" ;
 	
-	parameter "vehicule arriving in A each cyle " var: vehicule_in_A min: 0 max: 100 category: "Flow" ;
+	parameter "vehicule arriving in A each cyle " var: vehicule_in_A min: 0 max: 10000 category: "Flow" ;
 	
 	output {	
 		display map background: #white type: opengl {
