@@ -41,6 +41,9 @@ species Road {
 	//length of the road (in meters)
 	float size <- shape.perimeter;
 	
+	// the minimal time between two vehicules leaving the road (in second)
+	float output_flow_capacity <- output_flow.keys contains type ? output_flow[type]: 2.4;
+	
 	//maximum space capacity of the road (in meters)
 	float max_capacity <- size * nb_lanes min: 10.0;
 	
@@ -55,12 +58,13 @@ species Road {
 	bool has_bike_lane <- false;
 	
 	//list of current vehicules present in the road 
-	//list = [[int time_to_leave, Transport t]]
+	//list = [[float time_to_leave, Transport t]]
 	list<list> present_bikes <- [];
     list<list> present_transports <- [];
     
     //This list store all the incoming transports requests
-    //waiting_transports = [[int time_request, Transport t]]
+    //waiting_transports = [[float time_request, Transport t]]
+    list<list> waiting_bikes <- [];
     list<list> waiting_transports <- [];
     
     action init{
@@ -69,16 +73,16 @@ species Road {
     	current_capacity <- max_capacity;
     }
     
-    int getPresentTransportLeaveTime(int index){
-    	return int(present_transports[index][0]);
+    float getPresentTransportLeaveTime(int index){
+    	return float(present_transports[index][0]);
     }
     
     Transport getPresentTransport(int index){
     	return Transport(present_transports[index][1]);
     }
 
-    int getWaitingTimeRequest(int index){
-    	return int(waiting_transports[index][0]);
+    float getWaitingTimeRequest(int index){
+    	return float(waiting_transports[index][0]);
     }
     
     Transport getWaitingTransport(int index){
@@ -90,8 +94,8 @@ species Road {
 		present_bikes << b;
 	}
 	
-	action queueInRoad(Transport t,int entry_time){
-		int leave_time <- int(floor(entry_time + getRoadTravelTime(t)));
+	action queueInRoad(Transport t,float entry_time){
+		float leave_time <- floor(entry_time + getRoadTravelTime(t));
 		//write t.name + " : " + leave_time;
 		ask t{
 			listactions <- listactions  + " " + entry_time + " Will leave at " + leave_time + "(" + path_to_target +")\n";
@@ -102,14 +106,10 @@ species Road {
 				listactions <- listactions  + " " + entry_time + " I'm alone, so i'll leave at " + leave_time + "(" + path_to_target +")\n";
 			}
 			ask getPresentTransport(0){ do setLeaveTime(leave_time); }
-		}else{
-			ask t{
-				estimated_travel_timestep <- leave_time;
-			}
 		}
 	}
 	
-	action enterRequest(Transport t, int request_time){
+	action enterRequest(Transport t, float request_time){
 		if hasCapacity(t.size){
 			ask t { 
 				listactions <- listactions  + " " + request_time + " I'll be entering at " + request_time + "(" + path_to_target +")\n";
@@ -125,7 +125,7 @@ species Road {
 		return current_capacity > capacity;
 	}
 	
-	action acceptTransport(int entry_time){
+	action acceptTransport(float entry_time){
 		if not empty(waiting_transports){
 			Transport t <- getWaitingTransport(0);
 			int delay <- 0;
@@ -145,13 +145,9 @@ species Road {
 		}
 	}
 	
-	//action called by transport when they know the time they'll enter the next road
-	action willLeave(int leave_time, Transport t){
-		//do acceptTransport(leave_time);
-	}
 	
 	//action called by a transport when it leaves the road
-	action leave(int signal_time){
+	action leave(float signal_time){
 		float gainedCapacity <- getPresentTransport(0).size;
 		current_capacity <- current_capacity + gainedCapacity;
 		remove present_transports[0] from: present_transports;
@@ -159,7 +155,7 @@ species Road {
 		if not empty(present_transports){
 			ask getPresentTransport(0){ 
 				listactions <- listactions  + " " + signal_time + " The car in front of me has left the road. Will leave the road at " + (signal_time+1) + ", I'll be in front of the road at "+ max(myself.getPresentTransportLeaveTime(0),signal_time+1) +"(" + path_to_target +")\n";
-				do setLeaveTime(max(myself.getPresentTransportLeaveTime(0),signal_time+1));
+				do setLeaveTime(max(myself.getPresentTransportLeaveTime(0),signal_time+myself.output_flow_capacity));
 			}
 		}
 	}

@@ -21,9 +21,6 @@ species Transport skills: [moving] {
 
 	//passenger capacity 
 	int max_passenger;
-	
-	//estimated_travel_timestep
-	int estimated_travel_timestep <- 0;
 
 	//passengers present in the transport
 	// the fisrt passenger of the list is considered as the driver
@@ -71,41 +68,31 @@ species Transport skills: [moving] {
 
 	}
 	//****************************************************
-	action setSignal (int signal_time, string signal_type) {
+	action setSignal (float signal_time, string signal_type) {
 		switch signal_type {
 			match "enter road" {
-
-			//write "entering road at "+ timestamp(signal_time);
-			//if we are leaving a road by entering another the transports averts the first road 
-			//it is leaving and when it is leaving
+				//if we are leaving a road by entering another the transports averts the first road 
 				do changeRoad(signal_time);
 			}
 
 			match "First in queue" {
-			listactions <- listactions + " " + signal_time + " First in Queue " + hasNextRoad() + " (" + path_to_target + ")\n";
-			//write "can leave road at "+ timestamp(signal_time);
+				listactions <- listactions + " " + signal_time + " First in Queue " + hasNextRoad() + " (" + path_to_target + ")\n";
 				if hasNextRoad() {
 					do sendEnterRequest(signal_time);
 				} else {
-				//the transport is arrived
-				//write "end trip";
+					//the transport is arrived
 					listactions <- listactions + " " + signal_time + " There is no next road (" + path_to_target + ")\n";
-					
 					ask getCurrentRoad() {
 						do leave(signal_time);
 					}
-//					write ""+self+" fini son trajet à "+signal_time+" sur la route:"+getCurrentRoad().type;
 					do endTrip;
 				}
-
 				lastAction <- "First in queue";
 			}
-
 		}
-
 	}
 
-	action changeRoad (int signal_time) {
+	action changeRoad (float signal_time) {
 		Road current <- getCurrentRoad();
 		Road next <- getNextRoad();
 		if current != nil {
@@ -138,7 +125,6 @@ species Transport skills: [moving] {
 		} else {
 			return nil;
 		}
-
 	}
 
 	Road getCurrentRoad {
@@ -146,30 +132,26 @@ species Transport skills: [moving] {
 	}
 
 	//the parameter should point toward the next road in path_to_target
-	action sendEnterRequest (int request_time) {
-	//write "entry request send at: "+timestamp(time_request);
+	action sendEnterRequest (float request_time) {
 		if (hasNextRoad()) {
 			listactions <- listactions + " " + request_time + " Enter request " + getNextRoad().name + "(" + path_to_target + ")\n";
 			ask getNextRoad() {
 				do enterRequest(myself, request_time);
 			}
-
 		}
 
 	}
 
-	action setEntryTime (int entry_time) {
-	//write "event enter road registered for: "+timestamp(entry_time);
-	listEvent <- listEvent + " " + entry_time + " Enter road/ ";
+	action setEntryTime (float entry_time) {
+		listEvent <- listEvent + " " + entry_time + " Enter road/ ";
 		ask event_m {
 			do registerEvent(entry_time, myself, "enter road");
 		}
 
 	}
 
-	action setLeaveTime (int leave_time) {
-	//write "event leave road registered for: "+timestamp(leave_time);
-	listEvent <- listEvent + " " + leave_time + " First In queue/ ";
+	action setLeaveTime (float leave_time) {
+		listEvent <- listEvent + " " + leave_time + " First In queue/ ";
 		ask event_m {
 			do registerEvent(leave_time, myself, "First in queue");
 		}
@@ -177,7 +159,7 @@ species Transport skills: [moving] {
 	}
 
 	//this function return a convenient string corresponding to a time (in second)
-	string timestamp (int time_to_print) {
+	string timestamp (float time_to_print) {
 		int nb_heure <- floor(time_to_print / 3600);
 		int nb_min <- floor((time_to_print - nb_heure * 3600) / 60);
 		int nb_sec <- floor(time_to_print - nb_heure * 3600 - nb_min * 60);
@@ -199,10 +181,7 @@ species Transport skills: [moving] {
 		return buff + nb_sec + "s";
 	}
 
-	action endTrip {
-//		write listactions;
-		do die;
-	}
+	action endTrip {}
 
 	aspect default {
 		draw square(1 #px) color: #green border: #black depth: 1.0;
