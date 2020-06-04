@@ -83,7 +83,7 @@ species Transport skills: [moving] {
 					//the transport is arrived
 					listactions <- listactions + " " + signal_time + " There is no next road (" + path_to_target + ")\n";
 					ask getCurrentRoad() {
-						do leave(signal_time);
+						do leave(myself, signal_time);
 					}
 					do endTrip;
 				}
@@ -98,13 +98,13 @@ species Transport skills: [moving] {
 		if current != nil {
 			listactions <- listactions + " " + signal_time + " Leaving " + current.name + "(" + path_to_target + ")\n";
 			ask current {
-				do leave(signal_time);
+				do leave(myself, signal_time);
 			}
 			traveled_dist <- traveled_dist + getCurrentRoad().size;
 		}
 		remove first(path_to_target) from: path_to_target;
 		if (next != nil) {
-			listactions <- listactions + " " + signal_time + " Queing " + next.name + " TravelTime:" + next.getRoadTravelTime(self) + " (" + path_to_target + ")\n";
+			listactions <- listactions + " " + signal_time + " Queing " + next.name + " TravelTime:" + getRoadTravelTime(next.max_speed,(next.max_capacity-next.current_capacity)/next.max_capacity) + " (" + path_to_target + ")\n";
 			ask next {
 				do queueInRoad(myself, signal_time);
 			}
@@ -113,22 +113,6 @@ species Transport skills: [moving] {
 			listactions <- listactions + " " + signal_time + " Queing " + next.name + " End of the road " + " (" + path_to_target + ")\n";
 		}
 
-	}
-
-	bool hasNextRoad {
-		return length(path_to_target) > 1;
-	}
-
-	Road getNextRoad {
-		if (hasNextRoad()) {
-			return path_to_target[1];
-		} else {
-			return nil;
-		}
-	}
-
-	Road getCurrentRoad {
-		return path_to_target[0];
 	}
 
 	//the parameter should point toward the next road in path_to_target
@@ -156,6 +140,31 @@ species Transport skills: [moving] {
 			do registerEvent(leave_time, myself, "First in queue");
 		}
 
+	}
+
+	// compute the travel of incoming transports
+	// The formula used is BPR equilibrium formula
+	float getRoadTravelTime(float road_max_speed, float road_congestion_ratio){
+		float max_speed_formula <- max([speed,road_max_speed]) #km/#h;
+		float free_flow_travel_time <- size/max_speed_formula;
+		float travel_time <- free_flow_travel_time *  (1.0 + 0.15 * road_congestion_ratio^4); //((max_capacity-current_capacity)/max_capacity)^4);
+		return travel_time with_precision 3;
+	}
+
+	bool hasNextRoad {
+		return length(path_to_target) > 1;
+	}
+
+	Road getNextRoad {
+		if (hasNextRoad()) {
+			return path_to_target[1];
+		} else {
+			return nil;
+		}
+	}
+
+	Road getCurrentRoad {
+		return path_to_target[0];
 	}
 
 	//this function return a convenient string corresponding to a time (in second)

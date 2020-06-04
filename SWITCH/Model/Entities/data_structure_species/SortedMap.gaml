@@ -30,6 +30,10 @@ species SortedMap {
 		return data[index];
 	}
 	
+	action remove(int index){
+		remove data[index] from: data;
+	}
+	
 	action remove(list list_to_remove){
 		remove list_to_remove from: data;
 	}

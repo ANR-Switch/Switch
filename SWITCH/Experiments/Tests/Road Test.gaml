@@ -19,7 +19,7 @@ global {
 	string datasettest <- "../Datasets/Road test/"; // default
 	file crossroad_shapefile <- shape_file(datasettest+"roadTest.shp");
 	geometry shape <- envelope(crossroad_shapefile);
-	float step <-  60#mn;
+	float step <-  1#mn;
 	float param_road_speed <- 50.0;
 	list<string> crossroads;
 	
@@ -35,7 +35,7 @@ global {
 	float speed_FG <- param_road_speed;
 	float speed_FH <- param_road_speed;
 	
-	int vehicule_in_A <- 3600;
+	int vehicule_in_A <- 36;
 	
 	init{
 		create logger with: [store_individual_dest::true]{the_logger <- self;}
@@ -53,13 +53,13 @@ global {
 		F <- Crossroad first_with (each.type = "F");
 		G <- Crossroad first_with (each.type = "G");
 		H <- Crossroad first_with (each.type = "H");
-		create Road{type <- "AB"; start_node <- A; end_node <- B; max_speed <- speed_AB; shape <- line([A.location,B.location]); do init;}
-		create Road{type <- "BC"; start_node <- B; end_node <- C; max_speed <- speed_BC; shape <- line([B.location,C.location]); do init;}
-		create Road{type <- "CD"; start_node <- C; end_node <- D; max_speed <- speed_CD; shape <- line([C.location,D.location]); do init;}
-		create Road{type <- "CE"; start_node <- C; end_node <- E; max_speed <- speed_CE; shape <- line([C.location,E.location]); do init;}
-		create Road{type <- "BF"; start_node <- B; end_node <- F; max_speed <- speed_BF; shape <- line([B.location,F.location]); do init;}
-		create Road{type <- "FG"; start_node <- F; end_node <- G; max_speed <- speed_FG; shape <- line([F.location,G.location]); do init;}
-		create Road{type <- "FH"; start_node <- F; end_node <- H; max_speed <- speed_FH; shape <- line([F.location,H.location]); do init;}
+		create Road{type <- "AB"; start_node <- A; end_node <- B; max_speed <- speed_AB; shape <- line([A.location,B.location]);do init;}
+		create Road{type <- "BC"; start_node <- B; end_node <- C; max_speed <- speed_BC; shape <- line([B.location,C.location]);do init;}
+		create Road{type <- "CD"; start_node <- C; end_node <- D; max_speed <- speed_CD; shape <- line([C.location,D.location]);do init;}
+		create Road{type <- "CE"; start_node <- C; end_node <- E; max_speed <- speed_CE; shape <- line([C.location,E.location]);do init;}
+		create Road{type <- "BF"; start_node <- B; end_node <- F; max_speed <- speed_BF; shape <- line([B.location,F.location]);do init;}
+		create Road{type <- "FG"; start_node <- F; end_node <- G; max_speed <- speed_FG; shape <- line([F.location,G.location]);do init;}
+		create Road{type <- "FH"; start_node <- F; end_node <- H; max_speed <- speed_FH; shape <- line([F.location,H.location]);do init;}
 		road_network <- directed(as_edge_graph(Road,Crossroad));
 		create transport_generator;
 		create EventManager;
