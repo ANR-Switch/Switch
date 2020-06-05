@@ -37,7 +37,7 @@ global {
 	
 	int vehicule_in_A <- 10;
 	int bike_in_A <- 1;
-	int walk_in_A <- 10;
+	int walk_in_A <- 5;
 	
 	init{
 		create logger with: [store_individual_dest::true]{the_logger <- self;}

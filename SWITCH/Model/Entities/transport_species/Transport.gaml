@@ -145,7 +145,7 @@ species Transport skills: [moving] {
 	// compute the travel of incoming transports
 	// The formula used is BPR equilibrium formula
 	float getRoadTravelTime(Road r){
-		float max_speed_formula <- max([speed,r.max_speed]) #km/#h;
+		float max_speed_formula <- min([self.max_speed,r.max_speed]) #km/#h;
 		float free_flow_travel_time <- r.size/max_speed_formula;
 		float travel_time <- free_flow_travel_time *  (1.0 + 0.15 * ((r.max_capacity-r.current_capacity)/r.max_capacity)^4);
 		return travel_time with_precision 3;
@@ -190,7 +190,9 @@ species Transport skills: [moving] {
 		return buff + nb_sec + "s";
 	}
 
-	action endTrip {}
+	action endTrip {
+		//need to be redefined in each concrete transports
+	}
 
 	aspect default {
 		draw square(1 #px) color: #green border: #black depth: 1.0;
