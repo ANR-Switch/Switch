@@ -37,6 +37,7 @@ global {
 	
 	int vehicule_in_A <- 10;
 	int bike_in_A <- 1;
+	int walk_in_A <- 10;
 	
 	init{
 		create logger with: [store_individual_dest::true]{the_logger <- self;}
@@ -109,6 +110,21 @@ species transport_generator {
         int nb_transport_sent <- 0;
         loop delay from: 0 to: bike_in_A{
             create Bike {
+                location <- A.location;
+                Crossroad c <- one_of([D, E, G, H]);
+                pos_target <- c.location;
+                available_graph <- road_network;
+                path_to_target <- list<Road>(path_between(available_graph, location, pos_target).edges);
+                add nil to:path_to_target at:0;
+                do sendEnterRequest(time+delay);
+            }
+            nb_transport_sent <- nb_transport_sent + 1;
+        }
+    }
+    reflex send_walkers{
+        int nb_transport_sent <- 0;
+        loop delay from: 0 to: walk_in_A{
+            create Walk {
                 location <- A.location;
                 Crossroad c <- one_of([D, E, G, H]);
                 pos_target <- c.location;
