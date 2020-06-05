@@ -81,7 +81,7 @@ species Road {
 					current_capacity <- current_capacity - t.size;
 				}
 				ask t {
-					do setEntryTime(request_time);
+					do setEntryTime(request_time with_precision 3);
 				}
 			}
 			default {
@@ -89,7 +89,7 @@ species Road {
 					ask t {
 						listactions <- listactions + " " + request_time + " I'll be entering at " + request_time + "(" + path_to_target + ")\n";
 						myself.current_capacity <- myself.current_capacity - t.size;
-						do setEntryTime(request_time);
+						do setEntryTime(request_time with_precision 3);
 					}
 				} else {
 					ask waiting_transports {
@@ -109,7 +109,7 @@ species Road {
 				ask t {
 					listactions <- listactions + " " + entry_time + " AcceptTransport " + entry_time + delay + "(" + path_to_target + ")\n";
 					myself.current_capacity <- myself.current_capacity - t.size;
-					do setEntryTime(entry_time);
+					do setEntryTime(entry_time with_precision 3);
 				}
 				ask waiting_transports {
 					do remove([request_time, t]);
@@ -126,15 +126,14 @@ species Road {
 			match Bike {
 				present_bikes << Bike(t);
 				ask t {
-					float leave_time <- getRoadTravelTime(max_speed,(myself.max_capacity-myself.current_capacity)/myself.max_capacity);
-					do setLeaveTime(leave_time);
+					float leave_time <- getRoadTravelTime(myself);
+					do setLeaveTime(leave_time with_precision 3);
 				}
 			}
-
 			default {
 				float leave_time;
 				ask t {
-					leave_time <- getRoadTravelTime(max_speed,(myself.max_capacity-myself.current_capacity)/myself.max_capacity);
+					leave_time <- getRoadTravelTime(myself);
 					listactions <- listactions + " " + entry_time + " Will leave at " + leave_time + "(" + path_to_target + ")\n";
 				}
 				present_transports << [leave_time, t];
@@ -143,7 +142,7 @@ species Road {
 						listactions <- listactions + " " + entry_time + " I'm alone, so i'll leave at " + leave_time + "(" + path_to_target + ")\n";
 					}
 					ask getPresentTransport(0) {
-						do setLeaveTime(leave_time);
+						do setLeaveTime(leave_time with_precision 3);
 					}
 				}
 			}
@@ -168,7 +167,7 @@ species Road {
 					ask getPresentTransport(0) {
 						listactions <-
 						listactions + " " + signal_time + " The car in front of me has left the road. Will leave the road at " + (signal_time + 1) + ", I'll be in front of the road at " + max(myself.getPresentTransportLeaveTime(0), signal_time + 1) + "(" + path_to_target + ")\n";
-						do setLeaveTime(max(myself.getPresentTransportLeaveTime(0), signal_time + myself.output_flow_capacity));
+						do setLeaveTime(max(myself.getPresentTransportLeaveTime(0), signal_time + myself.output_flow_capacity) with_precision 3);
 					}
 				}
 			}

@@ -104,7 +104,7 @@ species Transport skills: [moving] {
 		}
 		remove first(path_to_target) from: path_to_target;
 		if (next != nil) {
-			listactions <- listactions + " " + signal_time + " Queing " + next.name + " TravelTime:" + getRoadTravelTime(next.max_speed,(next.max_capacity-next.current_capacity)/next.max_capacity) + " (" + path_to_target + ")\n";
+			listactions <- listactions + " " + signal_time + " Queing " + next.name + " TravelTime:" + getRoadTravelTime(next) + " (" + path_to_target + ")\n";
 			ask next {
 				do queueInRoad(myself, signal_time);
 			}
@@ -144,10 +144,10 @@ species Transport skills: [moving] {
 
 	// compute the travel of incoming transports
 	// The formula used is BPR equilibrium formula
-	float getRoadTravelTime(float road_max_speed, float road_congestion_ratio){
-		float max_speed_formula <- max([speed,road_max_speed]) #km/#h;
-		float free_flow_travel_time <- size/max_speed_formula;
-		float travel_time <- free_flow_travel_time *  (1.0 + 0.15 * road_congestion_ratio^4); //((max_capacity-current_capacity)/max_capacity)^4);
+	float getRoadTravelTime(Road r){
+		float max_speed_formula <- max([speed,r.max_speed]) #km/#h;
+		float free_flow_travel_time <- r.size/max_speed_formula;
+		float travel_time <- free_flow_travel_time *  (1.0 + 0.15 * ((r.max_capacity-r.current_capacity)/r.max_capacity)^4);
 		return travel_time with_precision 3;
 	}
 
