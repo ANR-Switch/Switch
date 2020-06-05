@@ -19,7 +19,7 @@ global {
 	string datasettest <- "../Datasets/Road test/"; // default
 	file crossroad_shapefile <- shape_file(datasettest+"roadTest.shp");
 	geometry shape <- envelope(crossroad_shapefile);
-	float step <-  60#mn;
+	float step <-  60 #mn;
 	float param_road_speed <- 50.0;
 	list<string> crossroads;
 	
@@ -35,7 +35,7 @@ global {
 	float speed_FG <- param_road_speed;
 	float speed_FH <- param_road_speed;
 	
-	int vehicule_in_A <- 10000;
+	int vehicule_in_A <- 3600;
 	
 	init{
 		create logger with: [store_individual_dest::true]{the_logger <- self;}
@@ -102,7 +102,6 @@ species transport_generator {
             }
             nb_transport_sent <- nb_transport_sent + 1;
         }
-        write nb_transport_sent;
     }
 
 }

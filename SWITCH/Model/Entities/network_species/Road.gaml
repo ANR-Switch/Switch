@@ -116,6 +116,7 @@ species Road {
 				}
 				if not waiting_transports.isEmpty() {
 					t <- getWaitingTransport(0);
+					request_time <- getWaitingTimeRequest(0);
 				}
 			}
 		}
@@ -126,14 +127,14 @@ species Road {
 			match Bike {
 				present_bikes << Bike(t);
 				ask t {
-					float leave_time <- getRoadTravelTime(myself);
+					float leave_time <- entry_time + getRoadTravelTime(myself);
 					do setLeaveTime(leave_time with_precision 3);
 				}
 			}
 			default {
 				float leave_time;
 				ask t {
-					leave_time <- getRoadTravelTime(myself);
+					leave_time <- entry_time + getRoadTravelTime(myself);
 					listactions <- listactions + " " + entry_time + " Will leave at " + leave_time + "(" + path_to_target + ")\n";
 				}
 				present_transports << [leave_time, t];
@@ -165,8 +166,7 @@ species Road {
 				do acceptTransport(signal_time);
 				if not empty(present_transports) {
 					ask getPresentTransport(0) {
-						listactions <-
-						listactions + " " + signal_time + " The car in front of me has left the road. Will leave the road at " + (signal_time + 1) + ", I'll be in front of the road at " + max(myself.getPresentTransportLeaveTime(0), signal_time + 1) + "(" + path_to_target + ")\n";
+						listactions <- listactions + " " + signal_time + " The car in front of me has left the road. Will leave the road at " + (signal_time + 1) + ", I'll be in front of the road at " + max(myself.getPresentTransportLeaveTime(0), signal_time + 1) + "(" + path_to_target + ")\n";
 						do setLeaveTime(max(myself.getPresentTransportLeaveTime(0), signal_time + myself.output_flow_capacity) with_precision 3);
 					}
 				}
