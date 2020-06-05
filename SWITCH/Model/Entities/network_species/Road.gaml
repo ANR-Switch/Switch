@@ -207,7 +207,9 @@ species Road {
 	aspect advanced {
 		geometry geom_display <- (shape + (2.0));
 		draw geom_display border: #gray color: rgb(255 * (max_capacity - current_capacity) / max_capacity, 0, 0);
-		draw "" + type + " - " + length(present_transports) + " PCU" at: location + point([15, -5]) size: 10 color: #black;
+		draw "" + type at: location + point([15, -5]) size: 10 color: #black;
+		draw "" + length(present_transports) + " Transports" at: location + point([15, 15]) size: 10 color: #black;
+		draw "" + length(present_bikes) + " Bikes" at: location + point([15, 35]) size: 10 color: #black;
 	}
 
 	aspect roadTest {
