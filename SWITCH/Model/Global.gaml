@@ -87,6 +87,7 @@ global {
 		create Outside {the_outside <- self;}
 		
 		weather <- "sunny";
+		ratio_cycleway <- 0.8;
 		
 		
 		do write_message("Building created");

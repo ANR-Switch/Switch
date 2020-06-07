@@ -23,6 +23,7 @@ species Individual skills: [moving] control:simple_bdi{
 	Building target_building;
 	string status among: ["go to trip","passenger","driving","arrived","activity",nil];
 	predicate current_activity <- staying_at_home;
+	string athletic among: ["no", "a bit", "yes", nil];
 	
 	map<string,int> grades;//how agent care for differents criteria	
 	map<string, float> priority_modes;//priority for each mode
@@ -65,17 +66,54 @@ species Individual skills: [moving] control:simple_bdi{
 	
 	float price_car;
 	float price_bus;
-	
+	float price_bike;
+	float price_walk;
 	
 	action initialization{
 		target_building <- home_building;
 		car_place <- any_location_in(Road closest_to self);
 		bike_place <-location;
-		loop i from: 0 to: length(criteria)-1{
-      		grades[criteria[i]]<- rnd(9);
-	  	}
 		
-		n<-3;
+		
+		
+	  	
+	  	int m <- 99;//rnd(100);
+  		if (m <= 34){ //automobilistes ouverts à tout mode
+  			grades["comfort"]<-8;
+  			grades["price"]<-8;
+  			grades["time"]<-10;
+  			grades["security"]<-rnd(10);
+  			grades["ecology"]<-4;
+  			grades["simplicity"]<-10;
+  		} else if(m > 34 and m<=61){ //pro indiv
+  			grades["comfort"]<-7;
+  			grades["price"]<-rnd(10);
+  			grades["time"]<-9;
+  			grades["security"]<-rnd(10);
+  			grades["ecology"]<-5;
+  			grades["simplicity"]<-10;
+  		}else if(m > 61 and m<=77){ //automobilistes à contre coeur
+  			grades["comfort"]<-5;
+  			grades["price"]<-rnd(10);
+  			grades["time"]<-8;
+  			grades["security"]<-rnd(10);
+  			grades["ecology"]<-10;
+  			grades["simplicity"]<-9;
+  		}else if(m > 77 and m<=87){ //pro indiv
+  			grades["comfort"]<-10;
+  			grades["price"]<-5;
+  			grades["time"]<-7;
+  			grades["security"]<-rnd(10);
+  			grades["ecology"]<-3;
+  			grades["simplicity"]<-10;
+  		}else {
+  			loop i from: 0 to: length(criteria)-1{
+      		grades[criteria[i]]<- rnd(9);
+	  		}
+  		}
+	  	
+		
+		n<-5;//for habit coefficient
 		
 		
 		
@@ -95,10 +133,21 @@ species Individual skills: [moving] control:simple_bdi{
 		time_bus <- distance/bus_speed+0.1;
 		time_walk <- distance/walk_speed+0.1;
 		
-		price_bus <- subscription_price/(21.8*2); //21.8 est le nombre moyen de jour "de semaine" par mois
-		price_car <- (7.2*distance/100*gas_price)/(21.8*2);
+		price_bus <- subscription_price/(21.8*2)+ 0.1; //21.8 est le nombre moyen de jour "de semaine" par mois
+		price_car <- (7.2*distance/100*gas_price)/(21.8*2) +0.1;
+		price_bike <- 0.0001;
+		price_walk <- 0.0001;
 		
-	
+		int r <- rnd(2);
+		if (r = 0){
+			athletic <- "no";
+		}else if (r = 1){
+			athletic <- "a bit";
+		} else {
+			athletic <- "yes";
+		}
+		
+		
 		float x <- update_priority(); //x is useless
 		
 		do add_belief(at_target);
@@ -121,12 +170,13 @@ species Individual skills: [moving] control:simple_bdi{
 					match "price" {
 						//on considère qu'une voiture dépense 7,2 litres pour 100 km(moyenne sur 2019)
 						
-						val <- 1 - (price_car/max([price_car,price_bus]));
+						val <- 1.0 /(price_car/min([price_car,price_bus, price_walk, price_bike]));
+					
 					}
 					match "time" {
 						//on considère que la voiture à une allure moyenne de 25km/h
 						//write max(time_car,time_bike, time_bus, time_walk);
-						val<- 1 - time_car/max(time_car,time_bike, time_bus, time_walk);
+						val<- 1.0/(time_car/min(time_car,time_bike, time_bus, time_walk));
 						
 					}
 					match "ecology"{
@@ -153,12 +203,21 @@ species Individual skills: [moving] control:simple_bdi{
 						} else {
 							val <- 0.1;
 						}
+						
+						if athletic = "no"{
+							val <- (val + 0.1) /2;
+						} else if (athletic = "a bit") {
+							val <- (val + 0.6) /2;
+						} else {
+							val <- (val + 1.0)/2;
+						}
+						//prise en compte du niveau de sportivité?
 					}
 					match "price" {
-						val <- 1.0;
+						val <- 1/ (price_bike/min(price_car, price_bus, price_walk, price_bike));
 					}
 					match "time" {
-						val<- 1 - time_bike/max(time_car,time_bike, time_bus, time_walk);
+						val<- 1 / (time_bike/min(time_car,time_bike, time_bus, time_walk));
 					
 					}
 					match "ecology"{
@@ -179,31 +238,37 @@ species Individual skills: [moving] control:simple_bdi{
 					match "comfort" {
 						//selon son heure de départ
 						//nb de personnes qu'on peut transporter en 30min - nb actuel de passager
-						float val1 <- ((30/bus_freq)* bus_capacity) - number_of_users_per_hour[[int(current_date.hour,floor(current_date.minute/30)*30)]];
+						float val1 <- ((30/bus_freq)* bus_capacity) - number_of_users_per_hour[[current_date.hour,int(floor(current_date.minute/30)*30)]];
 						val <- val1/((30/bus_freq)* bus_capacity);
 					}
 					match "price" {
-					 	//val <- 1- price_bus/max(price_car,price_bus);
+					 	val <- 1/ (price_bus/min(price_car,price_bus, price_walk, price_bike));
+					 
 					
 					}
 					match "time" {
 						// On considère qu'un bus se déplace à 10km/h
-						val<- 1 - time_bus/max(time_car,time_bike, time_bus, time_walk);
-
+						val<- 1 / (time_bus/min(time_car,time_bike, time_bus, time_walk));
+						
 					}
 					match "ecology"{
-						val <- 0.75;
+						val <- 0.9;
 					}
 					match "simplicity"{
 						//Dépend du nombre de ligne de bus différentes à prendre; à voir comment faire avec ces data
-						val <-0.5;
+						val <-0.7;
 					}
 					match "safety"{
-						if(current_date.hour>21.0){
-							val <- 0.5;
+						if (gender = "f"){
+							if(current_date.hour>21.0){
+								val <- 0.5;
+							} else {
+								val <- 0.90;
+							}
 						} else {
-							val <- 0.90;
+							val <- 0.9;
 						}
+						
 					}
 				}
 				
@@ -211,28 +276,35 @@ species Individual skills: [moving] control:simple_bdi{
 			match "walk"{
 				switch criterion {
 					match "comfort" { 
-						if(distance < 3){
-							val <- 1- distance /3.0;
+						if(distance <1){
+							val<-1.0;
+						}else if (distance < 3){
+							val <- 1 - distance /3.0;
 						} else {
 							val <- 0.0;
 						}
+						val <- 0.5;
 					}
 					match "price" {
-						val <- 1.0;
+						val <- 1 / (price_walk/min(price_car, price_bus, price_walk, price_bike));
 					}
 					match "time" {
-						val<- 1 - time_walk/max(time_car,time_bike, time_bus, time_walk);
-						
+						val<- 1 / (time_walk/min(time_car,time_bike, time_bus, time_walk));
+					
 					}
 					match "ecology"{
 						val <- 1.0;
 					}
 					match "simplicity"{
-						if(distance < 3){
-							val <- 1- distance /3.0;
-						} else {
-							val <- 0.0;
-						}
+//						if(distance < 2.5){
+//							val <- 1.0;
+//						}
+//						if(distance < 5){
+//							val <- 1- distance /3.0;
+//						} else {
+//							val <- 0.0;
+//						}
+						val <- 0.5;
 					}
 					match "safety"{
 						if(current_date.hour > 21 or current_date.hour<5){
