@@ -11,6 +11,8 @@ import "../transport_species/Transport.gaml"
 import "../transport_species/Bike.gaml"
 import "../transport_species/Walk.gaml"
 import "../data_structure_species/SortedMap.gaml"
+import "../data_structure_species/Queue.gaml"
+
 species Road {
 
 //type of road (the OpenStreetMap highway feature: https://wiki.openstreetmap.org/wiki/Map_Features)
@@ -57,11 +59,10 @@ species Road {
 	//				= false if not
 	bool has_bike_lane <- false;
 
-	//list of current vehicules present in the road 
-	//list = [[float time_to_leave, Transport t]]
+	//lists of current vehicules present in the road 
 	list<Walk> present_pedestrians <- [];
 	list<Bike> present_bikes <- [];
-	list<list> present_transports <- [];
+	Queue present_transports <- [];
 
 	//This list store all the incoming transports requests by chronological order
 	//waiting_transports = [[float time_request, Transport t]]
@@ -73,6 +74,9 @@ species Road {
 		current_capacity <- max_capacity;
 		create SortedMap {
 			myself.waiting_transports <- self;
+		}
+		create Queue {
+			myself.present_transports <- self;
 		}
 	}
 
@@ -151,15 +155,13 @@ species Road {
 					leave_time <- entry_time + getRoadTravelTime(myself);
 					listactions <- listactions + " " + entry_time + " Will leave at " + leave_time + "(" + path_to_target + ")\n";
 				}
-				present_transports << [leave_time, t];
-				if length(present_transports) = 1 {
+				if present_transports.isEmpty() {
 					ask t {
 						listactions <- listactions + " " + entry_time + " I'm alone, so i'll leave at " + leave_time + "(" + path_to_target + ")\n";
-					}
-					ask getPresentTransport(0) {
 						do setLeaveTime(leave_time with_precision 3);
 					}
 				}
+				ask present_transports{ do add([leave_time, t]); }
 			}
 		}
 	}
@@ -180,12 +182,12 @@ species Road {
 			default {
 				float gainedCapacity <- t.size;
 				current_capacity <- current_capacity + gainedCapacity;
-				remove present_transports[0] from: present_transports;
+				ask present_transports{ do remove; }
 				do acceptTransport(signal_time);
-				if not empty(present_transports) {
-					ask getPresentTransport(0) {
-						listactions <- listactions + " " + signal_time + " The car in front of me has left the road. Will leave the road at " + (signal_time + 1) + ", I'll be in front of the road at " + max(myself.getPresentTransportLeaveTime(0), signal_time + 1) + "(" + path_to_target + ")\n";
-						do setLeaveTime(max(myself.getPresentTransportLeaveTime(0), signal_time + myself.output_flow_capacity) with_precision 3);
+				if not present_transports.isEmpty() {
+					ask getHeadPresentTransport() {
+						listactions <- listactions + " " + signal_time + " The car in front of me has left the road. Will leave the road at " + (signal_time + 1) + ", I'll be in front of the road at " + max(myself.getHeadPresentTransportLeaveTime(), signal_time + 1) + "(" + path_to_target + ")\n";
+						do setLeaveTime(max(myself.getHeadPresentTransportLeaveTime(), signal_time + myself.output_flow_capacity) with_precision 3);
 					}
 				}
 			}
@@ -193,12 +195,12 @@ species Road {
 	}
 
 
-	float getPresentTransportLeaveTime (int index) {
-		return float(present_transports[index][0]);
+	float getHeadPresentTransportLeaveTime{
+		return float(present_transports.element()[0]);
 	}
 
-	Transport getPresentTransport (int index) {
-		return Transport(present_transports[index][1]);
+	Transport getHeadPresentTransport{
+		return Transport(present_transports.element()[1]);
 	}
 
 	float getWaitingTimeRequest (int index) {
@@ -226,7 +228,7 @@ species Road {
 		geometry geom_display <- (shape + (2.0));
 		draw geom_display border: #gray color: rgb(255 * (max_capacity - current_capacity) / max_capacity, 0, 0);
 		draw "" + type at: location + point([15, -5]) size: 10 color: #black;
-		draw "" + length(present_transports) + " transports" at: location + point([15, 15]) size: 10 color: #black;
+		draw "" + length(present_transports.queue) + " transports" at: location + point([15, 15]) size: 10 color: #black;
 		draw "" + length(present_bikes) + " bikes" at: location + point([15, 35]) size: 10 color: #black;
 		draw "" + length(present_pedestrians) + " walkers" at: location + point([15, 55]) size: 10 color: #black;
 	}

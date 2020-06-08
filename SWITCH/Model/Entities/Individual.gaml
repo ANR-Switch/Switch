@@ -421,24 +421,12 @@ species Individual skills: [moving] control:simple_bdi{
 		}
 	}
 	
-	action useCar(list<Individual> passengers_, point pos_target_){
-		ask world {do write_message(myself.name + " - drive: location" + myself.location + " target: "+ pos_target_);}
+	action useCar(list<Individual> passengers_, point pos_target){
+		ask world {do write_message(myself.name + " - drive: location" + myself.location + " target: "+ pos_target);}
 		if (current_car = nil) {
 			create Car {
-				myself.current_car <- self;
-                location <- myself.location;
-                pos_target <- pos_target_;
-                available_graph <- road_network;
-                path the_path <- path_between(available_graph, location, pos_target);
-                if (the_path = nil) {
-                	write "PATH NIL //// TELEPORTATION ACTIVEEE !!!!!!";
-                	myself.location <- pos_target_;
-                	myself.status <- "arrived";
-                } else {
-                	path_to_target <- list<Road>(the_path.edges);  
-	                do getIn(passengers_);
-                }
-                
+	            do getIn(passengers_);
+                do start(location,pos_target);
 			}
 		}
 		

@@ -36,10 +36,8 @@ species Transport skills: [moving] {
 	//list of roads that lead to the target
 	list<Road> path_to_target;
 	string listactions <- "";
-	
-	string listEvent <-"";
-	
-	string listEventManager <-"";
+	string listEvent <- "";
+	string listEventManager <- "";
 
 	//******* /!\ TESTING ATTRIBUTES and ACTION **********
 	string test_target;
@@ -68,10 +66,26 @@ species Transport skills: [moving] {
 
 	}
 	//****************************************************
+	action start (point start_location, point end_location) {
+		location <- start_location;
+		pos_target <- end_location;
+		available_graph <- road_network;
+		path the_path <- list<Road>(path_between(available_graph, location, pos_target).edges);
+		if (the_path = nil) {
+			write "PATH NIL //// TELEPORTATION ACTIVEEE !!!!!!";
+			location <- end_location;
+			do endTrip;
+		} else {
+			path_to_target <- list<Road>(the_path.edges);			
+			add nil to: path_to_target at: 0;
+			do sendEnterRequest(time);
+		}
+	}
+
 	action setSignal (float signal_time, string signal_type) {
 		switch signal_type {
 			match "enter road" {
-				//if we are leaving a road by entering another the transports averts the first road 
+			//if we are leaving a road by entering another the transports averts the first road 
 				do changeRoad(signal_time);
 			}
 
@@ -80,16 +94,20 @@ species Transport skills: [moving] {
 				if hasNextRoad() {
 					do sendEnterRequest(signal_time);
 				} else {
-					//the transport is arrived
+				//the transport is arrived
 					listactions <- listactions + " " + signal_time + " There is no next road (" + path_to_target + ")\n";
 					ask getCurrentRoad() {
 						do leave(myself, signal_time);
 					}
+
 					do endTrip;
 				}
+
 				lastAction <- "First in queue";
 			}
+
 		}
+
 	}
 
 	action changeRoad (float signal_time) {
@@ -100,8 +118,10 @@ species Transport skills: [moving] {
 			ask current {
 				do leave(myself, signal_time);
 			}
+
 			traveled_dist <- traveled_dist + getCurrentRoad().size;
 		}
+
 		remove first(path_to_target) from: path_to_target;
 		if (next != nil) {
 			listactions <- listactions + " " + signal_time + " Queing " + next.name + " TravelTime:" + getRoadTravelTime(next) + " (" + path_to_target + ")\n";
@@ -122,6 +142,7 @@ species Transport skills: [moving] {
 			ask getNextRoad() {
 				do enterRequest(myself, request_time);
 			}
+
 		}
 
 	}
@@ -144,10 +165,10 @@ species Transport skills: [moving] {
 
 	// compute the travel of incoming transports
 	// The formula used is BPR equilibrium formula
-	float getRoadTravelTime(Road r){
-		float max_speed_formula <- min([self.max_speed,r.max_speed]) #km/#h;
-		float free_flow_travel_time <- r.size/max_speed_formula;
-		float travel_time <- free_flow_travel_time *  (1.0 + 0.15 * ((r.max_capacity-r.current_capacity)/r.max_capacity)^4);
+	float getRoadTravelTime (Road r) {
+		float max_speed_formula <- min([self.max_speed, r.max_speed]) #km / #h;
+		float free_flow_travel_time <- r.size / max_speed_formula;
+		float travel_time <- free_flow_travel_time * (1.0 + 0.15 * ((r.max_capacity - r.current_capacity) / r.max_capacity) ^ 4);
 		return travel_time with_precision 3;
 	}
 
@@ -161,6 +182,7 @@ species Transport skills: [moving] {
 		} else {
 			return nil;
 		}
+
 	}
 
 	Road getCurrentRoad {
@@ -191,7 +213,7 @@ species Transport skills: [moving] {
 	}
 
 	action endTrip {
-		//need to be redefined in each concrete transports
+	//need to be redefined in each concrete transports
 	}
 
 	aspect default {

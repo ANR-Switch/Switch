@@ -19,8 +19,7 @@ species Walk parent: PrivateTransport {
 	}
 	
 	float getRoadTravelTime(Road r){
-		float free_flow_travel_time <- r.size/self.max_speed;
-		float travel_time <- free_flow_travel_time *  (1.0 + 0.15 * ((r.max_capacity-r.current_capacity)/r.max_capacity)^4);
+		float travel_time <- r.size/self.max_speed;
 		return travel_time with_precision 3;
 	}
 	
