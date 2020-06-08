@@ -302,6 +302,13 @@ global {
 		
 	}
 	
+	action update_number_of_users_per_hour{
+		loop i from:5 to:23{
+			number_of_users_per_hour[[i,0]]<-30;
+			number_of_users_per_hour[[i,30]]<-30;
+		}
+	}
+	
 	list<Individual> manage_list_int(string val) {
 		val <- val replace("[","") replace("]","");
 		list<string> vs <- val split_with ",";
@@ -314,6 +321,8 @@ global {
 		}
 		return ind;
 	}
+	
+	
 	
 	list<file> define_shapefiles(string file_name) {
 		list<file> f;
