@@ -106,6 +106,18 @@ global {
 			        "residential"::0.6,
 			        "living_street"::1.0
 			       ];
+			       
+	//those numbers represent the minimal time between two vehicules leaving the road (in second)
+	//depending on the road type
+	map<string,float> output_flow <- 
+			       ["motorway"::1.8,
+			        "trunk"::2.4,
+			        "primary"::2.4,
+			        "secondary"::2.4,
+			        "tertiary"::6.0,
+			        "residential"::6.0,
+			        "living_street"::12.0
+			       ];
 	
 	//***********************************************************
 	

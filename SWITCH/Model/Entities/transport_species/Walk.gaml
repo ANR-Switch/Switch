@@ -1,5 +1,5 @@
 /**
-* Name: Bike
+* Name: Walk
 * Based on the internal empty template. 
 * Author: Lo�c
 * Tags: 
@@ -10,18 +10,18 @@ model SWITCH
 
 import "PrivateTransport.gaml"
 
-species Bike parent: PrivateTransport {
+species Walk parent: PrivateTransport {
 	
 	init{
-		max_speed <- 20.0;
+		max_speed <- 6.0;
 		size <- 1.0;
 		max_passenger <- 1;
 	}
 	
-	float getRoadTravelTime (Road r) {
-		float max_speed_formula <- min([self.max_speed, r.max_speed]) #km / #h;
-		return r.size / max_speed_formula;
-	}	
+	float getRoadTravelTime(Road r){
+		float travel_time <- r.size/self.max_speed;
+		return travel_time with_precision 3;
+	}
 	
 	action endTrip{
 		location <- pos_target;
@@ -30,7 +30,6 @@ species Bike parent: PrivateTransport {
 			if passenger = passengers[0]{ passenger.bike_place <- location;}
 			passenger.status <- "arrived";
 			passenger.location <- location;
-			passenger.current_bike <- nil;
 		}
 		do die;
 	}

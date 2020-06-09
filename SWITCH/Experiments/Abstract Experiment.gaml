@@ -56,6 +56,7 @@ experiment "Abstract Experiment" virtual:true{
             	string dispclock <- current_date.hour <10 ? "0"+current_date.hour : ""+current_date.hour;
             	dispclock <- current_date.minute <10 ? dispclock+"h0"+current_date.minute : dispclock +"h"+current_date.minute;
             	draw dispclock font: default at: { 20#px, 80#px} anchor: #top_left color:text_color;
+            	draw "step: "+step+" sec" font: default at: { 20#px, 110#px} anchor: #top_left color:text_color;
             	
             	float y <- 170#px;
                 loop type over: colors_per_act.keys 
@@ -74,7 +75,7 @@ experiment "Abstract Experiment" virtual:true{
 			image file:  file_exists(dataset+"/satellite.png") ? (dataset+"/satellite.png"): dataset_folder+"Default/satellite.png" transparency: 0.5 refresh: false;
 			
 			species Building;
-			species Road aspect: advanced;
+			species Road aspect: default;
 			species Crossroad;
 			species Individual;
 		}

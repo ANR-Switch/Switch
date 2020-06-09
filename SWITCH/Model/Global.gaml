@@ -14,10 +14,9 @@ import "Parameters.gaml"
 import "Entities/network_species/Building.gaml"
 import "Entities/network_species/Crossroad.gaml"
 import "Entities/network_species/Road.gaml"
-
-
-
 import "Entities/Individual.gaml"
+import "Entities/EventManager.gaml"
+import "Entities/factory_species/TransportFactory.gaml"
  
 global {
 		//variables environement de transport :
@@ -47,6 +46,7 @@ global {
 	
 	string weather <- "sunny" among: ["sunny","rainy","stormy",nil];// update: update_weather(); faut que ce soit une ou deux fois par jour
 	
+	EventManager event_m;
 	
 	logger the_logger;
 	list<file> shp_roads <-  define_shapefiles("roads");
@@ -79,6 +79,8 @@ global {
 	
 	action global_init  {
 		
+		create EventManager{event_m <- self;}
+    
 		//Initialization of the building using the shapefile of buildings
 		list<file> shp_buildings <- define_shapefiles("buildings");
 		loop shp_building over:shp_buildings {
