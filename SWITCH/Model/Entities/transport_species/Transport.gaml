@@ -8,9 +8,9 @@ model SWITCH
 
 import "../../logger.gaml"
 import "../../Global.gaml"
-import "../../../Experiments/Tests/Road Test.gaml"
 import "../network_species/Road.gaml"
 import "../Individual.gaml"
+import "../EventManager.gaml"
 species Transport skills: [moving] {
 
 // maximum speed for a transport (km/h)

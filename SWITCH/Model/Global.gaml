@@ -15,6 +15,7 @@ import "Entities/network_species/Building.gaml"
 import "Entities/network_species/Crossroad.gaml"
 import "Entities/network_species/Road.gaml"
 import "Entities/Individual.gaml"
+import "Entities/EventManager.gaml"
  
 global {
 		//variables environement de transport :

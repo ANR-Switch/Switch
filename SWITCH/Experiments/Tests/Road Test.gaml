@@ -65,13 +65,14 @@ global {
 		create Road with:(type:"FH", start_node:F, end_node:H, max_speed:speed_FH, shape:line([F.location,H.location]));
 		road_network <- directed(as_edge_graph(Road,Crossroad));
 		create transport_generator;
+		create EventManager{event_m <- self;}
 	}
 	
-	/*reflex manage_step when: every(#h) {}
+	reflex manage_step when: every(#h) {}
 	
 	reflex print_time{
 		write "***********"+timestamp(time)+"*****************" color:#red;
-	}*/
+	}
 	
 	//this function return a convenient string corresponding to a time (in second)
 	string timestamp (int time_to_print){
