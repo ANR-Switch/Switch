@@ -68,7 +68,8 @@ species Road {
 	//waiting_transports = [[float time_request, Transport t]]
 	SortedMap waiting_transports;
 
-	action init {
+	init {
+		write type;
 		size <- shape.perimeter;
 		max_capacity <- size * nb_lanes;
 		current_capacity <- max_capacity;

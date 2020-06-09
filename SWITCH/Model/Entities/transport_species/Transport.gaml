@@ -118,17 +118,15 @@ species Transport skills: [moving] {
 			ask current {
 				do leave(myself, signal_time);
 			}
-
 			traveled_dist <- traveled_dist + getCurrentRoad().size;
 		}
-
 		remove first(path_to_target) from: path_to_target;
 		if (next != nil) {
 			listactions <- listactions + " " + signal_time + " Queing " + next.name + " TravelTime:" + getRoadTravelTime(next) + " (" + path_to_target + ")\n";
 			ask next {
 				do queueInRoad(myself, signal_time);
 			}
-
+			do updatePassengerPosition;
 		} else {
 			listactions <- listactions + " " + signal_time + " Queing " + next.name + " End of the road " + " (" + path_to_target + ")\n";
 		}
@@ -189,6 +187,12 @@ species Transport skills: [moving] {
 		return path_to_target[0];
 	}
 
+	action updatePassengerPosition{
+		loop passenger over: passengers{
+			passenger.location <- getCurrentRoad().start_node.location;
+		}	
+	}
+	
 	//this function return a convenient string corresponding to a time (in second)
 	string timestamp (float time_to_print) {
 		int nb_heure <- floor(time_to_print / 3600);

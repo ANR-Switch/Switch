@@ -13,10 +13,15 @@ import "PrivateTransport.gaml"
 species Bike parent: PrivateTransport {
 	
 	init{
-		max_speed <- 14.0;
+		max_speed <- 20.0;
 		size <- 1.0;
 		max_passenger <- 1;
 	}
+	
+	float getRoadTravelTime (Road r) {
+		float max_speed_formula <- min([self.max_speed, r.max_speed]) #km / #h;
+		return r.size / max_speed_formula;
+	}	
 	
 	action endTrip{
 		location <- pos_target;
