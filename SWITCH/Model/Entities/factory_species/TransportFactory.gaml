@@ -17,7 +17,7 @@ global{
 	Car createCar(point start_location, point end_location, list<Individual> passengers){
         create Car returns: children{
 	    	do getIn(passengers);
-            do start(location,pos_target);
+            do start(start_location,end_location);
         } 
         return children[0];
     }
@@ -25,7 +25,7 @@ global{
     Bike createBike(point start_location, point end_location, list<Individual> passengers){
         create Bike returns: children{
 	    	do getIn(passengers);
-            do start(location,pos_target);
+            do start(start_location,end_location);
         } 
         return children[0];
     }
@@ -33,7 +33,7 @@ global{
     Walk createWalk(point start_location, point end_location, list<Individual> passengers){
         create Walk returns: children{
 	    	do getIn(passengers);
-            do start(location,pos_target);
+            do start(start_location,end_location);
         } 
         return children[0];
     }

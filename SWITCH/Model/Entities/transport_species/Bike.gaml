@@ -30,6 +30,7 @@ species Bike parent: PrivateTransport {
 			if passenger = passengers[0]{ passenger.bike_place <- location;}
 			passenger.status <- "arrived";
 			passenger.location <- location;
+			passenger.current_bike <- nil;
 		}
 		do die;
 	}

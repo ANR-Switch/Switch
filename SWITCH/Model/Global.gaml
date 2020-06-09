@@ -14,9 +14,6 @@ import "Parameters.gaml"
 import "Entities/network_species/Building.gaml"
 import "Entities/network_species/Crossroad.gaml"
 import "Entities/network_species/Road.gaml"
-
-
-
 import "Entities/Individual.gaml"
  
 global {
@@ -78,6 +75,8 @@ global {
 	}
 	
 	action global_init  {
+		
+		create EventManager{event_m <- self;}
 		//Initialization of the building using the shapefile of buildings
 		create Building from: building_shapefile;
 		create Outside {the_outside <- self;}

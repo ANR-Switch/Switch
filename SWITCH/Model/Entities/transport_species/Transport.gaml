@@ -70,7 +70,7 @@ species Transport skills: [moving] {
 		location <- start_location;
 		pos_target <- end_location;
 		available_graph <- road_network;
-		path the_path <- list<Road>(path_between(available_graph, location, pos_target).edges);
+		path the_path <- path_between(available_graph, location, pos_target);
 		if (the_path = nil) {
 			write "PATH NIL //// TELEPORTATION ACTIVEEE !!!!!!";
 			location <- end_location;
@@ -87,6 +87,7 @@ species Transport skills: [moving] {
 			match "enter road" {
 			//if we are leaving a road by entering another the transports averts the first road 
 				do changeRoad(signal_time);
+				do updatePassengerPosition;
 			}
 
 			match "First in queue" {
@@ -99,7 +100,6 @@ species Transport skills: [moving] {
 					ask getCurrentRoad() {
 						do leave(myself, signal_time);
 					}
-
 					do endTrip;
 				}
 
@@ -130,7 +130,6 @@ species Transport skills: [moving] {
 		} else {
 			listactions <- listactions + " " + signal_time + " Queing " + next.name + " End of the road " + " (" + path_to_target + ")\n";
 		}
-
 	}
 
 	//the parameter should point toward the next road in path_to_target

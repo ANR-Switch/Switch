@@ -69,7 +69,6 @@ species Road {
 	SortedMap waiting_transports;
 
 	init {
-		write type;
 		size <- shape.perimeter;
 		max_capacity <- size * nb_lanes;
 		current_capacity <- max_capacity;
@@ -217,12 +216,8 @@ species Road {
 	}
 
 	aspect default {
-		rgb road_color <- #gray;
-		if current_capacity != max_capacity {
-			road_color <- #red;
-		}
-
-		draw shape color: road_color end_arrow: 5;
+		geometry geom_display <- (shape + (2.0));
+		draw geom_display border: #gray color: rgb(255 * (max_capacity - current_capacity) / max_capacity, 0, 0);
 	}
 
 	aspect advanced {

@@ -29,6 +29,7 @@ species EventManager {
 	}
 	
 	reflex sendSignal when: not events_map.isEmpty() {
+		write events_map.data;
 		loop while: getEventTime(0) <= time{
 			//write ""+getEventTransport(0)+" " +getEventTime(0) + " " +getEventType(0);
 			float event_time <- getEventTime(0);
@@ -37,11 +38,12 @@ species EventManager {
 			ask event_transport{
 				do setSignal(event_time,event_type);
 			}
+			//write "" + event_type +" signal sent to "+event_transport+" at "+event_time;
 			ask events_map{
 				do remove([event_time,event_transport,event_type]);
 			}
 		}
-		write events_map.data;	
+			
 	}
 	
 	Transport getEventTransport(int event_index){

@@ -29,6 +29,7 @@ species Individual skills: [moving] control:simple_bdi{
 	Building work_building;
 	Building home_building;
 	Car current_car;
+	Bike current_bike;
 	
 	list<Individual> relatives;
 	list<Individual> friends;
@@ -421,13 +422,10 @@ species Individual skills: [moving] control:simple_bdi{
 		}
 	}
 	
-	action useCar(list<Individual> passengers_, point pos_target){
+	action useCar(list<Individual> passengers, point pos_target){
 		ask world {do write_message(myself.name + " - drive: location" + myself.location + " target: "+ pos_target);}
 		if (current_car = nil) {
-			create Car {
-	            do getIn(passengers_);
-                do start(location,pos_target);
-			}
+			current_car <- world.createCar(self.location,pos_target,passengers);
 		}
 		
 	}
@@ -441,14 +439,9 @@ species Individual skills: [moving] control:simple_bdi{
 		}
 	}
 	
-	action useBike(list<Individual> passengers_, point pos_target_){
-		create Bike{
-                location <- myself.location;
-                pos_target <- pos_target_;
-                available_graph <- road_network;
-                path p <- path_between(available_graph, location, pos_target);
-                path_to_target <- list<Road>(path_between(available_graph, location, pos_target).edges);
-                do getIn(passengers_);
+	action useBike(list<Individual> passengers, point pos_target){
+		if (current_bike = nil) {
+			current_bike <- world.createBike(self.location,pos_target,passengers);
 		}
 	}
 	

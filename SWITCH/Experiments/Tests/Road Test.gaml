@@ -5,7 +5,7 @@
 * Tags: 
 */
 
-model SWITCH
+model RoadTest
 
 import "../../Model/logger.gaml"
 import "../../Model/Entities/network_species/Road.gaml"
@@ -13,13 +13,14 @@ import "../../Model/Entities/network_species/Crossroad.gaml"
 import "../../Model/Entities/transport_species/Transport.gaml"
 import "../../Model/Entities/transport_species/PrivateTransport.gaml"
 import "../../Model/Entities/transport_species/Car.gaml"
+import "../../Model/Entities/factory_species/TransportFactory.gaml"
 import "../../Model/Entities/EventManager.gaml"
 
 global { 
 	string datasettest <- "../Datasets/Road test/"; // default
 	file crossroad_shapefile <- shape_file(datasettest+"roadTest.shp");
 	geometry shape <- envelope(crossroad_shapefile);
-	float step <-  3600.0;
+	float step <-  5.0;
 	float param_road_speed <- 50.0;
 	list<string> crossroads;
 	
@@ -35,7 +36,7 @@ global {
 	float speed_FG <- param_road_speed;
 	float speed_FH <- param_road_speed;
 	
-	int vehicule_in_A <- 3600;
+	int vehicule_in_A <- 10;
 	int bike_in_A <- 1;
 	int walk_in_A <- 5;
 	
@@ -55,24 +56,22 @@ global {
 		F <- Crossroad first_with (each.type = "F");
 		G <- Crossroad first_with (each.type = "G");
 		H <- Crossroad first_with (each.type = "H");
-		create Road{type <- "AB"; start_node <- A; end_node <- B; max_speed <- speed_AB; shape <- line([A.location,B.location]);}
-		create Road{type <- "BC"; start_node <- B; end_node <- C; max_speed <- speed_BC; shape <- line([B.location,C.location]);}
-		create Road{type <- "CD"; start_node <- C; end_node <- D; max_speed <- speed_CD; shape <- line([C.location,D.location]);}
-		create Road{type <- "CE"; start_node <- C; end_node <- E; max_speed <- speed_CE; shape <- line([C.location,E.location]);}
-		create Road{type <- "BF"; start_node <- B; end_node <- F; max_speed <- speed_BF; shape <- line([B.location,F.location]);}
-		create Road{type <- "FG"; start_node <- F; end_node <- G; max_speed <- speed_FG; shape <- line([F.location,G.location]);}
-		create Road{type <- "FH"; start_node <- F; end_node <- H; max_speed <- speed_FH; shape <- line([F.location,H.location]);}
+		create Road with:(type:"AB", start_node:A, end_node:B, max_speed:speed_AB, shape:line([A.location,B.location]));
+		create Road with:(type:"BC", start_node:B, end_node:C, max_speed:speed_BC, shape:line([B.location,C.location]));
+		create Road with:(type:"CD", start_node:C, end_node:D, max_speed:speed_CD, shape:line([C.location,D.location]));
+		create Road with:(type:"CE", start_node:C, end_node:E, max_speed:speed_CE, shape:line([C.location,E.location]));
+		create Road with:(type:"BF", start_node:B, end_node:F, max_speed:speed_BF, shape:line([B.location,F.location]));
+		create Road with:(type:"FG", start_node:F, end_node:G, max_speed:speed_FG, shape:line([F.location,G.location]));
+		create Road with:(type:"FH", start_node:F, end_node:H, max_speed:speed_FH, shape:line([F.location,H.location]));
 		road_network <- directed(as_edge_graph(Road,Crossroad));
 		create transport_generator;
-		create EventManager;
-		event_m <- first(EventManager);
 	}
 	
-	reflex manage_step when: every(#h) {}
+	/*reflex manage_step when: every(#h) {}
 	
 	reflex print_time{
 		write "***********"+timestamp(time)+"*****************" color:#red;
-	}
+	}*/
 	
 	//this function return a convenient string corresponding to a time (in second)
 	string timestamp (int time_to_print){
@@ -93,10 +92,8 @@ species transport_generator {
     reflex send_car{
         int nb_transport_sent <- 0;
         loop delay from: 0 to: vehicule_in_A{
-            create Car {
-                Crossroad c <- one_of([D, E, G, H]);
-                do start(A.location,c.location);
-            }
+        	Crossroad cr <- one_of([D, E, G, H]);
+        	Car c <- world.createCar(A.location,cr.location,[]);
             nb_transport_sent <- nb_transport_sent + 1;
         }
     }
@@ -104,20 +101,17 @@ species transport_generator {
     reflex send_bike{
         int nb_transport_sent <- 0;
         loop delay from: 0 to: bike_in_A{
-            create Bike {
-                Crossroad c <- one_of([D, E, G, H]);
-                do start(A.location,c.location);
-            }
+        	Crossroad cr <- one_of([D, E, G, H]);
+        	Bike b <- world.createBike(A.location,cr.location,[]);
             nb_transport_sent <- nb_transport_sent + 1;
         }
     }
     reflex send_walkers{
+    	write"send pedestrians";
         int nb_transport_sent <- 0;
         loop delay from: 0 to: walk_in_A{
-            create Walk {
-                Crossroad c <- one_of([D, E, G, H]);
-                do start(A.location,c.location);
-            }
+        	Crossroad cr <- one_of([D, E, G, H]);
+        	Walk w <- world.createWalk(A.location,cr.location,[]);
             nb_transport_sent <- nb_transport_sent + 1;
         }
     }
