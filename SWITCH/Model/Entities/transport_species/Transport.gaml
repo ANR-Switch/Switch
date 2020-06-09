@@ -9,7 +9,6 @@ model SWITCH
 import "../../logger.gaml"
 import "../../Global.gaml"
 import "../network_species/Road.gaml"
-import "../Individual.gaml"
 import "../EventManager.gaml"
 species Transport skills: [moving] {
 
@@ -78,6 +77,7 @@ species Transport skills: [moving] {
 		} else {
 			path_to_target <- list<Road>(the_path.edges);			
 			add nil to: path_to_target at: 0;
+			write path_to_target;
 			do sendEnterRequest(time);
 		}
 	}
