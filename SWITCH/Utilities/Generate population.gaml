@@ -7,7 +7,6 @@
 
 model Generatepopulation
 
-import "../Model/Constants.gaml"
 
 import "../Model/Entities/network_species/Building.gaml"
 
@@ -15,14 +14,12 @@ import "../Model/Entities/Individual.gaml"
 
 
 global {
-	//define the path to the dataset folder
-	string dataset_path <- "../Datasets/Castanet Tolosan/";
-
-	//GIS data
-	file shp_buildings <- file_exists(dataset_path+"buildings.shp") ? shape_file(dataset_path+"buildings.shp"):nil;
-	geometry shape <- envelope(shp_buildings);
-		
+		//GIS data
+	list<file> shp_buildings <- define_shapefiles("buildings");
+	geometry shape <- envelope(union(shp_buildings collect envelope(each)));
+	int nb_for_individual_shapefile_split <- 50000;
 	
+	bool parallel <- true;
 	
 	// ------------------------------------------- //
 	// SYNTHETIC POPULATION FROM COMOKIT ALGORITHM //
@@ -32,11 +29,22 @@ global {
 	
 	init {
 	 	//Initialization of the building using the shapefile of buildings
-		create Building from: building_shapefile;
+	 	loop shp_building over:shp_buildings {
+			create Building from: shp_building with: [types::(string(get("types")) split_with ",")];
+		}
 		
 		create Outside {the_outside <- self;}
-		list<Building> homes <- Building where (each.type in possible_homes);
-		map<string,list<Building>> buildings_per_activity <- Building group_by (each.type);
+		list<Building> homes <- Building where not empty(each.types inter possible_homes);
+		map<string,list<Building>> buildings_per_activity ;
+		list<string> tps <- remove_duplicates(Building accumulate each.types) ;
+		loop t over: tps {
+			buildings_per_activity[t] <- [];
+		}
+		ask Building {
+			loop t over: types {
+				buildings_per_activity[t] << self;
+			}
+		}
 		
 		map<Building,float> working_places;
 		loop wp over: possible_workplaces.keys {
@@ -55,24 +63,57 @@ global {
 			schools[l] <- (type in buildings_per_activity.keys) ? buildings_per_activity[type] : list<Building>([]);
 		}
 		do create_population(working_places, schools, homes, min_student_age, max_student_age);
+		if (max_individuals > -1.0 and (max_individuals < length(Individual))) {
+			ask (length(Individual) - max_individuals) among Individual{
+				do die;
+			}
+			ask Individual parallel: parallel{
+				relatives <- relatives where (not dead(each));
+			}
+		}
+	
 		write "Individual created";
 		do assign_school_working_place(working_places,schools, min_student_age, max_student_age);
 		write "Working placed assigned";
 		
 		do create_social_networks(min_student_age, max_student_age);	
 		write "social network created";
+		map<string,list<Individual>> inds <- Individual group_by each.sub_area;
+		loop sa over: inds.keys {
+			list<Individual> bds <- inds[sa] ;
+			if (length(bds) > nb_for_individual_shapefile_split) {
+				int i <- 1;
+				loop while: not empty(bds)  {
+					list<Individual> bds_ <- nb_for_individual_shapefile_split first bds;
+						save bds_ type: shp to:dataset+ sa  + "/individuals_" +i+".shp" attributes: [
+					"sub_area"::sub_area,
+					"age":: age,
+					"gender"::gender,
+					"category"::category,
+					"work_pl":: work_building = nil ? -2 :((work_building = the_outside) ? -1 : work_building.id),
+					"home_pl":: home_building.id,
+					"rels"::string(relatives collect int(each)),
+					"frs"::string(friends collect int(each)),
+					"colls"::string(colleagues collect int(each))];
+					bds <- bds - bds_;
+					i <- i + 1;
+				}
+			} else {
+			
+				save bds type: shp to:dataset+ sa  + "/individuals.shp" attributes: [
+				"sub_area"::sub_area,
+				"age":: age,
+				"gender"::gender,
+				"category"::category,
+				"work_pl":: work_building = nil ? -2 :((work_building = the_outside) ? -1 : work_building.id),
+				"home_pl":: home_building.id,
+				"rels"::string(relatives collect int(each)),
+				"frs"::string(friends collect int(each)),
+				"colls"::string(colleagues collect int(each))
+				] ;
+			}
+		}
 		
-		save Individual type: shp to:dataset_path + "individuals.shp" attributes: [
-			"age":: age,
-			"gender"::gender,
-			"category"::category,
-			"work_pl":: (work_building = the_outside) ? -1 : int(work_building),
-			"home_pl":: int(home_building),
-			"rels"::string(relatives collect int(each)),
-			"frs"::string(friends collect int(each)),
-			"colls"::string(colleagues collect int(each))
-			] ;
-	
 	/*	save "id, agenda" type:text to:dataset_path + "agenda.csv";
 		ask Individual {
 			string ag <- "";
@@ -129,6 +170,7 @@ global {
 						gender <- "M";
 						home_building <- myself;
 						household << self;
+						sub_area <- myself.sub_area;
 					} 
 					//mother
 					create Individual {
@@ -136,6 +178,7 @@ global {
 						gender <- "F";
 						home_building <- myself;
 						household << self;
+						sub_area <- myself.sub_area;
 					
 					}
 					//children
@@ -147,6 +190,7 @@ global {
 							gender <- one_of(["M", "F"]);
 							home_building <- myself;
 							household << self;
+							sub_area <- myself.sub_area;
 						}
 					}
 					if (flip(proba_grandfather)) {
@@ -156,6 +200,7 @@ global {
 							gender <- "M";
 							home_building <- myself;
 							household << self;
+							sub_area <- myself.sub_area;
 						}
 					}	
 					if (flip(proba_grandmother)) {
@@ -165,6 +210,7 @@ global {
 							gender <- "F";
 							home_building <- myself;
 							household << self;
+							sub_area <- myself.sub_area;
 						}
 					}
 				} else {
@@ -174,6 +220,7 @@ global {
 						home_building <- myself;
 						household << self;
 						category <- age > retirement_age ? retired : none;
+						sub_area <- myself.sub_area;
 					} 
 				}
 				
@@ -195,7 +242,7 @@ global {
 	//Initialiase social network of the agents (colleagues, friends)
 	action initialise_social_network(map<Building,list<Individual>> working_places, map<Building,list<Individual>> schools, map<int,list<Individual>> ind_per_age_cat) {
 		
-		ask Individual {
+		ask Individual parallel:parallel {
 			int nb_friends <- max(0,round(gauss(nb_friends_mean,nb_friends_std)));
 			loop i over: ind_per_age_cat.keys {
 				if age < i {
@@ -277,11 +324,10 @@ global {
 	//   min_student_age : minimum age to be in a school
 	//   max_student_age : maximum age to go to a school
 	action assign_school_working_place(map<Building,float> working_places,map<list<int>,list<Building>> schools, int min_student_age, int max_student_age) {
-		
 		// Assign to each individual a school and working_place depending of its age.
 		// in addition, school and working_place can be outside.
 		// Individuals too young or too old, do not have any working_place or school 
-		ask Individual {
+		ask Individual parallel: parallel{
 			if (age >= min_student_age) {
 				if (age < max_student_age) {
 					category <- student;

@@ -39,6 +39,27 @@ species Road {
 
 	//is the road is oneway or not
 	string oneway;
+  
+	//foot=no means pedestrians are not allowed
+	string foot;
+	
+	//bicycle=no means pedestrians are not allowed
+	string  bicycle;
+	
+	// access=no means car are not allowed
+	string access;
+	
+	// access=no together with bus=yes means only buses are allowed 
+	string bus;
+	
+	// tag is used to describe the "physical" properties of the road.
+	string parking_lane;
+	
+	//is used to give information about footways
+	string sidewalk;
+	
+	// can be used to describe any cycle lanes constructed within the carriageway or cycle tracks running parallel to the carriageway.
+	string cycleway;
 
 	//length of the road (in meters)
 	float size <- shape.perimeter;

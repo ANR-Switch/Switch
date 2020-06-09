@@ -16,6 +16,7 @@ species Crossroad{
 	//OSM information on crossroad (see https://wiki.openstreetmap.org/wiki/Tag:highway%3Dcrossing)
 	string crossing;
 	
+	list<string> sub_areas;
 	aspect default {
 		draw circle(3) color: #grey border: #black;
 	}

@@ -17,15 +17,21 @@ import "transport_species/Bike.gaml"
 
 species Individual skills: [moving] control:simple_bdi{
 	
+	string sub_area;
 	list<map<list<int>, pair<predicate,list<Individual>>>> agenda_week;
 	map<list<int>, pair<predicate,list<Individual>>> agenda_d;
 	path my_path;
 	Building target_building;
 	string status among: ["go to trip","passenger","driving","arrived","activity",nil];
 	predicate current_activity <- staying_at_home;
+	string athletic among: ["no", "a bit", "yes", nil];
 	
 	map<string,int> grades;//how agent care for differents criteria	
 	map<string, float> priority_modes;//priority for each mode
+	int n update: n +1;
+	float habit_coeff update: ln(n);
+	
+	string profile_type;
 	
 	Building work_building;
 	Building home_building;
@@ -63,35 +69,145 @@ species Individual skills: [moving] control:simple_bdi{
 	
 	float price_car;
 	float price_bus;
+	float price_bike;
+	float price_walk;
 	
 	action initialization{
 		target_building <- home_building;
 		car_place <- any_location_in(Road closest_to self);
 		bike_place <-location;
-		loop i from: 0 to: length(criteria)-1{
-      		grades[criteria[i]]<- rnd(9);
-	  	}
+		gender<-any(["f","m"]);
+		athletic<-any(["no","a bit","yes"]);
 		
 		
-		loop i from: 0 to: length(type_mode)-1{
-			priority_modes[type_mode[i]]<- compute_priority_mobility_mode(type_mode[i]);
+		profile_type<-"fqsdfqs";//changer ici pour le mode
+		int m <- 99;//rnd(100);
+		if(profile_type = "test"){
+				grades["comfort"]<-10;
+	  			grades["price"]<-10;
+	  			grades["time"]<-10;
+	  			grades["security"]<-10;
+	  			grades["ecology"]<-10;
+	  			grades["simplicity"]<-10;
 		}
+		
+		if(profile_type = "rocci") {//auto qui kiffent
+			if(m<16){
+				grades["comfort"]<-10;
+	  			grades["price"]<-5;
+	  			grades["time"]<-7;
+	  			grades["security"]<-rnd(10);
+	  			grades["ecology"]<-0;
+	  			grades["simplicity"]<-8;
+			}else if (m >= 16 and m < 32 ){ //auto opposition autre mode
+				grades["comfort"]<-10;
+	  			grades["price"]<-6;
+	  			grades["time"]<-7;
+	  			grades["security"]<-rnd(10);
+	  			grades["ecology"]<-3;
+	  			grades["simplicity"]<-10;
+			}else if (m >= 32 and m < 49 ){ //multimodaux
+				grades["comfort"]<-8;
+	  			grades["price"]<-8;
+	  			grades["time"]<-10;
+	  			grades["security"]<-rnd(10);
+	  			grades["ecology"]<-8;
+	  			grades["simplicity"]<-10;
+			}else if (m >= 49 and m < 66 ){ //multimodaux opp voiture
+				grades["comfort"]<-3;
+	  			grades["price"]<-10;
+	  			grades["time"]<-6;
+	  			grades["security"]<-rnd(10);
+	  			grades["ecology"]<-10;
+	  			grades["simplicity"]<-8;
+			}else if (m >= 66 and m < 83 ){ //alternatif adhérence leur mode
+				grades["comfort"]<-2;
+	  			grades["price"]<-rnd(10);
+	  			grades["time"]<-7;
+	  			grades["security"]<-rnd(10);
+	  			grades["ecology"]<-10;
+	  			grades["simplicity"]<-10;
+			}else { //alternatif oppo
+				grades["comfort"]<-2;
+	  			grades["price"]<-8;
+	  			grades["time"]<-4;
+	  			grades["security"]<-rnd(10);
+	  			grades["ecology"]<-10;
+	  			grades["simplicity"]<-rnd(10);
+			}
+		} else {
+			
+	  		if (m <= 34){ //automobilistes ouverts à tout mode
+	  			grades["comfort"]<-8;
+	  			grades["price"]<-8;
+	  			grades["time"]<-10;
+	  			grades["security"]<-rnd(10);
+	  			grades["ecology"]<-4;
+	  			grades["simplicity"]<-10;
+	  		} else if(m > 34 and m<=61){ //pro indiv
+	  			grades["comfort"]<-7;
+	  			grades["price"]<-rnd(10);
+	  			grades["time"]<-9;
+	  			grades["security"]<-rnd(10);
+	  			grades["ecology"]<-5;
+	  			grades["simplicity"]<-10;
+	  		}else if(m > 61 and m<=77){ //automobilistes à contre coeur
+	  			grades["comfort"]<-5;
+	  			grades["price"]<-rnd(10);
+	  			grades["time"]<-8;
+	  			grades["security"]<-rnd(10);
+	  			grades["ecology"]<-10;
+	  			grades["simplicity"]<-9;
+	  		}else if(m > 77 and m<=87){ //pro indiv
+	  			grades["comfort"]<-10;
+	  			grades["price"]<-5;
+	  			grades["time"]<-7;
+	  			grades["security"]<-rnd(10);
+	  			grades["ecology"]<-3;
+	  			grades["simplicity"]<-10;
+	  		}else {
+	  			loop i from: 0 to: length(criteria)-1{
+	      		grades[criteria[i]]<- rnd(9);
+		  		}
+	  		}
+		}
+	  	
+	  	m <- rnd(1);
+	  	if (m = 0){
+	  		car_place <- nil;
+	  	}
+	  	
+		
+		n<-5;//for habit coefficient
+		
+		
+		
 		
 		//People agents are located anywhere in one of the building
 		location <- any_location_in(home_building);
+		if (work_building = nil){
+			
+		}
 		if (work_building != nil) {
 			distance <- home_building distance_to work_building;
-			time_bike <- distance/bike_speed;
-			time_car <- distance/car_speed;
-			time_bus <- distance/bus_speed;
-			time_walk <- distance/walk_speed;
+		} else {
+			distance <- 10.0;
 		}
+		time_bike <- distance/bike_speed+0.1;
+		time_car <- distance/car_speed+0.1;
+		time_bus <- distance/bus_speed+0.1;
+		time_walk <- distance/walk_speed+0.1;
 		
-		price_bus <- subscription_price/(21.8*2); //21.8 est le nombre moyen de jour "de semaine" par mois
-		price_car <- (7.2*distance/100*gas_price)/(21.8*2);
-		price_bus<- 0.68;
-		price_car <- 0.8;
-	
+		price_bus <- subscription_price/(21.8*2)+ 0.1; //21.8 est le nombre moyen de jour "de semaine" par mois
+		price_car <- (7.2*distance/100*gas_price)/(21.8*2) +0.1;
+		price_bike <- 0.0001;
+		price_walk <- 0.0001;
+		
+		
+		
+		
+		do update_priority(); 
+		
 		do add_belief(at_target);
 		do add_desire(staying_at_home);
 		
@@ -111,24 +227,24 @@ species Individual skills: [moving] control:simple_bdi{
 					}
 					match "price" {
 						//on considère qu'une voiture dépense 7,2 litres pour 100 km(moyenne sur 2019)
-						val <- 0.5;
-						//val <- 1- (price_car/max([price_car,price_bus]));
+						
+						val <- 1.0 /(price_car/min([price_car,price_bus, price_walk, price_bike]));
+					
 					}
 					match "time" {
 						//on considère que la voiture à une allure moyenne de 25km/h
-						time_car <- distance/25.0;
-						//val<- time_car/max([time_car,time_bike, time_bus, time_walk]);
-						val <-0.5;
-
+						//write max(time_car,time_bike, time_bus, time_walk);
+						val<- 1.0/(time_car/min(time_car,time_bike, time_bus, time_walk));
+						
 					}
 					match "ecology"{
 						val <-0.0;
 					}
 					match "simplicity"{
-						val <- 1.0;
+						val <- 0.8;
 					}
 					match "safety"{
-						val <- percentage_of_drivers/100;
+						val <- 1 - percentage_of_drivers/100;
 						
 						//eventuellement prendre en compte la capacité de la route ? est-ce une info à la quelle on a accès ?
 					}
@@ -145,25 +261,32 @@ species Individual skills: [moving] control:simple_bdi{
 						} else {
 							val <- 0.1;
 						}
+						
+						if athletic = "no"{
+							val <- (val + 0.1) /2;
+						} else if (athletic = "a bit") {
+							val <- (val + 0.6) /2;
+						} else {
+							val <- (val + 1.0)/2;
+						}
 					}
 					match "price" {
-						val <- 1.0;
+						val <- 1/ (price_bike/min(price_car, price_bus, price_walk, price_bike));
 					}
 					match "time" {
-						//val<-time_bike/max([time_car,time_bike, time_bus, time_walk]);
-						val <-0.5;
-
+						val<- 1 / (time_bike/min(time_car,time_bike, time_bus, time_walk));
+					
 					}
 					match "ecology"{
-						val <- 1.0;
+						val <- 2.0;
 					}
 					match "simplicity"{
 						// dans le trajet effectué, voir pourcentage route cyclables + distance au dessus de 20min pas cool (voir papiers socio)
-						val <-0.5;
+						val <- 0.9;
 					}
 					match "safety"{
 						//dans le trajet effectué pourcentage de route non partagée avec automobilistes
-						val <-0.5;
+						val <-ratio_cycleway;
 					}			
 				}
 			}//end match bike
@@ -172,32 +295,37 @@ species Individual skills: [moving] control:simple_bdi{
 					match "comfort" {
 						//selon son heure de départ
 						//nb de personnes qu'on peut transporter en 30min - nb actuel de passager
-						float val1 <- ((30/bus_freq)* bus_capacity) - number_of_users_per_hour[[int(current_date.hour,floor(current_date.minute/30)*30)]];
+						float val1 <- ((30/bus_freq)* bus_capacity) - number_of_users_per_hour[[current_date.hour,int(floor(current_date.minute/30)*30)]];
 						val <- val1/((30/bus_freq)* bus_capacity);
 					}
 					match "price" {
-					 	val <-0.5;
-					 	//val <- price_bus/max(price_car,price_bus);
+					 	val <- 1/ (price_bus/min(price_car,price_bus, price_walk, price_bike));
+					 
+					
 					}
 					match "time" {
 						// On considère qu'un bus se déplace à 10km/h
-						//val<-time_bus/max(time_car,time_bike, time_bus, time_walk);
-						val <-0.5;
-
+						val<- 1 / (time_bus/min(time_car,time_bike, time_bus, time_walk));
+						
 					}
 					match "ecology"{
-						val <- 0.75;
+						val <- 0.7;
 					}
 					match "simplicity"{
 						//Dépend du nombre de ligne de bus différentes à prendre; à voir comment faire avec ces data
-						val <-0.5;
+						val <-0.3;
 					}
 					match "safety"{
-						if(current_date.hour>21.0){
-							val <- 0.5;
+						if (gender = "f"){
+							if(current_date.hour>21.0){
+								val <- 0.5;
+							} else {
+								val <- 0.80;
+							}
 						} else {
-							val <- 0.90;
+							val <- 0.9;
 						}
+						
 					}
 				}
 				
@@ -205,28 +333,36 @@ species Individual skills: [moving] control:simple_bdi{
 			match "walk"{
 				switch criterion {
 					match "comfort" { 
-						if(distance < 3){
-							val <- 1- distance /3.0;
+						if(distance <1){
+							val<-1.0;
+						}else if (distance < 3){
+							val <- 1 - distance /3.0;
 						} else {
 							val <- 0.0;
 						}
+						val <- 0.5;
 					}
 					match "price" {
-						val <- 1.0;
+						val <- 1 / (price_walk/min(price_car, price_bus, price_walk, price_bike));
+						
 					}
 					match "time" {
-						//val<-time_walk/max(time_car,time_bike, time_bus, time_walk);
-						val <-0.5;
+						val<- 1 / (time_walk/min(time_car,time_bike, time_bus, time_walk));
+					
 					}
 					match "ecology"{
-						val <- 1.0;
+						val <- 2.0;
 					}
 					match "simplicity"{
-						if(distance < 3){
-							val <- 1- distance /3.0;
-						} else {
-							val <- 0.0;
-						}
+//						if(distance < 2.5){
+//							val <- 1.0;
+//						}
+//						if(distance < 5){
+//							val <- 1- distance /3.0;
+//						} else {
+//							val <- 0.0;
+//						}
+						val <- 0.5;
 					}
 					match "safety"{
 						if(current_date.hour > 21 or current_date.hour<5){
@@ -246,10 +382,22 @@ species Individual skills: [moving] control:simple_bdi{
 	float compute_priority_mobility_mode(string type) {
 		float val <- 0.0;
 		loop i from: 0 to: length(criteria)-1{
-			val <- grades[criteria[i]]*compute_value(type,criteria[i]);
+			val <- exp(grades[criteria[i]])*((compute_value(type,criteria[i])*2)-1);
 		}
+		n<-0;
+		return val/length(criteria) + habit_coeff*priority_modes[type];
+		
+	}
 	
-		return val/length(criteria);
+	action update_priority{
+		loop i from: 0 to: length(type_mode)-1{
+			priority_modes[type_mode[i]]<- compute_priority_mobility_mode(type_mode[i]);
+		}
+		if(not has_car()){
+			priority_modes["car"] <-0;
+		}
+		write "max priority = : " + get_max_priority_mode() ;
+		
 	}
 	
 	bool has_car{
@@ -262,6 +410,25 @@ species Individual skills: [moving] control:simple_bdi{
 	
 	bool is_time(int hour, int minute) {
 		return current_date.hour = hour and current_date.minute = minute;
+	}
+	
+	string get_max_priority_mode{
+		float p <- max(priority_modes);
+		switch p{
+			match priority_modes["car"]{
+				return "car";
+			}
+			match priority_modes["bike"]{
+				return "bike";
+			}
+			match priority_modes["walk"]{
+				return "walk";
+			}
+			match priority_modes["bus"]{
+				return "bus";
+			}
+		}
+		
 	}
 	
 	reflex define_agenda_day when: every(#day) {
@@ -286,11 +453,31 @@ species Individual skills: [moving] control:simple_bdi{
 		// for the moment this function is only returning a car trip
 		//
 		transport_trip <- [];
-		transport_trip << ["walk",location, car_place];
-		point target_parking <- any_location_in(Road closest_to target_);
-		transport_trip << ["car",car_place,target_parking];
-		transport_trip << ["walk",target_parking,target_];
-		
+		float p <- max(priority_modes);
+		switch p {
+			match priority_modes["car"]{
+				transport_trip << ["walk",location, car_place];
+				point target_parking <- any_location_in(Road closest_to target_);
+				transport_trip << ["car",car_place,target_parking];
+				transport_trip << ["walk",target_parking,target_];
+			}
+			
+			match priority_modes["bike"]{
+				transport_trip << ["walk",location, bike_place];
+				point target_parking <- any_location_in(Road closest_to target_);
+				transport_trip << ["bike",bike_place,target_parking];
+				transport_trip << ["walk",target_parking,target_];
+			}
+			
+			match priority_modes["bus"]{
+				
+			}
+			
+			match priority_modes ["walk"]{
+				transport_trip << ["walk",location, target_];
+			}
+			
+		}
 		trip_pointer <- 0;
 		ask world {do write_message(myself.name + " - transport trip: " + myself.transport_trip);}
 	}
