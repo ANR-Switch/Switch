@@ -135,7 +135,7 @@ experiment RoadTest type: gui {
 	output {	
 		display map background: #white type: opengl {
 			species Crossroad aspect: roadTest;
-			species Road aspect: roadTest;
+			species Road aspect: advanced;
 		}
 //		display chart_D {
 //            chart "traveled distance by car going to D" type: series {

@@ -268,7 +268,7 @@ species Road {
 			int i<-0;
 			loop elem over:waiting_transports.data {
 				Transport trans <- elem[1];
-				float dt <- (i * trans.size) + i * spacing;
+				float dt <- min((i * trans.size) + i * spacing,self.max_capacity);
 				float distToPoint <- 24;
 				float t <- distToPoint / d;
 				float xt <- ((1 - t) * x0 + t * x1);
