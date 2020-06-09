@@ -14,25 +14,25 @@ import "../data_structure_species/Queue.gaml"
 
 global{
 	
-	Car createCar(point start_location, point end_location, list<Individual> passengers){
+	Car createCar(point start_location, point end_location, list<Individual> passengers_){
         create Car returns: children{
-	    	do getIn(passengers);
+	    	do getIn(passengers_);
             do start(start_location,end_location);
         } 
         return children[0];
     }
     
-    Bike createBike(point start_location, point end_location, list<Individual> passengers){
+    Bike createBike(point start_location, point end_location, list<Individual> passengers_){
         create Bike returns: children{
-	    	do getIn(passengers);
+	    	do getIn(passengers_);
             do start(start_location,end_location);
         } 
         return children[0];
     }
     
-    Walk createWalk(point start_location, point end_location, list<Individual> passengers){
+    Walk createWalk(point start_location, point end_location, list<Individual> passengers_){
         create Walk returns: children{
-	    	do getIn(passengers);
+	    	do getIn(passengers_);
             do start(start_location,end_location);
         } 
         return children[0];

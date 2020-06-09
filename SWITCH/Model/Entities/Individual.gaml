@@ -13,7 +13,7 @@ import "../Constants.gaml"
 import "network_species/Building.gaml"
 import "transport_species/Car.gaml"
 import "transport_species/Bike.gaml"
-import "factory_species/TransportFactory.gaml"
+
 
 species Individual skills: [moving] control:simple_bdi{
 	

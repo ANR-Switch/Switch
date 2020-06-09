@@ -77,7 +77,6 @@ species Transport skills: [moving] {
 		} else {
 			path_to_target <- list<Road>(the_path.edges);			
 			add nil to: path_to_target at: 0;
-			write path_to_target;
 			do sendEnterRequest(time);
 		}
 	}
@@ -87,7 +86,7 @@ species Transport skills: [moving] {
 			match "enter road" {
 			//if we are leaving a road by entering another the transports averts the first road 
 				do changeRoad(signal_time);
-				do updatePassengerPosition;
+				do updatePassengerPosition();
 			}
 
 			match "First in queue" {
@@ -100,7 +99,7 @@ species Transport skills: [moving] {
 					ask getCurrentRoad() {
 						do leave(myself, signal_time);
 					}
-					do endTrip;
+					do endTrip();
 				}
 
 				lastAction <- "First in queue";
@@ -126,7 +125,6 @@ species Transport skills: [moving] {
 			ask next {
 				do queueInRoad(myself, signal_time);
 			}
-			do updatePassengerPosition;
 		} else {
 			listactions <- listactions + " " + signal_time + " Queing " + next.name + " End of the road " + " (" + path_to_target + ")\n";
 		}
@@ -163,7 +161,7 @@ species Transport skills: [moving] {
 	// compute the travel of incoming transports
 	// The formula used is BPR equilibrium formula
 	float getRoadTravelTime (Road r) {
-		float max_speed_formula <- min([self.max_speed, r.max_speed]) #km / #h;
+		float max_speed_formula <- min([self.max_speed, r.avg_speed]) #km / #h;
 		float free_flow_travel_time <- r.size / max_speed_formula;
 		float travel_time <- free_flow_travel_time * (1.0 + 0.15 * ((r.max_capacity - r.current_capacity) / r.max_capacity) ^ 4);
 		return travel_time with_precision 3;
