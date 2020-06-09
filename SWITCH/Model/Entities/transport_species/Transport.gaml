@@ -9,7 +9,6 @@ model SWITCH
 import "../../logger.gaml"
 import "../../Global.gaml"
 import "../network_species/Road.gaml"
-import "../Individual.gaml"
 import "../EventManager.gaml"
 species Transport skills: [moving] {
 

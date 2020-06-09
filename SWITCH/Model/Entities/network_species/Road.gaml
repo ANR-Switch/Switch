@@ -234,7 +234,7 @@ species Road {
 	//rgb color <- rgb(150,255 * (current_capacity / max_capacity),0);
 		geometry geom_display <- (shape + (2.5));
 		draw geom_display border: #gray color: #black;
-		draw "" + type + " - " + length(present_transports) + " PCU" at: location + point([15, -5]) size: 10 color: #black;
+//		draw "" + type + " - " + length(present_transports) + " PCU" at: location + point([15, -5]) size: 10 color: #black;
 
 		// Display each vehicle in the queue according to their size and colored according to their time_to_leave
 		// Vehicles at the top of FIFO are the closet of the end_node.
@@ -245,22 +245,36 @@ species Road {
 			float x0 <- end_node.location.x;
 			float y0 <- end_node.location.y;
 			float d <- sqrt(((x1 - x0) * (x1 - x0)) + ((y1 - y0) * (y1 - y0)));
-			loop i from: 0 to: length(present_transports) - 1 {
-				Transport trans <- present_transports[i];
+			int i<-0;
+			loop elem over:present_transports.queue {
+				Transport trans <- elem[1];
 				float dt <- (i * trans.size) + i * spacing;
-				float t <- dt / d;
+				float distToPoint <- 6;
+				float t <- distToPoint / d;
 				float xt <- ((1 - t) * x0 + t * x1);
 				float yt <- ((1 - t) * y0 + t * y1);
-				float time_to_leave <- 0.0; // NOT CORRECT DUE TO CHANGES ON ROAD BEHAVIOUR 
-				int nbStepToLeave <- round(int(time_to_leave - time) * step);
-				rgb carColor;
-				if (nbStepToLeave > 0) {
-					carColor <- rgb(0, 255 - min(255, nbStepToLeave), 0);
-				} else {
-					carColor <- rgb(255 - min(255, abs(nbStepToLeave)), 0, 0);
-				}
+				i <- i+1;
+				draw box(15, 15, dt) at: point([xt,yt]) color: #red rotate: angle_between({x0, y0}, {x1, y0}, {x1, y1});
+			}
 
-				draw box(trans.size, 1.5, 1.5) at: point([xt, yt]) color: carColor rotate: angle_between({x0, y0}, {x1, y0}, {x1, y1});
+		}
+		if (length(waiting_transports) > 0) {
+			float spacing <- 0.0;
+			float x1 <- start_node.location.x;
+			float y1 <- start_node.location.y;
+			float x0 <- end_node.location.x;
+			float y0 <- end_node.location.y;
+			float d <- sqrt(((x1 - x0) * (x1 - x0)) + ((y1 - y0) * (y1 - y0)));
+			int i<-0;
+			loop elem over:waiting_transports.data {
+				Transport trans <- elem[1];
+				float dt <- (i * trans.size) + i * spacing;
+				float distToPoint <- 24;
+				float t <- distToPoint / d;
+				float xt <- ((1 - t) * x0 + t * x1);
+				float yt <- ((1 - t) * y0 + t * y1);
+				i <- i+1;
+				draw box(15, 15, dt) at: point([xt,yt]) color: #yellow rotate: angle_between({x0, y0}, {x1, y0}, {x1, y1});
 			}
 
 		}
