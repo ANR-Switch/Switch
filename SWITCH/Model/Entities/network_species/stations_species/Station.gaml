@@ -7,7 +7,7 @@
 
 model SWITCH
 
-import "../../Individual.gaml"
+import "../../transport_species/Passenger.gaml"
 
 species Hub {
 	rgb color;
@@ -17,6 +17,6 @@ species Hub {
 		draw square(5) color: color border: #black;
 	}
 	
-	action enter(list<Individual> passengers_, Hub targetHub){}
+	action enter(list<Passenger> passengers_, Hub targetHub){}
 	action leave(Transport t){}
 }
