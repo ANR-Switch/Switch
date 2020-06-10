@@ -7,7 +7,7 @@
 model SWITCH
 
 import "../../logger.gaml"
-import "../../Global.gaml"
+import "../../Entities/Individual.gaml"
 import "../network_species/Road.gaml"
 import "../EventManager.gaml"
 species Transport skills: [moving] {
@@ -94,12 +94,13 @@ species Transport skills: [moving] {
 				} else {
 				//the transport is arrived
 					listactions <- listactions + " " + signal_time + " There is no next road (" + path_to_target + ")\n";
-					ask getCurrentRoad() {
-						do leave(myself, signal_time);
+					if getCurrentRoad() != nil{
+						ask getCurrentRoad() {
+							do leave(myself, signal_time);
+						}
 					}
 					do endTrip();
 				}
-
 				lastAction <- "First in queue";
 			}
 
@@ -179,7 +180,11 @@ species Transport skills: [moving] {
 	}
 
 	Road getCurrentRoad {
-		return path_to_target[0];
+		if length(path_to_target)>0{
+			return path_to_target[0];
+		}else{
+			return nil;
+		}
 	}
 
 	action updatePassengerPosition{

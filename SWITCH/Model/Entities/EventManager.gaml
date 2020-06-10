@@ -30,7 +30,7 @@ species EventManager {
 	
 	reflex sendSignal when: not events_map.isEmpty() {
 		
-		loop while: getEventTime(0) <= time{
+		loop while: not events_map.isEmpty() and getEventTime(0) <= time{
 			//write ""+getEventTransport(0)+" " +getEventTime(0) + " " +getEventType(0);
 			float event_time <- getEventTime(0);
 			string event_type <- getEventType(0);

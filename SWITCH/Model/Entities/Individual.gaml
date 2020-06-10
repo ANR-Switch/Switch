@@ -471,7 +471,7 @@ species Individual skills: [moving] control:simple_bdi{
 			}
 			
 			match priority_modes["bus"]{
-				
+				transport_trip << ["walk",location, target_];
 			}
 			
 			match priority_modes ["walk"]{
@@ -590,7 +590,7 @@ species Individual skills: [moving] control:simple_bdi{
 				color <-colors_per_mobility_mode[mobility_mode]; 
 					
 				switch mobility_mode{
-					match "walk"{do walk([self],transport_trip[trip_pointer][2]);}
+					match "walk"{do useWalk([self],transport_trip[trip_pointer][2]);}
 					match "car"{do useCar([self],transport_trip[trip_pointer][2]);}
 					match "bike"{do useBike([self],transport_trip[trip_pointer][2]);}
 					default{write "error execute_trip transport mode switch";}
@@ -601,7 +601,6 @@ species Individual skills: [moving] control:simple_bdi{
 				if trip_pointer = length(transport_trip)-1{
 					color <- colors_per_act[current_activity];
 					do add_belief(at_target);
-					
 				}else{
 					//There is transport left to use so the individual join the next departure by foot
 					trip_pointer <- trip_pointer + 1;
@@ -611,24 +610,24 @@ species Individual skills: [moving] control:simple_bdi{
 		}
 	}
 	
-	action useCar(list<Individual> passengers, point pos_target){
-		ask world {do write_message(myself.name + " - drive: location" + myself.location + " target: "+ pos_target);}
+	action useCar(list<Individual> passengers_, point pos_target_){
+		ask world {do write_message(myself.name + " - drive: location" + myself.location + " target: "+ pos_target_);}
 		if (current_car = nil) {
-			current_car <- world.createCar(self.location,pos_target,passengers);
+			current_car <- world.createCar(self.location,pos_target_,passengers_);
 		}
 		
 	}
 	
-	action useBike(list<Individual> passengers, point pos_target){
+	action useBike(list<Individual> passengers_, point pos_target_){
 		if (current_bike = nil) {
-			current_bike <- world.createBike(self.location,pos_target,passengers);
+			current_bike <- world.createBike(self.location,pos_target_,passengers_);
 		}
 	}
 	
-	action walk( list<Individual> passengers, point pos_target){
-		ask world {do write_message(myself.name + " - walk: location" + myself.location + " target: "+ pos_target);}
+	action useWalk( list<Individual> passengers_, point pos_target_){
+		ask world {do write_message(myself.name + " - walk: location" + myself.location + " target: "+ pos_target_);}
 		if (current_walk = nil) {
-			current_walk <- world.createWalk(self.location,pos_target,passengers);
+			current_walk <- world.createWalk(self.location,pos_target_,passengers_);
 		}
 	}
 	

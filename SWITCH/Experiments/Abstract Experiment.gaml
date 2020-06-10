@@ -10,7 +10,7 @@ global {
 	font default <- font("Helvetica", 18, #bold);
 	rgb text_color <- world.color.brighter.brighter;
 	rgb background <- world.color.darker.darker;
-	string dataset_folder <- "../../Datasets/"; // Need to be overwritten if the caller is not in a sub-directory
+	string dataset_folder <- "../../Datasets"; // Need to be overwritten if the caller is not in a sub-directory
 
 	init { 
 		do global_init;
