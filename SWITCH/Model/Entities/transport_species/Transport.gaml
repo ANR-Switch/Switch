@@ -7,9 +7,14 @@
 model SWITCH
 
 import "../../logger.gaml"
+<<<<<<< Updated upstream
 import "../../Entities/Individual.gaml"
+=======
+>>>>>>> Stashed changes
 import "../network_species/Road.gaml"
 import "../EventManager.gaml"
+import "Passenger.gaml"
+
 species Transport skills: [moving] {
 
 // maximum speed for a transport (km/h)
@@ -23,7 +28,7 @@ species Transport skills: [moving] {
 
 	//passengers present in the transport
 	// the fisrt passenger of the list is considered as the driver
-	list<Individual> passengers <- [];
+	list<Passenger> passengers <- [];
 
 	//road graph available for the transport
 	graph available_graph;
@@ -44,26 +49,26 @@ species Transport skills: [moving] {
 
 	action addPointReachedEndRoad {
 		traveled_dist <- traveled_dist + getCurrentRoad().size;
-		if (the_logger != nil) {
-			ask the_logger {
-				do add_data(myself.test_target, myself.name, myself.traveled_dist);
-			}
-
-		}
+//		if (the_logger != nil) {
+//			ask the_logger {
+//				do add_data(myself.test_target, myself.name, myself.traveled_dist);
+//			}
+//
+//		}
 
 	}
 
 	action addPointEnterRoad {
-		if (the_logger != nil) {
-			ask the_logger {
-				do add_data(myself.test_target, myself.name, myself.traveled_dist);
-			}
-
-		}
+//		if (the_logger != nil) {
+//			ask the_logger {
+//				do add_data(myself.test_target, myself.name, myself.traveled_dist);
+//			}
+//
+//		}
 
 	}
 	//****************************************************
-	action start (point start_location, point end_location) {
+	action start (point start_location, point end_location,graph<Crossroad,Road> road_network) {
 		location <- start_location;
 		pos_target <- end_location;
 		available_graph <- road_network;
@@ -143,7 +148,7 @@ species Transport skills: [moving] {
 
 	action setEntryTime (float entry_time) {
 		listEvent <- listEvent + " " + entry_time + " Enter road/ ";
-		ask event_m {
+		ask EventManager {
 			do registerEvent(entry_time, myself, "enter road");
 		}
 
@@ -151,7 +156,7 @@ species Transport skills: [moving] {
 
 	action setLeaveTime (float leave_time) {
 		listEvent <- listEvent + " " + leave_time + " First In queue/ ";
-		ask event_m {
+		ask EventManager {
 			do registerEvent(leave_time, myself, "First in queue");
 		}
 

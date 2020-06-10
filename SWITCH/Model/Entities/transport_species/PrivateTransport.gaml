@@ -9,7 +9,7 @@ model SWITCH
 import "Transport.gaml"
 species PrivateTransport parent: Transport {
 
-	action getIn (list<Individual> passengers_) {
+	action getIn (list<Passenger> passengers_) {
 		int nb_passenger <- min([length(passengers_), max_passenger]);
 		if nb_passenger > 0 {
 			loop i from: 0 to: nb_passenger - 1 {

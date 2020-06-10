@@ -41,7 +41,7 @@ global {
 	int walk_in_A <- 5;
 	
 	init{
-		create logger with: [store_individual_dest::true]{the_logger <- self;}
+//		create logger with: [store_individual_dest::true]{the_logger <- self;}
 		//logger.data["D"] <- []; logger.data["E"] <- []; logger.data["G"] <- []; logger.data["H"] <- [];
 		
 		create Crossroad from: crossroad_shapefile with:[
@@ -65,7 +65,7 @@ global {
 		create Road with:(type:"FH", start_node:F, end_node:H, max_speed:speed_FH, shape:line([F.location,H.location]));
 		road_network <- directed(as_edge_graph(Road,Crossroad));
 		create transport_generator;
-		create EventManager{event_m <- self;}
+		create EventManager;
 	}
 	
 	reflex manage_step when: every(#h) {}
@@ -94,7 +94,7 @@ species transport_generator {
         int nb_transport_sent <- 0;
         loop delay from: 0 to: vehicule_in_A{
         	Crossroad cr <- one_of([D, E, G, H]);
-        	Car c <- world.createCar(A.location,cr.location,[]);
+        	Car c <- world.createCar(A.location,cr.location,[],road_network);
             nb_transport_sent <- nb_transport_sent + 1;
         }
     }
@@ -103,7 +103,7 @@ species transport_generator {
         int nb_transport_sent <- 0;
         loop delay from: 0 to: bike_in_A{
         	Crossroad cr <- one_of([D, E, G, H]);
-        	Bike b <- world.createBike(A.location,cr.location,[]);
+        	Bike b <- world.createBike(A.location,cr.location,[],road_network);
             nb_transport_sent <- nb_transport_sent + 1;
         }
     }
@@ -112,7 +112,7 @@ species transport_generator {
         int nb_transport_sent <- 0;
         loop delay from: 0 to: walk_in_A{
         	Crossroad cr <- one_of([D, E, G, H]);
-        	Walk w <- world.createWalk(A.location,cr.location,[]);
+        	Walk w <- world.createWalk(A.location,cr.location,[],road_network);
             nb_transport_sent <- nb_transport_sent + 1;
         }
     }

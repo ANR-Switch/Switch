@@ -26,7 +26,7 @@ species Walk parent: PrivateTransport {
 	//There is a specific start action for pedestrians as it is coherent to not have a road to pass for a walk trip
 	//so when the path is nil, a leave event is set. When the leave signal will occur, as path_to_target is empty the action endTrip
 	//will be called causing the pedestrian to be teleported at his target location
-	action start (point start_location, point end_location) {
+	action start (point start_location, point end_location,graph<Crossroad,Road> road_network) {
 		location <- start_location;
 		pos_target <- end_location;
 		available_graph <- road_network;

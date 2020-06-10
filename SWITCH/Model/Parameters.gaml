@@ -11,6 +11,7 @@ import "Constants.gaml"
 global {
 	string dataset <- "../Datasets/Castanet Tolosan/"; // default
 	
+	string weather <- "sunny" among: ["sunny","rainy","stormy",nil];
 	
 	//if empty, all;
 	list<string> sub_areas <- [];

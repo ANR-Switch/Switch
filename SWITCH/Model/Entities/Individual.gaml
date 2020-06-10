@@ -15,14 +15,13 @@ import "transport_species/Car.gaml"
 import "transport_species/Bike.gaml"
 
 
-species Individual skills: [moving] control:simple_bdi{
+species Individual skills: [moving] control:simple_bdi parent:Passenger{
 	
 	string sub_area;
 	list<map<list<int>, pair<predicate,list<Individual>>>> agenda_week;
 	map<list<int>, pair<predicate,list<Individual>>> agenda_d;
 	path my_path;
 	Building target_building;
-	string status among: ["go to trip","passenger","driving","arrived","activity",nil];
 	predicate current_activity <- staying_at_home;
 	string athletic among: ["no", "a bit", "yes", nil];
 	
@@ -35,18 +34,12 @@ species Individual skills: [moving] control:simple_bdi{
 	
 	Building work_building;
 	Building home_building;
-	Car current_car;
-	Bike current_bike;
-	Walk current_walk;
 	
 	list<Individual> relatives;
 	list<Individual> friends;
 	list<Individual> colleagues;
 	
 	map<predicate, map<string,list<Building>>> building_targets;
-	
-	point car_place;
-	point bike_place;
 	
 	//the trip the individual has to follow to join the activity
 	//transport_trip [[string tp_mode, point start_pos, point target_pos]]
@@ -614,21 +607,21 @@ species Individual skills: [moving] control:simple_bdi{
 	action useCar(list<Individual> passengers_, point pos_target_){
 		ask world {do write_message(myself.name + " - drive: location" + myself.location + " target: "+ pos_target_);}
 		if (current_car = nil) {
-			current_car <- world.createCar(self.location,pos_target_,passengers_);
+			current_car <- world.createCar(self.location,pos_target,passengers,road_network);
 		}
 		
 	}
 	
 	action useBike(list<Individual> passengers_, point pos_target_){
 		if (current_bike = nil) {
-			current_bike <- world.createBike(self.location,pos_target_,passengers_);
+			current_bike <- world.createBike(self.location,pos_target,passengers,road_network);
 		}
 	}
 	
 	action useWalk( list<Individual> passengers_, point pos_target_){
 		ask world {do write_message(myself.name + " - walk: location" + myself.location + " target: "+ pos_target_);}
 		if (current_walk = nil) {
-			current_walk <- world.createWalk(self.location,pos_target_,passengers_);
+			current_walk <- world.createWalk(self.location,pos_target,passengers,road_network);
 		}
 	}
 	

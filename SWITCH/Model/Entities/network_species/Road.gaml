@@ -7,6 +7,8 @@
 model SWITCH
 
 import "Crossroad.gaml"
+import "../../Constants.gaml"
+import "../../Parameters.gaml"
 import "../transport_species/Transport.gaml"
 import "../transport_species/Bike.gaml"
 import "../transport_species/Walk.gaml"
