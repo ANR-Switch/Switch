@@ -308,17 +308,25 @@ species Road {
 		float t <- distToPoint / d;
 		float xt <- ((1 - t) * x0 + t * x1);
 		float yt <- ((1 - t) * y0 + t * y1);
+		if(length(present_transports.queue)>0){
 		draw box(5, 5, length(present_transports.queue) * 2.5) at: point([xt, yt, dt]) color: #red rotate: angle_between({x0, y0}, {x1, y0}, {x1, y1});
 		dt <- dt + (length(present_transports.queue) * 2.5) + 1;
+		}
+		if(length(present_pedestrians)>0){
 		draw box(5, 5, length(present_pedestrians) * 2.5) at: point([xt, yt, dt]) color: #purple rotate: angle_between({x0, y0}, {x1, y0}, {x1, y1});
 		dt <- dt + (length(present_pedestrians) * 2.5) + 1;
+		}
+		if(length(present_bikes)>0){
 		draw box(5, 5, length(present_bikes) * 2.5) at: point([xt, yt, dt]) color: #green rotate: angle_between({x0, y0}, {x1, y0}, {x1, y1});
 		dt <- dt + (length(present_bikes) * 2.5) + 1;
+		}
 		distToPoint <- 24;
 		t <- distToPoint / d;
 		xt <- ((1 - t) * x0 + t * x1);
 		yt <- ((1 - t) * y0 + t * y1);
+		if(length(waiting_transports.data)>0){
 		draw box(5, 5, (length(waiting_transports.data) * 2.5)) at: point([xt, yt]) color: #yellow rotate: angle_between({x0, y0}, {x1, y0}, {x1, y1});
+		}
 	}
 
 }
