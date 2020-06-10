@@ -72,7 +72,6 @@ species Transport skills: [moving] {
 		path the_path <- path_between(available_graph, location, pos_target);
 		if (the_path = nil) {
 			write "PATH NIL //// TELEPORTATION ACTIVEEE !!!!!!";
-			location <- end_location;
 			do endTrip;
 		} else {
 			path_to_target <- list<Road>(the_path.edges);			

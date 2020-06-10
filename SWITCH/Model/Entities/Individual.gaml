@@ -484,7 +484,6 @@ species Individual skills: [moving] control:simple_bdi parent:Passenger{
 		status <- "go to trip";
 		do add_subintention(get_current_intention(),at_target, true);
 		do current_intention_on_hold();
-		
 	}
 	
 	string building_type_choice(predicate pred) {

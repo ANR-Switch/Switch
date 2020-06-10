@@ -43,11 +43,7 @@ global {
 	
 	//time
 	float bus_freq; //intervalle en minute
-	
-	string weather <- "sunny" among: ["sunny","rainy","stormy",nil];// update: update_weather(); faut que ce soit une ou deux fois par jour
-	
-	EventManager event_m;
-	
+			
 	logger the_logger;
 	list<file> shp_roads <-  define_shapefiles("roads");
 	geometry shape <- envelope(union(shp_roads collect envelope(each)));
@@ -79,7 +75,7 @@ global {
 	
 	action global_init  {
 		
-		create EventManager{event_m <- self;}
+		create EventManager;
     
 		//Initialization of the building using the shapefile of buildings
 		list<file> shp_buildings <- define_shapefiles("buildings");

@@ -44,10 +44,9 @@ species Walk parent: PrivateTransport {
 	action endTrip{
 		location <- pos_target;
 		loop passenger over:passengers{
-			// we assumed that the first passenger is always the transport owner
-			if passenger = passengers[0]{ passenger.bike_place <- location;}
 			passenger.status <- "arrived";
 			passenger.location <- location;
+			passenger.current_walk <- nil;
 		}
 		do die;
 	}

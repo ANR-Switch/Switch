@@ -31,7 +31,7 @@ global {
 	//date (et heure) de début de la simulation : 7/4/2020 à 6h00 0"
 	date starting_date <- date(2020,4,7,0,0,0);
 	
-	bool debug_mode <- true;
+	bool debug_mode <- false;
 	list<string> type_mode <- ["car","bus","bike","walk"];
 	list<string> criteria <- ["comfort", "safety", "price","ecology","simplicity","time"];
 	//Step value
@@ -61,7 +61,7 @@ global {
 	float bike_speed <- 8.0#km/#h;
 	float walk_speed <- 3.0 #km/#h;
 
-	int num_individuals <- 100;
+	int num_individuals <- 1000;
 	
 	bool road_speed_in_km_h <- false;
 	
