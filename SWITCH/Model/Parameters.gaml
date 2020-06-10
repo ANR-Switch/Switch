@@ -35,7 +35,7 @@ global {
 	list<string> type_mode <- ["car","bus","bike","walk"];
 	list<string> criteria <- ["comfort", "safety", "price","ecology","simplicity","time"];
 	//Step value
-	float normal_step <- 15 #mn;
+	float normal_step <- 3600 #sec;
 	float fast_step <- 15 #mn;
 	
 	float step <- normal_step;
