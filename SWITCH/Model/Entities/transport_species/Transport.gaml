@@ -41,28 +41,24 @@ species Transport skills: [moving] {
 	string listEventManager <- "";
 
 	//******* /!\ TESTING ATTRIBUTES and ACTION **********
-	string test_target;
+	bool test_mode <- false;
 	float traveled_dist <- 0.0;
 
 	action addPointReachedEndRoad {
 		traveled_dist <- traveled_dist + getCurrentRoad().size;
-//		if (the_logger != nil) {
-//			ask the_logger {
-//				do add_data(myself.test_target, myself.name, myself.traveled_dist);
-//			}
-//
-//		}
-
+		if (length(logger) >0) {
+			ask logger {
+				do add_transport_data(myself, time, myself.traveled_dist);
+			}
+		}
 	}
 
 	action addPointEnterRoad {
-//		if (the_logger != nil) {
-//			ask the_logger {
-//				do add_data(myself.test_target, myself.name, myself.traveled_dist);
-//			}
-//
-//		}
-
+		if (length(logger) >0) {
+			ask logger {
+				do add_transport_data(myself, time, myself.traveled_dist);
+			}
+		}
 	}
 	//****************************************************
 	action start (point start_location, point end_location,graph<Crossroad,Road> road_network) {
@@ -84,10 +80,10 @@ species Transport skills: [moving] {
 		switch signal_type {
 			match "enter road" {
 			//if we are leaving a road by entering another the transports averts the first road 
+				if test_mode { do addPointEnterRoad; }
 				do changeRoad(signal_time);
 				do updatePassengerPosition();
 			}
-
 			match "First in queue" {
 				listactions <- listactions + " " + signal_time + " First in Queue " + hasNextRoad() + " (" + path_to_target + ")\n";
 				if hasNextRoad() {
@@ -151,6 +147,7 @@ species Transport skills: [moving] {
 	}
 
 	action setLeaveTime (float leave_time) {
+		if test_mode { do addPointReachedEndRoad; }
 		listEvent <- listEvent + " " + leave_time + " First In queue/ ";
 		ask EventManager {
 			do registerEvent(leave_time, myself, "First in queue");

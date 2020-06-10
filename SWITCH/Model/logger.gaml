@@ -5,32 +5,28 @@
 * Tags: 
 */
 
-
 model logger
+
+import "Entities/transport_species/Transport.gaml"
 
 species logger { 
 	
-	bool store_individual_dest <- false;
-	// data = [string destination :: [string car_name :: float dist_traveled]]
-	map<string,list<pair<string,float>>> data;
 	
-	action add_data(string dest, string id, float dist) {
-		if (store_individual_dest) {
-			if not(dest in data) {
-				data[dest] <-[];
-			} 
-			data[dest] << (id::dist);
+	// data = [Transport t :: [list<float> x_series :: list<float> y_series]]
+	map<Transport, pair<list<float>,list<float>>> data;
+	
+	action add_transport_data(Transport t, float x, float y) {
+		if data.keys contains t {
+			data[t]<- data[t].key + [x] :: data[t].value + [y] ;
 		}
 	}
 	
+	action remove_transport_data(Transport t){
+		remove index:t from: data;
+	}
+	
 	string data_to_string{
-		string res;
-		loop k over: data.keys{
-			loop v over: data[k]{
-				res <- res + ""+k+"   "+v.key+"   "+v.value + "\n";
-			}
-		}
-		res <- res + "-----------------------------\n";
+		string res <- "default";
 		return res;
 	}
 	
