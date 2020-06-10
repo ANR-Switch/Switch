@@ -7,10 +7,7 @@
 model SWITCH
 
 import "../../logger.gaml"
-<<<<<<< Updated upstream
-import "../../Entities/Individual.gaml"
-=======
->>>>>>> Stashed changes
+import "Passenger.gaml"
 import "../network_species/Road.gaml"
 import "../EventManager.gaml"
 import "Passenger.gaml"
