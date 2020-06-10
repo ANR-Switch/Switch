@@ -429,8 +429,13 @@ species Individual skills: [moving] control:simple_bdi parent:Passenger{
 		agenda_d <- agenda_week[current_date.day_of_week - 1];
 	}
 	
-	reflex executeAgenda when: every(#mn){
-		pair act_p <- agenda_d[[current_date.hour,current_date.minute]];
+	reflex executeAgenda{
+		pair act_p <- nil;
+		loop activity_time over: agenda_d.keys{
+			if activity_time[0] < current_date.hour and activity_time[1] < current_date.minute{
+				act_p <- agenda_d[activity_time];
+			}
+		}
 		if (act_p.key != nil) {
 			current_activity <- act_p.key;
 			if (get_current_intention() != nil) {
