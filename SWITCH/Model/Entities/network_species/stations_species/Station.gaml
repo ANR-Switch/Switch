@@ -9,7 +9,7 @@ model SWITCH
 
 import "../../transport_species/Passenger.gaml"
 
-species Hub {
+species Station {
 	rgb color;
 	string name;
 	
@@ -17,6 +17,6 @@ species Hub {
 		draw square(5) color: color border: #black;
 	}
 	
-	action enter(list<Passenger> passengers_, Hub targetHub){}
+	action enter(list<Passenger> passengers_, Station targetHub){}
 	action leave(Transport t){}
 }
