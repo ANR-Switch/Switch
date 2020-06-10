@@ -14,7 +14,6 @@ import "../transport_species/Bike.gaml"
 import "../transport_species/Walk.gaml"
 import "../data_structure_species/SortedMap.gaml"
 import "../data_structure_species/Queue.gaml"
-
 species Road {
 
 //type of road (the OpenStreetMap highway feature: https://wiki.openstreetmap.org/wiki/Map_Features)
@@ -41,25 +40,25 @@ species Road {
 
 	//is the road is oneway or not
 	string oneway;
-  
+
 	//foot=no means pedestrians are not allowed
 	string foot;
-	
+
 	//bicycle=no means pedestrians are not allowed
-	string  bicycle;
-	
+	string bicycle;
+
 	// access=no means car are not allowed
 	string access;
-	
+
 	// access=no together with bus=yes means only buses are allowed 
 	string bus;
-	
+
 	// tag is used to describe the "physical" properties of the road.
 	string parking_lane;
-	
+
 	//is used to give information about footways
 	string sidewalk;
-	
+
 	// can be used to describe any cycle lanes constructed within the carriageway or cycle tracks running parallel to the carriageway.
 	string cycleway;
 
@@ -98,9 +97,11 @@ species Road {
 		create SortedMap {
 			myself.waiting_transports <- self;
 		}
+
 		create Queue {
 			myself.present_transports <- self;
 		}
+
 	}
 
 	action enterRequest (Transport t, float request_time) {
@@ -109,15 +110,20 @@ species Road {
 				if not has_bike_lane {
 					current_capacity <- current_capacity - t.size;
 				}
+
 				ask t {
 					do setEntryTime(request_time with_precision 3);
 				}
+
 			}
-			match Walk{
+
+			match Walk {
 				ask t {
 					do setEntryTime(request_time with_precision 3);
 				}
+
 			}
+
 			default {
 				if hasCapacity(t.size) {
 					ask t {
@@ -125,13 +131,18 @@ species Road {
 						myself.current_capacity <- myself.current_capacity - t.size;
 						do setEntryTime(request_time with_precision 3);
 					}
+
 				} else {
 					ask waiting_transports {
 						do add([request_time, t]);
 					}
+
 				}
+
 			}
+
 		}
+
 	}
 
 	action acceptTransport (float entry_time) {
@@ -145,15 +156,20 @@ species Road {
 					myself.current_capacity <- myself.current_capacity - t.size;
 					do setEntryTime(entry_time with_precision 3);
 				}
+
 				ask waiting_transports {
 					do remove([request_time, t]);
 				}
+
 				if not waiting_transports.isEmpty() {
 					t <- getWaitingTransport(0);
 					request_time <- getWaitingTimeRequest(0);
 				}
+
 			}
+
 		}
+
 	}
 
 	action queueInRoad (Transport t, float entry_time) {
@@ -164,29 +180,41 @@ species Road {
 					float leave_time <- entry_time + getRoadTravelTime(myself);
 					do setLeaveTime(leave_time with_precision 3);
 				}
+
 			}
+
 			match Walk {
 				present_pedestrians << Walk(t);
 				ask t {
 					float leave_time <- entry_time + getRoadTravelTime(myself);
 					do setLeaveTime(leave_time with_precision 3);
 				}
+
 			}
+
 			default {
 				float leave_time;
 				ask t {
 					leave_time <- entry_time + getRoadTravelTime(myself);
 					listactions <- listactions + " " + entry_time + " Will leave at " + leave_time + "(" + path_to_target + ")\n";
 				}
+
 				if present_transports.isEmpty() {
 					ask t {
 						listactions <- listactions + " " + entry_time + " I'm alone, so i'll leave at " + leave_time + "(" + path_to_target + ")\n";
 						do setLeaveTime(leave_time with_precision 3);
 					}
+
 				}
-				ask present_transports{ do add([leave_time, t]); }
+
+				ask present_transports {
+					do add([leave_time, t]);
+				}
+
 			}
+
 		}
+
 	}
 
 	//action called by a transport when it leaves the road
@@ -197,32 +225,42 @@ species Road {
 					float gainedCapacity <- t.size;
 					current_capacity <- current_capacity + gainedCapacity;
 				}
+
 				remove t from: present_bikes;
 			}
+
 			match Walk {
 				remove t from: present_pedestrians;
 			}
+
 			default {
 				float gainedCapacity <- t.size;
 				current_capacity <- current_capacity + gainedCapacity;
-				ask present_transports{ do remove; }
+				ask present_transports {
+					do remove;
+				}
+
 				do acceptTransport(signal_time);
 				if not present_transports.isEmpty() {
 					ask getHeadPresentTransport() {
-						listactions <- listactions + " " + signal_time + " The car in front of me has left the road. Will leave the road at " + (signal_time + 1) + ", I'll be in front of the road at " + max(myself.getHeadPresentTransportLeaveTime(), signal_time + 1) + "(" + path_to_target + ")\n";
+						listactions <-
+						listactions + " " + signal_time + " The car in front of me has left the road. Will leave the road at " + (signal_time + 1) + ", I'll be in front of the road at " + max(myself.getHeadPresentTransportLeaveTime(), signal_time + 1) + "(" + path_to_target + ")\n";
 						do setLeaveTime(max(myself.getHeadPresentTransportLeaveTime(), signal_time + myself.output_flow_capacity) with_precision 3);
 					}
+
 				}
+
 			}
+
 		}
+
 	}
 
-
-	float getHeadPresentTransportLeaveTime{
+	float getHeadPresentTransportLeaveTime {
 		return float(present_transports.element()[0]);
 	}
 
-	Transport getHeadPresentTransport{
+	Transport getHeadPresentTransport {
 		return Transport(present_transports.element()[1]);
 	}
 
@@ -257,51 +295,40 @@ species Road {
 	//rgb color <- rgb(150,255 * (current_capacity / max_capacity),0);
 		geometry geom_display <- (shape + (2.5));
 		draw geom_display border: #gray color: #black;
-//		draw "" + type + " - " + length(present_transports) + " PCU" at: location + point([15, -5]) size: 10 color: #black;
-
+		//		draw "" + type + " - " + length(present_transports) + " PCU" at: location + point([15, -5]) size: 10 color: #black;
+		float dt <- 0;
 		// Display each vehicle in the queue according to their size and colored according to their time_to_leave
 		// Vehicles at the top of FIFO are the closet of the end_node.
-		if (length(present_transports) > 0) {
-			float spacing <- 0.0;
-			float x1 <- start_node.location.x;
-			float y1 <- start_node.location.y;
-			float x0 <- end_node.location.x;
-			float y0 <- end_node.location.y;
-			float d <- sqrt(((x1 - x0) * (x1 - x0)) + ((y1 - y0) * (y1 - y0)));
-			int i<-0;
-			loop elem over:present_transports.queue {
-				Transport trans <- elem[1];
-				float dt <- (i * trans.size) + i * spacing;
-				float distToPoint <- 6;
-				float t <- distToPoint / d;
-				float xt <- ((1 - t) * x0 + t * x1);
-				float yt <- ((1 - t) * y0 + t * y1);
-				i <- i+1;
-				draw box(15, 15, dt) at: point([xt,yt]) color: #red rotate: angle_between({x0, y0}, {x1, y0}, {x1, y1});
-			}
-
+		float x1 <- start_node.location.x;
+		float y1 <- start_node.location.y;
+		float x0 <- end_node.location.x;
+		float y0 <- end_node.location.y;
+		float d <- sqrt(((x1 - x0) * (x1 - x0)) + ((y1 - y0) * (y1 - y0)));
+		float distToPoint <- 6;
+		float t <- distToPoint / d;
+		float xt <- ((1 - t) * x0 + t * x1);
+		float yt <- ((1 - t) * y0 + t * y1);
+		if(length(present_transports.queue)>0){
+		draw box(5, 5, length(present_transports.queue) * 5) at: point([xt, yt, dt]) color: #red rotate: angle_between({x0, y0}, {x1, y0}, {x1, y1});
+		dt <- dt + (length(present_transports.queue) * 5) + 1;
 		}
-		if (length(waiting_transports) > 0) {
-			float spacing <- 0.0;
-			float x1 <- start_node.location.x;
-			float y1 <- start_node.location.y;
-			float x0 <- end_node.location.x;
-			float y0 <- end_node.location.y;
-			float d <- sqrt(((x1 - x0) * (x1 - x0)) + ((y1 - y0) * (y1 - y0)));
-			int i<-0;
-			loop elem over:waiting_transports.data {
-				Transport trans <- elem[1];
-				float dt <- min((i * trans.size) + i * spacing,self.max_capacity);
-				float distToPoint <- 24;
-				float t <- distToPoint / d;
-				float xt <- ((1 - t) * x0 + t * x1);
-				float yt <- ((1 - t) * y0 + t * y1);
-				i <- i+1;
-				draw box(15, 15, dt) at: point([xt,yt]) color: #yellow rotate: angle_between({x0, y0}, {x1, y0}, {x1, y1});
-			}
-
+		if(length(present_pedestrians)>0){
+		draw box(5, 5, length(present_pedestrians) * 5) at: point([xt, yt, dt]) color: #purple rotate: angle_between({x0, y0}, {x1, y0}, {x1, y1});
+		dt <- dt + (length(present_pedestrians) * 5) + 1;
 		}
-
+		if(length(present_bikes)>0){
+		draw box(5, 5, length(present_bikes) * 5) at: point([xt, yt, dt]) color: #green rotate: angle_between({x0, y0}, {x1, y0}, {x1, y1});
+		dt <- dt + (length(present_bikes) * 5) + 1;
+		}
+		distToPoint <- 24;
+		t <- distToPoint / d;
+		xt <- ((1 - t) * x0 + t * x1);
+		yt <- ((1 - t) * y0 + t * y1);
+		if(length(waiting_transports.data)>0){
+		draw box(5, 5, (length(waiting_transports.data) * 5)) at: point([xt, yt]) color: #yellow rotate: angle_between({x0, y0}, {x1, y0}, {x1, y1});
+		}
 	}
 
 }
+
+
