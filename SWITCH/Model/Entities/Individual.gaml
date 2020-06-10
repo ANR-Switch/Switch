@@ -37,6 +37,7 @@ species Individual skills: [moving] control:simple_bdi{
 	Building home_building;
 	Car current_car;
 	Bike current_bike;
+	Walk current_walk;
 	
 	list<Individual> relatives;
 	list<Individual> friends;
@@ -589,7 +590,7 @@ species Individual skills: [moving] control:simple_bdi{
 				color <-colors_per_mobility_mode[mobility_mode]; 
 					
 				switch mobility_mode{
-					match "walk"{do walk(transport_trip[trip_pointer][2]);}
+					match "walk"{do walk([self],transport_trip[trip_pointer][2]);}
 					match "car"{do useCar([self],transport_trip[trip_pointer][2]);}
 					match "bike"{do useBike([self],transport_trip[trip_pointer][2]);}
 					default{write "error execute_trip transport mode switch";}
@@ -618,18 +619,16 @@ species Individual skills: [moving] control:simple_bdi{
 		
 	}
 	
-	action walk( point pos_target_){
-		ask world {do write_message(myself.name + " - walk: location" + myself.location + " target: "+ pos_target_);}
-		
-		do goto(pos_target_,walk_speed,road_network);
-		if(location = pos_target_){
-			status <- "arrived";
-		}
-	}
-	
 	action useBike(list<Individual> passengers, point pos_target){
 		if (current_bike = nil) {
 			current_bike <- world.createBike(self.location,pos_target,passengers);
+		}
+	}
+	
+	action walk( list<Individual> passengers, point pos_target){
+		ask world {do write_message(myself.name + " - walk: location" + myself.location + " target: "+ pos_target);}
+		if (current_walk = nil) {
+			current_walk <- world.createWalk(self.location,pos_target,passengers);
 		}
 	}
 	

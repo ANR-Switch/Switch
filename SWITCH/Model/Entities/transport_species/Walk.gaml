@@ -23,6 +23,24 @@ species Walk parent: PrivateTransport {
 		return travel_time with_precision 3;
 	}
 	
+	//There is a specific start action for pedestrians as it is coherent to not have a road to pass for a walk trip
+	//so when the path is nil, a leave event is set. When the leave signal will occur, as path_to_target is empty the action endTrip
+	//will be called causing the pedestrian to be teleported at his target location
+	action start (point start_location, point end_location) {
+		location <- start_location;
+		pos_target <- end_location;
+		available_graph <- road_network;
+		path the_path <- path_between(available_graph, location, pos_target);
+		if (the_path = nil) {
+			path_to_target <- [];
+			do setLeaveTime(time + distance_to(start_location,end_location)/self.max_speed);
+		} else {
+			path_to_target <- list<Road>(the_path.edges);			
+			add nil to: path_to_target at: 0;
+			do sendEnterRequest(time);
+		}
+	}
+	
 	action endTrip{
 		location <- pos_target;
 		loop passenger over:passengers{

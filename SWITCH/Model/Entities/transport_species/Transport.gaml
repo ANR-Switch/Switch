@@ -40,7 +40,6 @@ species Transport skills: [moving] {
 
 	//******* /!\ TESTING ATTRIBUTES and ACTION **********
 	string test_target;
-	bool already_reached_end_road <- false;
 	float traveled_dist <- 0.0;
 
 	action addPointReachedEndRoad {
@@ -55,7 +54,6 @@ species Transport skills: [moving] {
 	}
 
 	action addPointEnterRoad {
-		already_reached_end_road <- false;
 		if (the_logger != nil) {
 			ask the_logger {
 				do add_data(myself.test_target, myself.name, myself.traveled_dist);
