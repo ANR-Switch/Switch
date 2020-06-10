@@ -469,9 +469,11 @@ species Individual skills: [moving] control:simple_bdi{
 				transport_trip << ["bike",bike_place,target_parking];
 				transport_trip << ["walk",target_parking,target_];
 			}
-			
+			// TODO: Update with real bus
 			match priority_modes["bus"]{
-				
+				point target_parking <- any_location_in(Road closest_to target_);
+				transport_trip << ["car",location,target_parking];
+				transport_trip << ["walk",target_parking,target_];
 			}
 			
 			match priority_modes ["walk"]{
@@ -583,7 +585,6 @@ species Individual skills: [moving] control:simple_bdi{
 	
 	plan execute_trip intention: at_target{
 		ask world {do write_message(myself.name + " - status: " + myself.status + " trip_pointer: " + myself.trip_pointer);}
-		
 		switch status{
 			match "go to trip"{
 				string mobility_mode <- transport_trip[trip_pointer][0];
