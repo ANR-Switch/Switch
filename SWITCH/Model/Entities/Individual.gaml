@@ -41,6 +41,11 @@ species Individual skills: [moving] control:simple_bdi parent:Passenger{
 	
 	map<predicate, map<string,list<Building>>> building_targets;
 	
+	map<predicate,list<pair<float,float>>> times_to_join_activity <- [];
+	map<predicate,list<pair<float,float>>> times_spent_in_activity <- [];
+	
+	
+	
 	//the trip the individual has to follow to join the activity
 	//transport_trip [[string tp_mode, point start_pos, point target_pos]]
 	// tp_mode in [
@@ -607,6 +612,7 @@ species Individual skills: [moving] control:simple_bdi parent:Passenger{
 			}
 		}
 	}
+
 	
 	action useCar(list<Individual> passengers_, point pos_target_){
 		ask world {do write_message(myself.name + " - drive: location" + myself.location + " target: "+ pos_target_);}
@@ -627,6 +633,10 @@ species Individual skills: [moving] control:simple_bdi parent:Passenger{
 		if (current_walk = nil) {
 			current_walk <- world.createWalk(self.location,pos_target_,passengers_,road_network);
 		}
+	}
+	
+	action addTimeSpentInJams(float time_in_jams){
+		times_spent_in_jammed_roads << time_in_jams;
 	}
 	
 	aspect default {

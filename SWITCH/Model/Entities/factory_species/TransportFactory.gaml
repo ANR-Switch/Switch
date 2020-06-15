@@ -17,6 +17,7 @@ global{
 	
 	Car createCar(point start_location, point end_location, list<Passenger> passengers_,graph<Crossroad,Road> road_network){
         create Car returns: children{
+        	test_mode <- true;
 	    	do getIn(passengers_);
             do start(start_location,end_location, road_network);
         } 

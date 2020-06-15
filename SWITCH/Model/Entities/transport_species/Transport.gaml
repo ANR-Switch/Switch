@@ -10,11 +10,12 @@ import "../../logger.gaml"
 import "Passenger.gaml"
 import "../network_species/Road.gaml"
 import "../EventManager.gaml"
-import "Passenger.gaml"
 
 species Transport skills: [moving] {
 
-// maximum speed for a transport (km/h)
+	string transport_mode <- "transport";
+	
+	// maximum speed for a transport (km/h)
 	float max_speed;
 
 	// transport length (meters)
@@ -40,23 +41,29 @@ species Transport skills: [moving] {
 	string listEvent <- "";
 	string listEventManager <- "";
 
+	bool jammed_road <- false;
+	float last_entering_road <- time;
+	float time_in_jams <- 0.0;
+	float practical_trip_time <- 0.0;
+	float theoric_trip_time <- 0.0;
+	
 	//******* /!\ TESTING ATTRIBUTES and ACTION **********
 	bool test_mode <- false;
 	float traveled_dist <- 0.0;
 
-	action addPointReachedEndRoad {
+	action addPointReachedEndRoad(float time_){
 		traveled_dist <- traveled_dist + getCurrentRoad().size;
 		if (length(logger) >0) {
 			ask logger {
-				do add_transport_data(myself, time, myself.traveled_dist);
+				do add_transport_data(myself, time_, myself.traveled_dist);
 			}
 		}
 	}
 
-	action addPointEnterRoad {
+	action addPointEnterRoad(float time_){
 		if (length(logger) >0) {
 			ask logger {
-				do add_transport_data(myself, time, myself.traveled_dist);
+				do add_transport_data(myself, time_, myself.traveled_dist);
 			}
 		}
 	}
@@ -80,7 +87,7 @@ species Transport skills: [moving] {
 		switch signal_type {
 			match "enter road" {
 			//if we are leaving a road by entering another the transports averts the first road 
-				if test_mode { do addPointEnterRoad; }
+				if test_mode { do addPointEnterRoad(signal_time); }
 				do changeRoad(signal_time);
 				do updatePassengerPosition();
 			}
@@ -110,6 +117,11 @@ species Transport skills: [moving] {
 		Road next <- getNextRoad();
 		if current != nil {
 			listactions <- listactions + " " + signal_time + " Leaving " + current.name + "(" + path_to_target + ")\n";
+			if jammed_road {
+				time_in_jams <- time_in_jams + (last_entering_road - signal_time);
+			}
+			practical_trip_time <- practical_trip_time + (last_entering_road - signal_time);
+			theoric_trip_time <- theoric_trip_time + get_freeflow_travel_time(current);
 			ask current {
 				do leave(myself, signal_time);
 			}
@@ -118,6 +130,8 @@ species Transport skills: [moving] {
 		remove first(path_to_target) from: path_to_target;
 		if (next != nil) {
 			listactions <- listactions + " " + signal_time + " Queing " + next.name + " TravelTime:" + getRoadTravelTime(next) + " (" + path_to_target + ")\n";
+			last_entering_road <- signal_time;
+			jammed_road <- next.isJammed();
 			ask next {
 				do queueInRoad(myself, signal_time);
 			}
@@ -158,10 +172,16 @@ species Transport skills: [moving] {
 	// compute the travel of incoming transports
 	// The formula used is BPR equilibrium formula
 	float getRoadTravelTime (Road r) {
-		float max_speed_formula <- min([self.max_speed, r.avg_speed]) #km / #h;
-		float free_flow_travel_time <- r.size / max_speed_formula;
-		float travel_time <- free_flow_travel_time * (1.0 + 0.15 * ((r.max_capacity - r.current_capacity) / r.max_capacity) ^ 4);
+		float free_flow_travel_time <- get_freeflow_travel_time(r);
+		float occupation_ratio <- (r.max_capacity - r.current_capacity) / r.max_capacity;
+		float travel_time <- free_flow_travel_time * (1.0 + 0.15 * occupation_ratio ^ 4);
 		return travel_time with_precision 3;
+	}
+	
+	//compute the free_flow travel time depending on the max speed allowed on the road and the max speed of the transport
+	float get_freeflow_travel_time(Road r){
+		float max_speed_formula <- min([self.max_speed, r.avg_speed]) #km / #h;
+		return r.size / max_speed_formula;
 	}
 
 	bool hasNextRoad {

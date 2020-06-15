@@ -76,7 +76,7 @@ global {
 	action global_init  {
 		
 		create EventManager;
-    
+    	create logger{ myself.the_logger <- self; }
 		//Initialization of the building using the shapefile of buildings
 		list<file> shp_buildings <- define_shapefiles("buildings");
 		loop shp_building over:shp_buildings {

@@ -12,6 +12,8 @@ import "PrivateTransport.gaml"
 
 species Car parent: PrivateTransport {
 	
+	string transport_mode <- "car";
+	
 	init{
 		max_speed <- 130.0;
 		size <- 4.13;// Argus average size in meters
@@ -26,6 +28,10 @@ species Car parent: PrivateTransport {
 			passenger.status <- "arrived";
 			passenger.location <- location;
 			passenger.current_car <- nil;
+			ask passenger {
+				do addTimeSpentInJams(myself.time_in_jams);
+				do addTransportTravelTime(myself, myself.practical_trip_time, myself.theoric_trip_time);
+			}
 		}
 		do die;
 	}

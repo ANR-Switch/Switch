@@ -11,13 +11,23 @@ import "Entities/transport_species/Transport.gaml"
 
 species logger { 
 	
-	
 	// data = [Transport t :: [list<float> x_series :: list<float> y_series]]
-	map<Transport, pair<list<float>,list<float>>> data;
+	map<int, pair<list<float>,list<float>>> data;
+	int nbTransportToMonitor <- 100;
+	int cIndex <- 0;
+	map<Transport, int> transportIndex <- [];
+	
+	
 	
 	action add_transport_data(Transport t, float x, float y) {
 		if data.keys contains t {
-			data[t]<- data[t].key + [x] :: data[t].value + [y] ;
+			data[transportIndex[t]]<- data[transportIndex[t]].key + [x] :: data[transportIndex[t]].value + [y] ;
+		}else{
+			if (cIndex < nbTransportToMonitor) {
+				transportIndex  <+ t::cIndex;
+				data[transportIndex[t]] <- [x]::[y];
+				cIndex <- cIndex + 1;
+			}
 		}
 	}
 	

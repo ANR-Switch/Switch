@@ -12,6 +12,8 @@ import "PrivateTransport.gaml"
 
 species Bike parent: PrivateTransport {
 	
+	string transport_mode <- "bike";
+	
 	init{
 		max_speed <- 20.0;
 		size <- 1.0;

@@ -5,6 +5,7 @@
 model SWITCH
 
 import "../Model/Global.gaml"
+import "../Model/logger.gaml"
 
 global {
 	font default <- font("Helvetica", 18, #bold);

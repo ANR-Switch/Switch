@@ -54,6 +54,8 @@ global {
 	float number_of_users <- 0.0;
 	float percentage_of_drivers <- 80.0;
 	
+	//A road that reach this occupation ratio threshold is considered as a jammed raod.
+	float jam_threshold <- 0.75;
 
 	//speed
 	float car_speed <- 20.0#km/#h;

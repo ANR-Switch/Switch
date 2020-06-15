@@ -243,8 +243,8 @@ species Road {
 				do acceptTransport(signal_time);
 				if not present_transports.isEmpty() {
 					ask getHeadPresentTransport() {
-						listactions <-
-						listactions + " " + signal_time + " The car in front of me has left the road. Will leave the road at " + (signal_time + 1) + ", I'll be in front of the road at " + max(myself.getHeadPresentTransportLeaveTime(), signal_time + 1) + "(" + path_to_target + ")\n";
+						listactions <- listactions + " " + signal_time + " The car in front of me has left the road. Will leave the road at " + (signal_time + 1) + ", I'll be in front of the road at " + max(myself.getHeadPresentTransportLeaveTime(), signal_time + 1) + "(" + path_to_target + ")\n";
+						if self.test_mode { do addPointReachedEndRoad(signal_time); }
 						do setLeaveTime(max(myself.getHeadPresentTransportLeaveTime(), signal_time + myself.output_flow_capacity) with_precision 3);
 					}
 
@@ -272,6 +272,9 @@ species Road {
 		return Transport(waiting_transports.get(index)[1]);
 	}
 
+	bool isJammed{
+		return (max_capacity - current_capacity) / max_capacity > jam_threshold;
+	}
 	bool hasCapacity (float capacity) {
 		return current_capacity > capacity;
 	}

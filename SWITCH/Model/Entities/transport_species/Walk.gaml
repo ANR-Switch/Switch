@@ -12,6 +12,8 @@ import "PrivateTransport.gaml"
 
 species Walk parent: PrivateTransport {
 	
+	string transport_mode <- "walk";
+	
 	init{
 		max_speed <- 6.0;
 		size <- 1.0;
