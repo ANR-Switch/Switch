@@ -21,8 +21,7 @@ species Walk parent: PrivateTransport {
 	}
 	
 	float getRoadTravelTime(Road r){
-		float travel_time <- r.size/self.max_speed;
-		return travel_time with_precision 3;
+		return get_freeflow_travel_time(r) with_precision 3;
 	}
 	
 	//There is a specific start action for pedestrians as it is coherent to not have a road to pass for a walk trip
@@ -49,6 +48,9 @@ species Walk parent: PrivateTransport {
 			passenger.status <- "arrived";
 			passenger.location <- location;
 			passenger.current_walk <- nil;
+			ask passenger {
+				do addTransportTravelTime(myself, myself.practical_trip_time with_precision 3, myself.theoric_trip_time with_precision 3);
+			}
 		}
 		do die;
 	}

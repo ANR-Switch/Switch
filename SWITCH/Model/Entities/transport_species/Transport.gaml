@@ -98,6 +98,11 @@ species Transport skills: [moving] {
 				} else {
 				//the transport is arrived
 					listactions <- listactions + " " + signal_time + " There is no next road (" + path_to_target + ")\n";
+					if jammed_road {
+						time_in_jams <- time_in_jams + (signal_time - last_entering_road);
+					}
+					practical_trip_time <- practical_trip_time + (signal_time - last_entering_road);
+					theoric_trip_time <- theoric_trip_time + get_freeflow_travel_time(getCurrentRoad());
 					if getCurrentRoad() != nil{
 						ask getCurrentRoad() {
 							do leave(myself, signal_time);
@@ -107,9 +112,7 @@ species Transport skills: [moving] {
 				}
 				lastAction <- "First in queue";
 			}
-
 		}
-
 	}
 
 	action changeRoad (float signal_time) {
@@ -118,9 +121,9 @@ species Transport skills: [moving] {
 		if current != nil {
 			listactions <- listactions + " " + signal_time + " Leaving " + current.name + "(" + path_to_target + ")\n";
 			if jammed_road {
-				time_in_jams <- time_in_jams + (last_entering_road - signal_time);
+				time_in_jams <- time_in_jams + (signal_time - last_entering_road);
 			}
-			practical_trip_time <- practical_trip_time + (last_entering_road - signal_time);
+			practical_trip_time <- practical_trip_time + (signal_time - last_entering_road);
 			theoric_trip_time <- theoric_trip_time + get_freeflow_travel_time(current);
 			ask current {
 				do leave(myself, signal_time);
@@ -180,8 +183,8 @@ species Transport skills: [moving] {
 	
 	//compute the free_flow travel time depending on the max speed allowed on the road and the max speed of the transport
 	float get_freeflow_travel_time(Road r){
-		float max_speed_formula <- min([self.max_speed, r.avg_speed]) #km / #h;
-		return r.size / max_speed_formula;
+		float max_freeflow_speed <- min([self.max_speed, r.avg_speed]) #km / #h;
+		return r.size / max_freeflow_speed;
 	}
 
 	bool hasNextRoad {
