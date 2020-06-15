@@ -153,6 +153,7 @@ global {
 				ask (length(Individual) - num_individuals) among Individual{
 					do die;
 				}
+				num_individuals <- min(num_individuals,length(Individual));
 			}
 			ask Individual {
 				relatives <- world.manage_list_int(string(shape get "rels")) where (not dead(each));
