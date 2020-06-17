@@ -176,8 +176,7 @@ species Transport skills: [moving] {
 	// The formula used is BPR equilibrium formula
 	float getRoadTravelTime (Road r) {
 		float free_flow_travel_time <- get_freeflow_travel_time(r);
-		float occupation_ratio <- (r.max_capacity - r.current_capacity) / r.max_capacity;
-		float travel_time <- free_flow_travel_time * (1.0 + 0.15 * occupation_ratio ^ 4);
+		float travel_time <- free_flow_travel_time * (1.0 + 0.15 * r.occupation_ratio ^ 4);
 		return travel_time with_precision 3;
 	}
 	

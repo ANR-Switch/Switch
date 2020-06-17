@@ -34,7 +34,7 @@ species Walk parent: PrivateTransport {
 		path the_path <- path_between(available_graph, location, pos_target);
 		if (the_path = nil) {
 			path_to_target <- [];
-			do setLeaveTime(time + distance_to(start_location,end_location)/self.max_speed);
+			do setLeaveTime(time + (distance_to(start_location,end_location)/self.max_speed));
 		} else {
 			path_to_target <- list<Road>(the_path.edges);			
 			add nil to: path_to_target at: 0;

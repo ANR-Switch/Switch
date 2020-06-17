@@ -74,9 +74,8 @@ species Road {
 	//actual free space capacity of the road (in meters)
 	float current_capacity <- max_capacity min: 0.0 max: max_capacity;
 
-	//the minimal timestamp when the next transport can leave the road (transcription of maximal output capacity)
-	int min_leave_time <- 0;
-
+	float occupation_ratio -> (max_capacity - current_capacity) / max_capacity;
+	
 	//has_bike_lane = true if there is a specific lane for bikes in this road
 	//				= false if not
 	bool has_bike_lane <- false;
@@ -273,7 +272,7 @@ species Road {
 	}
 
 	bool isJammed{
-		return (max_capacity - current_capacity) / max_capacity > jam_threshold;
+		return occupation_ratio > jam_threshold;
 	}
 	bool hasCapacity (float capacity) {
 		return current_capacity > capacity;

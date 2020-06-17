@@ -28,7 +28,7 @@ global {
 	
 	//file individual_shapefile <- file_exists(dataset +"individuals.shp") ? shape_file(dataset+"individuals.shp") : nil;
 	
-	//date (et heure) de début de la simulation : 7/4/2020 à 6h00 0"
+	//date (et heure) de début de la simulation : 7/4/2020 à 7h00 0"
 	date starting_date <- date(2020,4,7,0,0,0);
 	
 	bool debug_mode <- false;
@@ -63,7 +63,7 @@ global {
 	float bike_speed <- 8.0#km/#h;
 	float walk_speed <- 3.0 #km/#h;
 
-	int num_individuals <- 10000;
+	int num_individuals <- 300;
 	
 	bool road_speed_in_km_h <- false;
 	
