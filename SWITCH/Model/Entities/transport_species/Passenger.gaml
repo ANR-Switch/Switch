@@ -30,7 +30,7 @@ species Passenger {
 	}
 	
 	action addTransportTravelTime(Transport t, float practical_travel_time, float theoric_travel_time){
-		write ""+ t +" executed its trip in " + practical_travel_time +"seconds instead of "+ theoric_travel_time+" seconds";
+		//write ""+ t +" executed its trip in " + practical_travel_time +"seconds instead of "+ theoric_travel_time+" seconds";
 		if times_in_transport.keys contains t.transport_mode{
 			times_in_transport[t.transport_mode] << practical_travel_time::theoric_travel_time;
 		}else{
