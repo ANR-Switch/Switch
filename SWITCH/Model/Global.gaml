@@ -50,6 +50,8 @@ global {
 	
 	//Graph of the road network
 	graph<Crossroad,Road> road_network;
+	string optimizer_type <- "NBAStar" among: ["NBAStar", "NBAStarApprox", "Dijkstra", "AStar", "BellmannFord", "FloydWarshall"];
+	bool memorize_shortest_paths <- true; //true by default
 	
 	Outside the_outside;
 	
@@ -261,6 +263,26 @@ global {
 			}
 		}
       	road_network <- directed(as_edge_graph(Road,Crossroad));
+      	
+      	do write_message("Shortest path cache computation");
+      	
+      	//allows to choose the type of algorithm to use compute the shortest paths
+		road_network <- road_network with_optimizer_type optimizer_type;
+		
+		//allows to define if the shortest paths computed should be memorized (in a cache) or not
+		road_network <- road_network use_cache memorize_shortest_paths;
+		
+//		string shortest_paths_file <- define_shapefiles("shortest_path");
+//		 if not file_exists(shortest_paths_file){ 
+//		 	matrix ssp <- all_pairs_shortest_path(road_network);
+//			save ssp type:"text" to:shortest_paths_file;
+//		 }
+//      	road_network <- road_network load_shortest_paths  matrix(file(shortest_paths_file));
+      	
+      	
+      	
+      	do write_message("Shoretest path loaded");
+      	
       	ask Road {
       		start_node <- road_network source_of self;
       		end_node <- road_network target_of self;

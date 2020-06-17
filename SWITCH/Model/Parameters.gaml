@@ -63,7 +63,7 @@ global {
 	float bike_speed <- 8.0#km/#h;
 	float walk_speed <- 3.0 #km/#h;
 
-	int num_individuals <- 500;
+	int num_individuals <- 10000;
 	
 	bool road_speed_in_km_h <- false;
 	
