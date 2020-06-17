@@ -635,10 +635,6 @@ species Individual skills: [moving] control:simple_bdi parent:Passenger{
 		}
 	}
 	
-	action addTimeSpentInJams(float time_in_jams){
-		times_spent_in_jammed_roads << time_in_jams;
-	}
-	
 	aspect default {
 		draw circle(5) color: color rotate: heading border: #black;
 	}	

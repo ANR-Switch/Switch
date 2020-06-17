@@ -8,7 +8,7 @@ model GenerateGTFSshapefiles
 
 global {
 	
-	string CSV_directory <- "../Datasets/gtfs_tisseo/";
+	string CSV_directory <- "../Datasets/Toulouse/gtfs_tisseo/";
 	string agency_path <- "agency.csv";
 	string trips_path <- "trips.csv";
 	string stop_times_path <- "stop_times.csv";
