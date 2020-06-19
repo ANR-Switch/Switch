@@ -8,6 +8,7 @@
 model SWITCH
 
 import "../Utilities/Generate Agenda.gaml"
+import "../Utilities/import GTFS.gaml"
 
 import "Parameters.gaml"
 
@@ -17,7 +18,7 @@ import "Entities/network_species/Road.gaml"
 import "Entities/Individual.gaml"
 import "Entities/EventManager.gaml"
 import "Entities/factory_species/TransportFactory.gaml"
- 
+
 global {
 		//variables environement de transport :
 	//map<string, map<string,float>> info_mode_env; //<mode, <critère,valeur>>
@@ -261,6 +262,7 @@ global {
 					}
 				}
 			}
+			
 		}
       	road_network <- directed(as_edge_graph(Road,Crossroad));
       	
@@ -288,7 +290,7 @@ global {
       		end_node <- road_network target_of self;
       	}
       	
-      	
+      	do createTransportLineAndStations();
 	}
 	
 	action write_message(string mess) {

@@ -19,7 +19,7 @@ species Station {
 	list<TransportLine> lines <- [];
 	
 	aspect default {
-		draw square(5) color: color border: #black;
+		draw square(15) color: #white border: #black;
 	}
 	
 }

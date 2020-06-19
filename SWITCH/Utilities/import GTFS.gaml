@@ -67,20 +67,20 @@ global {
 	map<string, list<list<string>>> shapes_map <- [];
 	map<string,geometry> polyline_shape_map <- [];
 	
-	init {
+	action readCSVfiles{
 		
-		//**********************IMPORT DATA FROM CSV*********************
+		//**********************READING DATA FROM CSV*********************
 		int nb_elem;
 		 
 		loop line over: rows_list(agency_data){
 			agency_map[line[0]]<- line;
 		}
-		write ""+length(agency_map) +" agency/ies imported";
+		write ""+length(agency_map) +" agency/ies read";
 		
 		loop line over: rows_list(stops_data){
 			stops_map[line[0]]<- line;
 		}
-		write ""+length(stops_map) +" stop(s) imported";
+		write ""+length(stops_map) +" stop(s) read";
 		
 		nb_elem <- 0;
 		loop line over: rows_list(stop_times_data){
@@ -92,7 +92,7 @@ global {
 				nb_elem <- nb_elem +1;
 			}
 		}
-		write ""+nb_elem +" stop_times imported";
+		write ""+nb_elem +" stop_times read";
 		
 		nb_elem <- 0;
 		loop line over: rows_list(trips_data){
@@ -104,17 +104,17 @@ global {
 				nb_elem <- nb_elem +1;
 			}
 		}
-		write ""+nb_elem +" trip(s) imported";
+		write ""+nb_elem +" trip(s) read";
 		
 		loop line over: rows_list(routes_data){
 			routes_map[line[0]]<- line;
 		}
-		write ""+length(routes_map) +" route(s) imported";
+		write ""+length(routes_map) +" route(s) read";
 		
 		loop line over:rows_list(calendar_data){
 			calendar_map[line[0]]<- line;
 		}
-		write ""+length(calendar_map) +" trip date service(s) imported";
+		write ""+length(calendar_map) +" trip date service(s) read";
 		
 		loop line over: rows_list(shapes_data){
 			if shapes_map[line[0]] != nil{
@@ -123,12 +123,14 @@ global {
 				shapes_map[line[0]]<- [line];
 			}
 		}
-		write ""+length(shapes_map) +" trip shape(s) imported";
-		
-		do createShapes();
+		write ""+length(shapes_map) +" trip shape(s) read";
 	}
 	
 	action createTransportLineAndStations{
+		write "reading CSV GTFS files";
+		do readCSVfiles();
+		do createShapes();
+		write "creating TransportLines and Stations";
 		loop routes over: routes_map.keys{
 			create TransportLine{
 				id <- routes_map[routes][0];
@@ -145,9 +147,7 @@ global {
 					stop_times_map[trip[0]] <- stop_times_map[trip[0]] sort_by int(each[2]);
 					loop stop_times over: stop_times_map[trip[0]]{
 						list<string> stop <- stops_map[stop_times[1]];
-						if station_map[stop[0]] != nil{
-							trips[trip[0]]<<[stop_times[3],stop_times[4],station_map[stop[0]]];
-						}else{
+						if station_map[stop[0]] = nil{
 							//we only import stations data covered by the simulation area
 							point stop_location <- myself.string2point(stop[4],stop[3]);
 							if world.shape overlaps stop_location{
@@ -157,8 +157,6 @@ global {
 											id <- stop[0];
 											name <- stop[2];
 											location <- stop_location;
-											myself.trips[trip[0]]<<[stop_times[3],stop_times[4],self];
-											lines<<myself;
 											station_map[stop[0]]<-self;
 										}
 									}
@@ -167,8 +165,6 @@ global {
 											id <- stop[0];
 											name <- stop[2];
 											location <- stop_location;
-											myself.trips[trip[0]]<<[stop_times[3],stop_times[4],self];
-											lines<<myself;
 											station_map[stop[0]]<-self;
 										}
 									}
@@ -177,17 +173,25 @@ global {
 											id <- stop[0];
 											name <- stop[2];
 											location <- stop_location;
-											myself.trips[trip[0]]<<[stop_times[3],stop_times[4],self];
-											lines<<myself;
 											station_map[stop[0]]<-self;
 										}
 									}
 								}
 							}
 						}
-						//if this is the first stop_times for this trip we add it in starting_times list
-						if stop_times = first(stop_times_map[trip[0]]){
-							starting_times << [stop_times[3],trip[0],station_map[stop[0]]];
+						//we check a second times if the stop is present in the map because it might not be added (outside the simulation area)
+						if station_map[stop[0]] != nil {
+							if trips[trip[0]]!=nil{
+								trips[trip[0]]<<[stop_times[3],stop_times[4],station_map[stop[0]]];
+							}else{
+								trips[trip[0]]<-[stop_times[3],stop_times[4],station_map[stop[0]]];
+							}
+							//we add the transport line in a station attribute so the station is aware of wich lines collect it
+							ask station_map[stop[0]]{ if not (lines contains myself){lines<<myself;} }
+							//if this is the first stop_times for this trip we add it in starting_times list
+							if length(trips[trip[0]]) =1{
+								starting_times << [stop_times[3],trip[0],station_map[stop[0]]];
+							}
 						}
 					}
 				}

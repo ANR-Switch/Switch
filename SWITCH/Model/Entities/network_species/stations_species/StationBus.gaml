@@ -13,4 +13,3 @@ import "Station.gaml"
 species StationBus parent: Station {
 	
 }
- 

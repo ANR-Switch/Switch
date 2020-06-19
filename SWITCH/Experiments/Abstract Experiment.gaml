@@ -77,6 +77,9 @@ experiment "Abstract Experiment" virtual:true{
 			species Building;
 			species Road aspect: default;
 			species Crossroad;
+			species StationBus;
+			species StationMetro;
+			species StationTram;
 			species Individual;
 		}
 		
