@@ -10,7 +10,7 @@ model SWITCH
 
 import "Station.gaml"
 
-species HubBus parent: Station {
+species StationBus parent: Station {
 	
 }
  

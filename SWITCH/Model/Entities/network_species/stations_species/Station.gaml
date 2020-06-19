@@ -8,15 +8,18 @@
 model SWITCH
 
 import "../../transport_species/Passenger.gaml"
+import "../../TransportLine.gaml"
 
 species Station {
-	rgb color;
+	
+	string id;
 	string name;
+	
+	//all the transport line that have this station in one of their trip
+	list<TransportLine> lines <- [];
 	
 	aspect default {
 		draw square(5) color: color border: #black;
 	}
 	
-	action enter(list<Passenger> passengers_, Station targetHub){}
-	action leave(Transport t){}
 }
