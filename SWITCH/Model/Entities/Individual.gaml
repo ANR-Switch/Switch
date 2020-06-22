@@ -617,21 +617,21 @@ species Individual skills: [moving] control:simple_bdi parent:Passenger{
 	action useCar(list<Individual> passengers_, point pos_target_){
 		ask world {do write_message(myself.name + " - drive: location" + myself.location + " target: "+ pos_target_);}
 		if (current_car = nil) {
-			current_car <- world.createCar(self.location,pos_target_,passengers_,road_network);
+			current_car <- world.createCar(self.location,pos_target_,passengers_,road_network, time);
 		}
 		
 	}
 	
 	action useBike(list<Individual> passengers_, point pos_target_){
 		if (current_bike = nil) {
-			current_bike <- world.createBike(self.location,pos_target_,passengers_,road_network);
+			current_bike <- world.createBike(self.location,pos_target_,passengers_,road_network, time);
 		}
 	}
 	
 	action useWalk( list<Individual> passengers_, point pos_target_){
 		ask world {do write_message(myself.name + " - walk: location" + myself.location + " target: "+ pos_target_);}
 		if (current_walk = nil) {
-			current_walk <- world.createWalk(self.location,pos_target_,passengers_,road_network);
+			current_walk <- world.createWalk(self.location,pos_target_,passengers_,road_network, time);
 		}
 	}
 	

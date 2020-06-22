@@ -30,10 +30,15 @@ species TransportLine{
 	rgb line_color <- #black;
 	
 	//store the trips info
-	// key = trip_id list<list> = [[int arrival_time, int departure_time, Hub hub_to_collect]]
-	map<string,list<list>> trips;
+	// key = trip_id list<list> = [[int arrival_time, int departure_time, Station station_to_collect]]
+	map<string, list<list>> trips;
 	
-	//[int starting_time, string trip_id, int hub_id]
-	list<list> starting_times <- [];
-	int last_starting <- 0;
+	// this is the map of trip departure, the map's keys are service_id so when we start a new day, 
+	// we load every starting event in the event manager
+	//service_id :: [int starting_time, string trip_id, int hub_id]
+	map<string, list<list>> starting_times <- [];
+	
+	action createTrip(string trip_id){
+		
+	}
 }

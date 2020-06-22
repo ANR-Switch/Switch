@@ -182,24 +182,33 @@ global {
 						//we check a second times if the stop is present in the map because it might not be added (outside the simulation area)
 						if station_map[stop[0]] != nil {
 							if trips[trip[0]]!=nil{
-								trips[trip[0]]<<[stop_times[3],stop_times[4],station_map[stop[0]]];
+								trips[trip[0]]<<[myself.string2time(stop_times[3]),myself.string2time(stop_times[4]),station_map[stop[0]]];
 							}else{
-								trips[trip[0]]<-[stop_times[3],stop_times[4],station_map[stop[0]]];
+								trips[trip[0]]<-[myself.string2time(stop_times[3]),myself.string2time(stop_times[4]),station_map[stop[0]]];
 							}
 							//we add the transport line in a station attribute so the station is aware of wich lines collect it
 							ask station_map[stop[0]]{ if not (lines contains myself){lines<<myself;} }
 							//if this is the first stop_times for this trip we add it in starting_times list
 							if length(trips[trip[0]]) =1{
-								starting_times << [stop_times[3],trip[0],station_map[stop[0]]];
+								if starting_times[trip[1]] != nil{
+									starting_times[trip[1]] << [myself.string2time(stop_times[3]),trip[0],station_map[stop[0]]];
+								}else{
+									starting_times[trip[1]] <- [myself.string2time(stop_times[3]),trip[0],station_map[stop[0]]];
+								}
 							}
 						}
 					}
 				}
 			}
-			
+		}
+		//if the transportLine has no trips planned the we kill it
+		//if the trips map isn't empty then the transportLine can register all the departure events
+		ask TransportLine{
+			if length(trips.keys) = 0 {
+				do die;
+			}
 		}
 	}
-	
 	
 	action createShapes{
 		
@@ -213,6 +222,69 @@ global {
 			polyline_shape_map[shape_] <- polyline(shape_compo);
 			shape_compo <- [];
 		}
+	}
+	
+	// return a list of service_ids for a specific day, it's used by transport lines 
+	// to only create active trips for a given date  
+	list<string> getServiceIdsFromDate(date today){
+		list<string> service_ids_for_today <- [];
+		int day_of_the_week <- date2day(today);
+		loop services_date over: calendar_map.keys{
+			if int(calendar_map[services_date][day_of_the_week])=1{
+				date start_date_ <- string2date(calendar_map[services_date][8]);
+				date end_date_ <- string2date(calendar_map[services_date][9]);
+				if (today after start_date_) and (today before end_date_){
+					service_ids_for_today << services_date;
+				}
+			}
+		}
+		return service_ids_for_today;
+	}
+	
+	// convert a date from GTFS format string (yyyymmdd) to GAMA date type
+	date string2date(string date_){
+		int year <- int(copy_between(date_,0,4));
+		int month <- int(copy_between(date_,4,6));
+		int day <- int(copy_between(date_,6,8));
+		return date([year,month,day]);
+	}
+	
+	//convert a time from GTFS format string (HH:mm:ss) to a number of second since midnight (ex "16:00:00" = 57 600 seconds)
+	float string2time(string time_){
+		return int(date(time_,"HH:mm:ss"))+3600;
+	}
+	
+	//return an int corresponding to the day of week for a given date (used to compute the service_id list for a specific day)
+	int date2day(date date_){
+		int day_code <- date_.day;
+		int year_num <- date_.year mod 100;
+		float year_code <- year_num + floor(year_num /4);
+		int month_code;
+		switch date_.month{
+			match 1{ if (year_num mod 4)=0 {month_code <- 5;}else{ month_code <- 6;} }
+			match 2{ if (year_num mod 4)=0 {month_code <- 1;}else{ month_code <- 2;} }
+			match 3{month_code <- 2;}
+			match 4{month_code <- 5;}
+			match 5{month_code <- 0;}
+			match 6{month_code <- 3;}
+			match 7{month_code <- 5;}
+			match 8{month_code <- 1;}
+			match 9{month_code <- 4;}
+			match 10{month_code <- 6;}
+			match 11{month_code <- 2;}
+			match 12{month_code <- 4;}
+		}
+		return ((day_code mod 7) + (year_code mod 7) + month_code) mod 7;
+		/*int day_num <- int(((day_code mod 7) + (year_code mod 7) + month_code) mod 7);
+		switch day_num{
+			match 1 {return "monday";}
+			match 2 {return "tuesday";}
+			match 3 {return "wednesday";}
+			match 4 {return "thursday";}
+			match 5 {return "friday";}
+			match 6 {return "saturday";}
+			match 7 {return "sunday";}
+		}*/
 	}
 	
 	point string2point(string lon, string lat){

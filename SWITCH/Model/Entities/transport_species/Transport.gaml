@@ -24,15 +24,9 @@ species Transport skills: [moving] {
 	//passenger capacity 
 	int max_passenger;
 
-	//passengers present in the transport
-	// the fisrt passenger of the list is considered as the driver
-	list<Passenger> passengers <- [];
-
 	//road graph available for the transport
-	graph available_graph;
-
-	//the target position, final destination of the trip
-	point pos_target;
+	graph<Crossroad,Road> available_graph;
+	
 	string lastAction <- "none";
 
 	//list of roads that lead to the target
@@ -68,20 +62,6 @@ species Transport skills: [moving] {
 		}
 	}
 	//****************************************************
-	action start (point start_location, point end_location,graph<Crossroad,Road> road_network) {
-		location <- start_location;
-		pos_target <- end_location;
-		available_graph <- road_network;
-		path the_path <- path_between(available_graph, location, pos_target);
-		if (the_path = nil) {
-			write "PATH NIL //// TELEPORTATION ACTIVEEE !!!!!!";
-			do endTrip;
-		} else {
-			path_to_target <- list<Road>(the_path.edges);			
-			add nil to: path_to_target at: 0;
-			do sendEnterRequest(time);
-		}
-	}
 
 	action setSignal (float signal_time, string signal_type) {
 		switch signal_type {
@@ -207,11 +187,7 @@ species Transport skills: [moving] {
 		}
 	}
 
-	action updatePassengerPosition{
-		loop passenger over: passengers{
-			passenger.location <- getCurrentRoad().start_node.location;
-		}	
-	}
+	action updatePassengerPosition{}
 	
 	//this function return a convenient string corresponding to a time (in second)
 	string timestamp (float time_to_print) {

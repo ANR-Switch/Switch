@@ -28,8 +28,8 @@ global {
 	
 	//file individual_shapefile <- file_exists(dataset +"individuals.shp") ? shape_file(dataset+"individuals.shp") : nil;
 	
-	//date (et heure) de début de la simulation : 7/4/2020 à 7h00 0"
-	date starting_date <- date(2020,4,7,0,0,0);
+	//date (et heure) de début de la simulation : 29/3/2020 à 00h00"
+	date starting_date <- date(2020,3,29,0,0,0);
 	
 	bool debug_mode <- false;
 	list<string> type_mode <- ["car","bus","bike","walk"];
