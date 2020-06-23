@@ -10,8 +10,9 @@ import "../../logger.gaml"
 import "Passenger.gaml"
 import "../network_species/Road.gaml"
 import "../EventManager.gaml"
+import "../EventListener.gaml"
 
-species Transport skills: [moving] {
+species Transport parent: EventListener{
 
 	string transport_mode <- "transport";
 	

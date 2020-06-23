@@ -7,7 +7,8 @@
 
 model SWITCH
 
-
+import "Entities/network_species/Road.gaml"
+import "Entities/network_species/Crossroad.gaml"
 
 global {
 	
@@ -49,6 +50,9 @@ global {
 	list<string> OSM_school <- ["school"];
 	
 	// ************Traffic Constants**********************
+	//Graph of the road network
+	graph<Crossroad,Road> road_network;
+	
 	
 	// this map give a speed limit for a specific type of road with an urban and weather context
 	map<list<string>,int> road_speed <- 

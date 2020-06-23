@@ -182,18 +182,18 @@ global {
 						//we check a second times if the stop is present in the map because it might not be added (outside the simulation area)
 						if station_map[stop[0]] != nil {
 							if trips[trip[0]]!=nil{
-								trips[trip[0]]<<[myself.string2time(stop_times[3]),myself.string2time(stop_times[4]),station_map[stop[0]]];
+								trips[trip[0]]<<[stop_times[3],stop_times[4],station_map[stop[0]]];
 							}else{
-								trips[trip[0]]<-[myself.string2time(stop_times[3]),myself.string2time(stop_times[4]),station_map[stop[0]]];
+								trips[trip[0]]<-[stop_times[3],stop_times[4],station_map[stop[0]]];
 							}
 							//we add the transport line in a station attribute so the station is aware of wich lines collect it
 							ask station_map[stop[0]]{ if not (lines contains myself){lines<<myself;} }
 							//if this is the first stop_times for this trip we add it in starting_times list
 							if length(trips[trip[0]]) =1{
 								if starting_times[trip[1]] != nil{
-									starting_times[trip[1]] << [myself.string2time(stop_times[3]),trip[0],station_map[stop[0]]];
+									starting_times[trip[1]] << [stop_times[3],trip[0],station_map[stop[0]]];
 								}else{
-									starting_times[trip[1]] <- [myself.string2time(stop_times[3]),trip[0],station_map[stop[0]]];
+									starting_times[trip[1]] <- [stop_times[3],trip[0],station_map[stop[0]]];
 								}
 							}
 						}
@@ -202,10 +202,12 @@ global {
 			}
 		}
 		//if the transportLine has no trips planned the we kill it
-		//if the trips map isn't empty then the transportLine can register all the departure events
+		//if the trips map isn't empty then the transportLine can register all the departure events for the day
 		ask TransportLine{
 			if length(trips.keys) = 0 {
 				do die;
+			}else{
+				do RegisterTodayDepartures;
 			}
 		}
 	}
@@ -247,11 +249,6 @@ global {
 		int month <- int(copy_between(date_,4,6));
 		int day <- int(copy_between(date_,6,8));
 		return date([year,month,day]);
-	}
-	
-	//convert a time from GTFS format string (HH:mm:ss) to a number of second since midnight (ex "16:00:00" = 57 600 seconds)
-	float string2time(string time_){
-		return int(date(time_,"HH:mm:ss"))+3600;
 	}
 	
 	//return an int corresponding to the day of week for a given date (used to compute the service_id list for a specific day)

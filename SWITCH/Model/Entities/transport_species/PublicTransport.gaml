@@ -14,7 +14,7 @@ import "../network_species/stations_species/Station.gaml"
 species PublicTransport parent: Transport {
 	
 	string transportLine_id;
-	// key = trip_id list<list> = [[int arrival_time, int departure_time, Station station_to_collect]]
+	//list<list> = [[int arrival_time, int departure_time, Station station_to_collect]]
 	list<list> trip_description <- [];
 	
 	map<Station,list<Passenger>> passengers <- [];
@@ -22,10 +22,10 @@ species PublicTransport parent: Transport {
 	
 	Station station_target;
 	
-	action start (point start_location, graph<Crossroad,Road> road_network, float start_time) {
+	action start (point start_location, graph<Crossroad,Road> road_network_, float start_time) {
 		location <- start_location;
 		station_target <- Station(trip_description[0][2]);
-		available_graph <- road_network;
+		available_graph <- road_network_;
 		path the_path <- path_between(available_graph, location, station_target.location);
 		if (the_path = nil) {
 			write "ERROR Public transport teleported" color:#red;
@@ -59,7 +59,7 @@ species PublicTransport parent: Transport {
 			}
 			passengers[Station(trip_description[0][2])] <- [];
 		}
-		if length(trip_description) =1 {
+		if length(trip_description) <=1 {
 			// the transport arrived at the last station and has already drop the passenger
 			do die;
 		}else{

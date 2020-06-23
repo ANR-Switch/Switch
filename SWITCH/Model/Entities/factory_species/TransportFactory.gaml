@@ -12,13 +12,14 @@ import "../transport_species/Walk.gaml"
 import "../transport_species/Bus.gaml"
 import "../transport_species/Tram.gaml"
 import "../transport_species/Metro.gaml"
+import "../../Constants.gaml"
 import "../data_structure_species/SortedMap.gaml"
 import "../data_structure_species/Queue.gaml"
 import "../transport_species/Passenger.gaml"
 
 global{
 	
-	Car createCar(point start_location, point end_location, list<Passenger> passengers_,graph<Crossroad,Road> road_network, float start_time){
+	Car createCar(point start_location, point end_location, list<Passenger> passengers_, float start_time){
         create Car returns: children{
         	test_mode <- true;
 	    	do getIn(passengers_);
@@ -27,7 +28,7 @@ global{
         return children[0];
     }
     
-    Bike createBike(point start_location, point end_location, list<Passenger> passengers_,graph<Crossroad,Road> road_network, float start_time){
+    Bike createBike(point start_location, point end_location, list<Passenger> passengers_, float start_time){
         create Bike returns: children{
 	    	do getIn(passengers_);
             do start(start_location,end_location,road_network, start_time);
@@ -35,7 +36,7 @@ global{
         return children[0];
     }
     
-    Walk createWalk(point start_location, point end_location, list<Passenger> passengers_,graph<Crossroad,Road> road_network, float start_time){
+    Walk createWalk(point start_location, point end_location, list<Passenger> passengers_, float start_time){
         create Walk returns: children{
 	    	do getIn(passengers_);
             do start(start_location,end_location,road_network, start_time);
@@ -43,23 +44,29 @@ global{
         return children[0];
     }
     
-    Bus createBus(point start_location, string transportLine_id, list<list> trip_description,graph<Crossroad,Road> road_network, float start_time){
+    Bus createBus(string transportLine_id_ , list<list> trip_description_, float start_time){
     	create Bus returns: children{
-    		
-        } 
+    		transportLine_id <- transportLine_id_;
+    		trip_description <- trip_description_;
+    		do start(Station(trip_description[0][2]).location, road_network, start_time);
+        }
         return children[0];
     }
     
-    Metro createMetro(point start_location, string transportLine_id, list<list> trip_description,graph<Crossroad,Road> road_network, float start_time){
+    Metro createMetro(string transportLine_id_ , list<list> trip_description_, float start_time){
     	create Metro returns: children{
-    		
+    		transportLine_id <- transportLine_id_;
+    		trip_description <- trip_description_;
+    		do start(Station(trip_description[0][2]).location, road_network, start_time);
         } 
         return children[0];
     }
     
-    Tram createTram(point start_location, string transportLine_id, list<list> trip_description,graph<Crossroad,Road> road_network, float start_time){
+    Tram createTram(string transportLine_id_ , list<list> trip_description_, float start_time){
     	create Tram returns: children{
-    		
+    		transportLine_id <- transportLine_id_;
+    		trip_description <- trip_description_;
+    		do start(Station(trip_description[0][2]).location, road_network, start_time);
         } 
         return children[0];
     }

@@ -49,8 +49,6 @@ global {
 	list<file> shp_roads <-  define_shapefiles("roads");
 	geometry shape <- envelope(union(shp_roads collect envelope(each)));
 	
-	//Graph of the road network
-	graph<Crossroad,Road> road_network;
 	string optimizer_type <- "NBAStar" among: ["NBAStar", "NBAStarApprox", "Dijkstra", "AStar", "BellmannFord", "FloydWarshall"];
 	bool memorize_shortest_paths <- true; //true by default
 	

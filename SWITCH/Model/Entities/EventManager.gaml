@@ -10,10 +10,11 @@ model SWITCH
 
 import "transport_species/Transport.gaml"
 import "data_structure_species/SortedMap.gaml"
+import "EventListener.gaml"
 
 species EventManager {
 	
-	//Registered events list events = [[float signal_time, Transport signal_target, string signal_type]]
+	//Registered events list events = [[float signal_time, EventListener signal_target, string signal_type]]
 	//Note that this list should always be sorted, 
 	//an intuitive method to sort the list is to use the insertion sort
 	SortedMap events_map;
@@ -22,7 +23,7 @@ species EventManager {
 		create SortedMap{myself.events_map <- self;}
 	}
 	
-	action registerEvent(float signal_time, Transport signal_target, string signal_type){
+	action registerEvent(float signal_time, EventListener signal_target, string signal_type){
 		ask events_map{
 			do add([signal_time,signal_target,signal_type]);
 		}
@@ -31,23 +32,20 @@ species EventManager {
 	reflex sendSignal when: not events_map.isEmpty() {
 		
 		loop while: not events_map.isEmpty() and getEventTime(0) <= time{
-			//write ""+getEventTransport(0)+" " +getEventTime(0) + " " +getEventType(0);
 			float event_time <- getEventTime(0);
 			string event_type <- getEventType(0);
-			Transport event_transport <- getEventTransport(0);
-			ask event_transport{
+			EventListener event_target <- getEventTarget(0);
+			ask event_target{
 				do setSignal(event_time,event_type);
 			}
-			//write "" + event_type +" signal sent to "+event_transport+" at "+event_time;
 			ask events_map{
-				do remove([event_time,event_transport,event_type]);
+				do remove([event_time,event_target,event_type]);
 			}
 		}
-		//write events_map.data;
 	}
 	
-	Transport getEventTransport(int event_index){
-		return Transport(events_map.get(event_index)[1]);
+	EventListener getEventTarget(int event_index){
+		return EventListener(events_map.get(event_index)[1]);
 	}
 	
 	float getEventTime(int event_index){
