@@ -65,9 +65,9 @@ species PublicTransport parent: Transport {
 		}else{
 			//there is at least one more station in the trip so we create an event to collect the current station
 			//and join the next one
-			float collect_time <- float(trip_description[0][1]);
+			float collect_time <- date(trip_description[0][1]) - current_date;
 			ask EventManager{
-				do registerEvent(collect_time, myself,"collect");
+				do registerEvent(time + collect_time, myself,"collect");
 			}
 		}
 	}
