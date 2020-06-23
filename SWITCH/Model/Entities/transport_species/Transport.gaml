@@ -213,9 +213,7 @@ species Transport parent: EventListener{
 		return buff + nb_sec + "s";
 	}
 
-	action endTrip {
-	//need to be redefined in each concrete transports
-	}
+	action endTrip virtual:true;
 
 	aspect default {
 		draw square(1 #px) color: #green border: #black depth: 1.0;

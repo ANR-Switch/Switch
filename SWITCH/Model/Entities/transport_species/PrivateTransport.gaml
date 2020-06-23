@@ -46,7 +46,9 @@ species PrivateTransport parent: Transport {
 			passenger.location <- getCurrentRoad().start_node.location;
 		}	
 	}
-
+	
+	action endTrip virtual:true;
+	
 	aspect default {
 		draw square(1 #px) color: #green border: #black;
 	}

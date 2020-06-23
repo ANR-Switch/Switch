@@ -140,7 +140,7 @@ global {
 				line_color <- myself.hex2rgb(routes_map[routes][7]);
 				
 				loop trip over: trips_map[routes]{
-					if line_shapes[trip[5]] != nil{
+					if line_shapes[trip[5]] = nil{
 						line_shapes[trip[5]] <- polyline_shape_map[trip[5]];
 					}
 					trip_shapes[trip[0]]<-trip[5];
@@ -150,14 +150,14 @@ global {
 						if station_map[stop[0]] = nil{
 							//we only import stations data covered by the simulation area
 							point stop_location <- myself.string2point(stop[4],stop[3]);
-							if world.shape overlaps stop_location{
+							if world.shape overlaps stop_location {
 								switch transport_type{
 									match 0{
 										create StationTram{
 											id <- stop[0];
 											name <- stop[2];
 											location <- stop_location;
-											station_map[stop[0]]<-self;
+											station_map[id]<-self;
 										}
 									}
 									match 1{
@@ -165,7 +165,7 @@ global {
 											id <- stop[0];
 											name <- stop[2];
 											location <- stop_location;
-											station_map[stop[0]]<-self;
+											station_map[id]<-self;
 										}
 									}
 									match 3{
@@ -173,7 +173,7 @@ global {
 											id <- stop[0];
 											name <- stop[2];
 											location <- stop_location;
-											station_map[stop[0]]<-self;
+											station_map[id]<-self;
 										}
 									}
 								}
@@ -184,16 +184,16 @@ global {
 							if trips[trip[0]]!=nil{
 								trips[trip[0]]<<[stop_times[3],stop_times[4],station_map[stop[0]]];
 							}else{
-								trips[trip[0]]<-[stop_times[3],stop_times[4],station_map[stop[0]]];
+								trips[trip[0]]<-[ [stop_times[3],stop_times[4],station_map[stop[0]]] ];
 							}
 							//we add the transport line in a station attribute so the station is aware of wich lines collect it
 							ask station_map[stop[0]]{ if not (lines contains myself){lines<<myself;} }
 							//if this is the first stop_times for this trip we add it in starting_times list
-							if length(trips[trip[0]]) =1{
+							if length(trips[trip[0]])=1{
 								if starting_times[trip[1]] != nil{
 									starting_times[trip[1]] << [stop_times[3],trip[0],station_map[stop[0]]];
 								}else{
-									starting_times[trip[1]] <- [stop_times[3],trip[0],station_map[stop[0]]];
+									starting_times[trip[1]] <- [[stop_times[3],trip[0],station_map[stop[0]]]];
 								}
 							}
 						}
@@ -207,7 +207,7 @@ global {
 			if length(trips.keys) = 0 {
 				do die;
 			}else{
-				do RegisterTodayDepartures;
+				do RegisterTodayDepartures();
 			}
 		}
 	}
@@ -231,11 +231,13 @@ global {
 	list<string> getServiceIdsFromDate(date today){
 		list<string> service_ids_for_today <- [];
 		int day_of_the_week <- date2day(today);
+		//in case day_of_the_week = 0 (sunday) we adjust it so it point towards the sunday columns (the 7) in the calendar map 
+		day_of_the_week <- day_of_the_week = 0 ? 7 : day_of_the_week;
 		loop services_date over: calendar_map.keys{
 			if int(calendar_map[services_date][day_of_the_week])=1{
 				date start_date_ <- string2date(calendar_map[services_date][8]);
 				date end_date_ <- string2date(calendar_map[services_date][9]);
-				if (today after start_date_) and (today before end_date_){
+				if (today - start_date_ >=0 ) and (today - end_date_ <=0){
 					service_ids_for_today << services_date;
 				}
 			}
@@ -280,7 +282,7 @@ global {
 			match 4 {return "thursday";}
 			match 5 {return "friday";}
 			match 6 {return "saturday";}
-			match 7 {return "sunday";}
+			match 0 {return "sunday";}
 		}*/
 	}
 	

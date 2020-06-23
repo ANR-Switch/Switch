@@ -64,7 +64,7 @@ species TransportLine parent: EventListener{
 				list<list> trip_description <- trips[signal_type];
 				loop trip_step over: trip_description{
 					trip_step[0] <- hour2date(trip_step[0]);
-					trip_step[1] <- hour2date(trip_step[0]);
+					trip_step[1] <- hour2date(trip_step[1]);
 				}
 				switch transport_type{
 					match 0{

@@ -26,7 +26,7 @@ species Station {
 		if waiting_passengers[transportLine_id] != nil{
 			waiting_passengers[transportLine_id] << p::destination;
 		}else{
-			waiting_passengers[transportLine_id] <- [p,destination];
+			waiting_passengers[transportLine_id] <- [p::destination];
 		}
 		p.status <- "waiting at station";
 	}

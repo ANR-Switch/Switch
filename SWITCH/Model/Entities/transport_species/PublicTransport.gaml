@@ -98,6 +98,7 @@ species PublicTransport parent: Transport {
 	}
 	
 	action updatePassengerPosition{
+		location <- getCurrentRoad().start_node.location;
 		loop station over: passengers.keys{
 			loop passenger over: passengers[station]{
 				passenger.location <- getCurrentRoad().start_node.location;
@@ -106,7 +107,7 @@ species PublicTransport parent: Transport {
 	}
 	
 	aspect default {
-		draw square(1#px) color: #green border: #black depth: 1.0 ;
+		draw square(15) color: #red border: #black;
 	}
 	
 }

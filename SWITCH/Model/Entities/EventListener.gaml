@@ -8,7 +8,7 @@
 model EventListener
 
 species EventListener {
-	action setSignal (float signal_time, string signal_type) {}
+	action setSignal (float signal_time, string signal_type) virtual:true;
 }
 
 
