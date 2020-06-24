@@ -44,8 +44,9 @@ global{
         return children[0];
     }
     
-    Bus createBus(string transportLine_id_ , list<list> trip_description_, float start_time){
+    Bus createBus(string trip_id_, string transportLine_id_ , list<list> trip_description_, float start_time){
     	create Bus returns: children{
+    		trip_id <- trip_id_;
     		transportLine_id <- transportLine_id_;
     		trip_description <- trip_description_;
     		do start(road_network, start_time);
@@ -53,8 +54,9 @@ global{
         return children[0];
     }
     
-    Metro createMetro(string transportLine_id_ , list<list> trip_description_, float start_time){
+    Metro createMetro(string trip_id_, string transportLine_id_ , list<list> trip_description_, float start_time){
     	create Metro returns: children{
+    		trip_id <- trip_id_;
     		transportLine_id <- transportLine_id_;
     		trip_description <- trip_description_;
     		do start(road_network, start_time);
@@ -62,8 +64,9 @@ global{
         return children[0];
     }
     
-    Tram createTram(string transportLine_id_ , list<list> trip_description_, float start_time){
+    Tram createTram(string trip_id_, string transportLine_id_ , list<list> trip_description_, float start_time){
     	create Tram returns: children{
+    		trip_id <- trip_id_;
     		transportLine_id <- transportLine_id_;
     		trip_description <- trip_description_;
     		do start(road_network, start_time);

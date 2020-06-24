@@ -70,13 +70,13 @@ species TransportLine parent: EventListener{
 				write "line " + name + " create trip " + signal_type + " at " + trip_description[0][1];
 				switch transport_type{
 					match 0{
-						Tram t <- world.createTram(id,trip_description,signal_time);
+						Tram t <- world.createTram(signal_type,id,trip_description,signal_time);
 					}
 					match 1{
-						Metro m <- world.createMetro(id,trip_description,signal_time);
+						Metro m <- world.createMetro(signal_type,id,trip_description,signal_time);
 					}
 					match 3{
-						Bus b <- world.createBus(id,trip_description,signal_time);
+						Bus b <- world.createBus(signal_type,id,trip_description,signal_time);
 					}
 				}
 			}

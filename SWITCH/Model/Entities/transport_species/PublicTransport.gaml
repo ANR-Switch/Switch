@@ -13,8 +13,9 @@ import "../network_species/stations_species/Station.gaml"
 
 species PublicTransport parent: Transport {
 	
+	string trip_id;
 	string transportLine_id;
-	//list<list> = [[int arrival_time, int departure_time, Station station_to_collect]]
+	//list<list> = [[date arrival_time, date departure_time, Station station_to_collect]]
 	list<list> trip_description <- [];
 	
 	map<Station,list<Passenger>> passengers <- [];
@@ -24,6 +25,9 @@ species PublicTransport parent: Transport {
 	Station station_target;
 	
 	action start (graph<Crossroad,Road> road_network_, float start_time) {
+		loop collect_info over: trip_description {
+			write "go to "+Station(collect_info[2]).name +" from " +collect_info[0]+" to "+collect_info[1];
+		}
 		location <- Station(trip_description[0][2]).location;
 		station_target <- Station(trip_description[0][2]);
 		do collectPassenger(station_target);
@@ -33,7 +37,7 @@ species PublicTransport parent: Transport {
 		available_graph <- road_network_;
 		path the_path <- path_between(available_graph, location, station_target.location);
 		if (the_path = nil) {
-			write "ERROR Public transport teleported from "+station_departure.name+" to "+station_target.name color:#red;
+			write "ERROR Public transport "+ trip_id +" teleported from "+station_departure.name+" to "+station_target.name color:#red;
 			do endTrip;
 		} else {
 			path_to_target <- list<Road>(the_path.edges);			
@@ -48,7 +52,7 @@ species PublicTransport parent: Transport {
 		station_target <- Station(trip_description[0][2]);
 		path the_path <- path_between(available_graph, location, station_target.location);
 		if (the_path = nil) {
-			write "ERROR Public transport teleported from "+station_departure.name+" to "+station_target.name color:#red;
+			write "ERROR Public transport "+ trip_id +" teleported from "+station_departure.name+" to "+station_target.name color:#red;
 			do endTrip;
 		} else {
 			path_to_target <- list<Road>(the_path.edges);			

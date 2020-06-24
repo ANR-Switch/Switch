@@ -150,30 +150,46 @@ global {
 						if station_map[stop[0]] = nil{
 							//we only import stations data covered by the simulation area
 							point stop_location <- myself.string2point(stop[4],stop[3]);
-							if world.shape overlaps stop_location {
-								switch transport_type{
-									match 0{
-										create StationTram{
-											id <- stop[0];
-											name <- stop[2];
-											location <- stop_location;
+							switch transport_type{
+								match 0{
+									create StationTram{
+										id <- stop[0];
+										name <- stop[2];
+										location <- stop_location;
+										// We check if the stop is near (20m) a road of the simulation
+										// if it isn't we kill it
+										if length(Road at_distance 20.0) >0{
 											station_map[id]<-self;
+										}else{
+											do die;
 										}
 									}
-									match 1{
-										create StationMetro{
-											id <- stop[0];
-											name <- stop[2];
-											location <- stop_location;
+								}
+								match 1{
+									create StationMetro{
+										id <- stop[0];
+										name <- stop[2];
+										location <- stop_location;
+										// We check if the stop is near (20m) a road of the simulation
+										// if it isn't we kill it
+										if length(Road at_distance 20.0) >0{
 											station_map[id]<-self;
+										}else{
+											do die;
 										}
 									}
-									match 3{
-										create StationBus{
-											id <- stop[0];
-											name <- stop[2];
-											location <- stop_location;
+								}
+								match 3{
+									create StationBus{
+										id <- stop[0];
+										name <- stop[2];
+										location <- stop_location;
+										// We check if the stop is near (20m) a road of the simulation
+										// if it isn't we kill it
+										if length(Road at_distance 20.0) >0{
 											station_map[id]<-self;
+										}else{
+											do die;
 										}
 									}
 								}
