@@ -48,7 +48,7 @@ global{
     	create Bus returns: children{
     		transportLine_id <- transportLine_id_;
     		trip_description <- trip_description_;
-    		do start(Station(trip_description[0][2]).location, road_network, start_time);
+    		do start(road_network, start_time);
         }
         return children[0];
     }
@@ -57,7 +57,7 @@ global{
     	create Metro returns: children{
     		transportLine_id <- transportLine_id_;
     		trip_description <- trip_description_;
-    		do start(Station(trip_description[0][2]).location, road_network, start_time);
+    		do start(road_network, start_time);
         } 
         return children[0];
     }
@@ -66,7 +66,7 @@ global{
     	create Tram returns: children{
     		transportLine_id <- transportLine_id_;
     		trip_description <- trip_description_;
-    		do start(Station(trip_description[0][2]).location, road_network, start_time);
+    		do start(road_network, start_time);
         } 
         return children[0];
     }

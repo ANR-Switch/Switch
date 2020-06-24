@@ -20,15 +20,35 @@ species PublicTransport parent: Transport {
 	map<Station,list<Passenger>> passengers <- [];
 	int nb_passenger <- 0;
 	
+	Station station_departure;
 	Station station_target;
 	
-	action start (point start_location, graph<Crossroad,Road> road_network_, float start_time) {
-		location <- start_location;
+	action start (graph<Crossroad,Road> road_network_, float start_time) {
+		location <- Station(trip_description[0][2]).location;
+		station_target <- Station(trip_description[0][2]);
+		do collectPassenger(station_target);
+		station_departure <- station_target;
+		remove trip_description[0] from: trip_description;
 		station_target <- Station(trip_description[0][2]);
 		available_graph <- road_network_;
 		path the_path <- path_between(available_graph, location, station_target.location);
 		if (the_path = nil) {
-			write "ERROR Public transport teleported" color:#red;
+			write "ERROR Public transport teleported from "+station_departure.name+" to "+station_target.name color:#red;
+			do endTrip;
+		} else {
+			path_to_target <- list<Road>(the_path.edges);			
+			add nil to: path_to_target at: 0;
+			do sendEnterRequest(start_time);
+		}
+	}
+	
+	action joinNextStation(float start_time){
+		station_departure <- station_target;
+		remove trip_description[0] from: trip_description;
+		station_target <- Station(trip_description[0][2]);
+		path the_path <- path_between(available_graph, location, station_target.location);
+		if (the_path = nil) {
+			write "ERROR Public transport teleported from "+station_departure.name+" to "+station_target.name color:#red;
 			do endTrip;
 		} else {
 			path_to_target <- list<Road>(the_path.edges);			
@@ -38,12 +58,37 @@ species PublicTransport parent: Transport {
 	}
 	
 	action setSignal (float signal_time, string signal_type) {
-		invoke setSignal(signal_time, signal_type);
-		switch signal_type{
+		switch signal_type {
+			match "enter road" {
+			//if we are leaving a road by entering another the transports averts the first road 
+				if test_mode { do addPointEnterRoad(signal_time); }
+				do changeRoad(signal_time);
+				do updatePassengerPosition();
+			}
+			match "First in queue" {
+				listactions <- listactions + " " + signal_time + " First in Queue " + hasNextRoad() + " (" + path_to_target + ")\n";
+				if hasNextRoad() {
+					do sendEnterRequest(signal_time);
+				} else {
+				//the transport is arrived
+					listactions <- listactions + " " + signal_time + " There is no next road (" + path_to_target + ")\n";
+					if jammed_road {
+						time_in_jams <- time_in_jams + (signal_time - last_entering_road);
+					}
+					practical_trip_time <- practical_trip_time + (signal_time - last_entering_road);
+					theoric_trip_time <- theoric_trip_time + get_freeflow_travel_time(getCurrentRoad());
+					if getCurrentRoad() != nil{
+						ask getCurrentRoad() {
+							do leave(myself, signal_time);
+						}
+					}
+					do endTrip();
+				}
+				lastAction <- "First in queue";
+			}
 			match "collect"{
 				do collectPassenger(station_target);
-				remove trip_description[0] from: trip_description;
-				do start(location, available_graph, signal_time);
+				do joinNextStation (signal_time);
 			}
 		}
 		

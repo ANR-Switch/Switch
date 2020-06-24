@@ -188,12 +188,13 @@ global {
 							}
 							//we add the transport line in a station attribute so the station is aware of wich lines collect it
 							ask station_map[stop[0]]{ if not (lines contains myself){lines<<myself;} }
-							//if this is the first stop_times for this trip we add it in starting_times list
-							if length(trips[trip[0]])=1{
+							//if this is the second stop_times for this trip we add it in starting_times list
+							//we wait to have 2 stops to collect in the trip because if there is only one the trip is useless
+							if length(trips[trip[0]])=2{
 								if starting_times[trip[1]] != nil{
-									starting_times[trip[1]] << [stop_times[3],trip[0],station_map[stop[0]]];
+									starting_times[trip[1]] << [trips[trip[0]][0][1],trip[0],Station(trips[trip[0]][0][2])];
 								}else{
-									starting_times[trip[1]] <- [[stop_times[3],trip[0],station_map[stop[0]]]];
+									starting_times[trip[1]] <- [[trips[trip[0]][0][1],trip[0],Station(trips[trip[0]][0][2])]];
 								}
 							}
 						}
@@ -201,10 +202,17 @@ global {
 				}
 			}
 		}
-		//if the transportLine has no trips planned the we kill it
-		//if the trips map isn't empty then the transportLine can register all the departure events for the day
+		
 		ask TransportLine{
-			if length(trips.keys) = 0 {
+			//if a trip has one station or less to collect then we remove it (useless trip)
+			loop trip over: trips.keys{
+				if length(trips[trip]) <= 1 {
+					remove trips[trip] from: trips;
+				}
+			}
+			//if the transportLine has no trips planned then we kill it
+			//if the trips map isn't empty then the transportLine can register all the departure events for the day
+			if length(trips.keys) = 0{
 				do die;
 			}else{
 				do RegisterTodayDepartures();

@@ -81,7 +81,7 @@ experiment "Abstract Experiment" virtual:true{
 			species StationMetro;
 			species StationTram;
 			species Individual;
-			species PublicTransport;
+			species Bus;
 		}
 		
 		display activity_charts refresh: every(1 #mn) {

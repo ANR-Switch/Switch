@@ -33,7 +33,7 @@ species TransportLine parent: EventListener{
 	rgb line_color <- #black;
 	
 	//store the trips info
-	// key = trip_id list<list> = [[int arrival_time, int departure_time, Station station_to_collect]]
+	// key = trip_id list<list> = [[string arrival_time, string departure_time, Station station_to_collect]]
 	map<string, list<list>> trips;
 	
 	// this is the map of trip departure, the map's keys are service_id so when we start a new day, 
@@ -66,6 +66,8 @@ species TransportLine parent: EventListener{
 					trip_step[0] <- hour2date(trip_step[0]);
 					trip_step[1] <- hour2date(trip_step[1]);
 				}
+				
+				write "line " + name + " create trip " + signal_type + " at " + trip_description[0][1];
 				switch transport_type{
 					match 0{
 						Tram t <- world.createTram(id,trip_description,signal_time);
