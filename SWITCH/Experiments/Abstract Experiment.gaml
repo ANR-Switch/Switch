@@ -48,7 +48,7 @@ experiment "Abstract Experiment" virtual:true{
 	
 	
 	output {
-		display "default_display" synchronized: false type: opengl background: background virtual: true draw_env: false {
+		display "default_display" synchronized: false background: background virtual: true draw_env: false {
 			
 			overlay position: { 5, 5 } size: { 400 #px, 600 #px }  transparency: 0.5
             {

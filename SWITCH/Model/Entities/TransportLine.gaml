@@ -51,6 +51,7 @@ species TransportLine parent: EventListener{
 					ask EventManager{
 						//we register a signal with the trip_id as the signal type so when we receive the signal
 						//we know that we have to start this trip
+						//write "register departure at " + date(target_date);
 						do registerEvent(time + time_diff, myself, departure[1]);
 					}
 				}
@@ -67,7 +68,7 @@ species TransportLine parent: EventListener{
 					trip_step[1] <- hour2date(trip_step[1]);
 				}
 				
-				write "line " + name + " create trip " + signal_type + " at " + trip_description[0][1];
+				//write "line " + name + " create trip " + signal_type + " at " + trip_description[0][1];
 				switch transport_type{
 					match 0{
 						Tram t <- world.createTram(signal_type,id,trip_description,signal_time);

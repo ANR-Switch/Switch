@@ -28,7 +28,7 @@ global {
 	
 	//file individual_shapefile <- file_exists(dataset +"individuals.shp") ? shape_file(dataset+"individuals.shp") : nil;
 	
-	//date (et heure) de début de la simulation : 29/3/2020 à 00h00"
+	//date (et heure) de début de la simulation : 27/3/2020 à 00h00"
 	date starting_date <- date(2020,3,27,0,0,0);
 	
 	bool debug_mode <- false;
