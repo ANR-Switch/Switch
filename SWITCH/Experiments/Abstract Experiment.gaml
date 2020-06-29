@@ -62,13 +62,13 @@ experiment "Abstract Experiment" virtual:true{
                 loop type over: colors_per_act.keys 
                 {
                 	draw square(15#px) at: { 20#px, y } color: colors_per_act[type] border: #white;
-                    draw type.name +":"+((Individual count (each.current_activity = type))/num_individuals*100) with_precision 2 +"%" at: { 40#px, y + 4#px } color: # white font: default;
+                    draw type.name at: { 40#px, y + 4#px } color: # white font: default; //+":"+((Individual count (each.current_activity = type))/num_individuals*100) with_precision 2 +"%" at: { 40#px, y + 4#px } color: # white font: default;
                     y <- y + 35#px;
                 }
                 loop type over: colors_per_mobility_mode.keys
                 {
                     draw square(15#px) at: { 20#px, y } color: colors_per_mobility_mode[type] border: #white;
-                    draw type+":"+((Individual count (each.get_max_priority_mode() = type))/num_individuals*100) with_precision  2+"%" at: { 40#px, y + 4#px } color: # white font: default;
+                    draw type at: { 40#px, y + 4#px } color: # white font: default; //+":"+((Individual count (each.get_max_priority_mode() = type))/num_individuals*100) with_precision  2+"%" at: { 40#px, y + 4#px } color: # white font: default;
                     y <- y + 35#px;
                 }
             }

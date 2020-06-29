@@ -231,7 +231,7 @@ global {
 			if length(trips.keys) = 0{
 				do die;
 			}else{
-				do RegisterTodayDepartures();
+				//do RegisterTodayDepartures();
 			}
 		}
 	}

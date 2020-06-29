@@ -395,7 +395,7 @@ species Individual skills: [moving] control:simple_bdi parent:Passenger{
 		if(not has_car()){
 			priority_modes["car"] <-0;
 		}
-		write "max priority = : " + get_max_priority_mode() ;
+		//write "max priority = : " + get_max_priority_mode() ;
 		
 	}
 	

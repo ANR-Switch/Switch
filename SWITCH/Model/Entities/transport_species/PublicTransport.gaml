@@ -25,9 +25,6 @@ species PublicTransport parent: Transport {
 	Station station_target;
 	
 	action start (graph<Crossroad,Road> road_network_, float start_time) {
-		loop collect_info over: trip_description {
-			write "go to "+Station(collect_info[2]).name +" from " +collect_info[0]+" to "+collect_info[1];
-		}
 		location <- Station(trip_description[0][2]).location;
 		station_target <- Station(trip_description[0][2]);
 		do collectPassenger(station_target);
@@ -42,11 +39,13 @@ species PublicTransport parent: Transport {
 		} else {
 			path_to_target <- list<Road>(the_path.edges);			
 			add nil to: path_to_target at: 0;
+			write "send enter request start";
 			do sendEnterRequest(start_time);
 		}
 	}
 	
 	action joinNextStation(float start_time){
+		write "join next station";
 		station_departure <- station_target;
 		remove trip_description[0] from: trip_description;
 		station_target <- Station(trip_description[0][2]);
@@ -91,6 +90,7 @@ species PublicTransport parent: Transport {
 				lastAction <- "First in queue";
 			}
 			match "collect"{
+				write "trip "+trip_id+" collecting station "+station_target.name+" à "+date(starting_date + signal_time);
 				do collectPassenger(station_target);
 				do joinNextStation (signal_time);
 			}
@@ -99,6 +99,7 @@ species PublicTransport parent: Transport {
 	}
 	
 	action endTrip{
+		write " bus "+trip_id+" endtrip";
 		location <- station_target.location;
 		if passengers[Station(trip_description[0][2])] != nil{
 			loop passenger over: passengers[Station(trip_description[0][2])]{
@@ -110,12 +111,14 @@ species PublicTransport parent: Transport {
 		}
 		if length(trip_description) <=1 {
 			// the transport arrived at the last station and has already drop the passenger
+			write "die";
 			do die;
 		}else{
 			//there is at least one more station in the trip so we create an event to collect the current station
 			//and join the next one
 			float collect_time <- date(trip_description[0][1]) - current_date;
 			ask EventManager{
+				write "register collect event at " + date(starting_date+time+collect_time);
 				do registerEvent(time + collect_time, myself,"collect");
 			}
 		}

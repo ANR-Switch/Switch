@@ -9,8 +9,7 @@ model SWITCH
 import "Transport.gaml"
 species PrivateTransport parent: Transport {
 
-	//the target position, final destination of the trip
-	point pos_target;
+	
 	
 	//passengers present in the transport
 	// the fisrt passenger of the list is considered as the driver
@@ -26,10 +25,10 @@ species PrivateTransport parent: Transport {
 		}
 	}
 
-	action start (point start_location, point end_location,graph<Crossroad,Road> road_network, float start_time) {
+	action start (point start_location, point end_location,graph<Crossroad,Road> road_network_, float start_time) {
 		location <- start_location;
 		pos_target <- end_location;
-		available_graph <- road_network;
+		available_graph <- road_network_;
 		path the_path <- path_between(available_graph, location, pos_target);
 		if (the_path = nil) {
 			write "PATH NIL //// TELEPORTATION ACTIVEEE !!!!!!";

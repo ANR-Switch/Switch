@@ -13,7 +13,7 @@ import "../EventManager.gaml"
 import "../EventListener.gaml"
 
 species Transport parent: EventListener{
-
+	
 	string transport_mode <- "transport";
 	
 	// maximum speed for a transport (km/h)
@@ -24,6 +24,9 @@ species Transport parent: EventListener{
 
 	//passenger capacity 
 	int max_passenger;
+	
+	//the target position, final destination of the trip
+	point pos_target;
 
 	//road graph available for the transport
 	graph<Crossroad,Road> available_graph;
@@ -131,9 +134,7 @@ species Transport parent: EventListener{
 			ask getNextRoad() {
 				do enterRequest(myself, request_time);
 			}
-
 		}
-
 	}
 
 	action setEntryTime (float entry_time) {
@@ -163,8 +164,13 @@ species Transport parent: EventListener{
 	
 	//compute the free_flow travel time depending on the max speed allowed on the road and the max speed of the transport
 	float get_freeflow_travel_time(Road r){
-		float max_freeflow_speed <- min([self.max_speed, r.avg_speed]) #km / #h;
-		return r.size / max_freeflow_speed;
+		if(r != nil){
+			float max_freeflow_speed <- min([self.max_speed, r.avg_speed]) #km / #h;
+			return r.size / max_freeflow_speed;
+		}else{
+			return distance_to(location,pos_target)/self.max_speed;
+		}
+		
 	}
 
 	bool hasNextRoad {
@@ -188,7 +194,7 @@ species Transport parent: EventListener{
 		}
 	}
 
-	action updatePassengerPosition{}
+	
 	
 	//this function return a convenient string corresponding to a time (in second)
 	string timestamp (float time_to_print) {
@@ -212,6 +218,8 @@ species Transport parent: EventListener{
 
 		return buff + nb_sec + "s";
 	}
+	
+	action updatePassengerPosition virtual: true;
 
 	action endTrip virtual:true;
 
