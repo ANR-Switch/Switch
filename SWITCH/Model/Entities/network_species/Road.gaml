@@ -69,7 +69,7 @@ species Road {
 	float output_flow_capacity <- output_flow.keys contains type ? output_flow[type] : 2.4;
 
 	//maximum space capacity of the road (in meters)
-	float max_capacity <- size * nb_lanes min: 10.0;
+	float max_capacity <- size * nb_lanes min: 15.0;
 
 	//actual free space capacity of the road (in meters)
 	float current_capacity <- max_capacity min: 0.0 max: max_capacity;

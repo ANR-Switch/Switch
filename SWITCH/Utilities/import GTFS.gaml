@@ -219,7 +219,7 @@ global {
 			}
 		}
 		
-		ask TransportLine[2]{
+		ask TransportLine{
 			//if a trip has one station or less to collect then we remove it (useless trip)
 			loop trip over: trips.keys{
 				if length(trips[trip]) <= 1 {
