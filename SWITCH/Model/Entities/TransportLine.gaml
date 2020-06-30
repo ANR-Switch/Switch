@@ -36,6 +36,8 @@ species TransportLine parent: EventListener{
 	// key = trip_id list<list> = [[string arrival_time, string departure_time, Station station_to_collect]]
 	map<string, list<list>> trips;
 	
+	list<Station> served_stations;
+	
 	// this is the map of trip departure, the map's keys are service_id so when we start a new day, 
 	// we load every starting event in the event manager
 	//service_id :: [string starting_time, string trip_id, Station first_station]
@@ -46,8 +48,7 @@ species TransportLine parent: EventListener{
 		loop service_id over: starting_times.keys{
 			if today_service_ids contains service_id{
 				loop departure over:starting_times[service_id]{
-					date target_date <- hour2date(departure[0]);
-					float time_diff <- target_date - current_date;
+					float time_diff <- hour2date(departure[0]) - current_date;
 					ask EventManager{
 						//we register a signal with the trip_id as the signal type so when we receive the signal
 						//we know that we have to start this trip

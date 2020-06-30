@@ -7,7 +7,7 @@
 
 model SWITCH
 
-import "../Utilities/Generate Agenda.gaml"
+//import "../Utilities/Generate Agenda.gaml"
 import "../Utilities/import GTFS.gaml"
 
 import "Parameters.gaml"
@@ -63,11 +63,12 @@ global {
 	} 
 	
 	reflex manage_step when: every(#h) {
-		if (not is_fast_step and (current_date.hour < first_activity_h[current_date.day_of_week-1])) {
+		float next_event_time <- (first(EventManager).getEventTime(0));
+		if (not is_fast_step and ( time < next_event_time)) {
 			step <- fast_step;
 			is_fast_step <- true;
 		} 
-		if (is_fast_step  and (current_date.hour >= first_activity_h[current_date.day_of_week-1])) {
+		if (is_fast_step  and (time >= next_event_time)) {
 			step <- normal_step;
 			is_fast_step <- false;
 		}
@@ -133,135 +134,26 @@ global {
 			
 		}
 		do write_message("Nodes filtered");
+
+		ask Building{
+			switch size{
+				match_between [0.0,50.0]{}
+				match_between [50.0,125.0]{type <-"home";}
+				match_between [125.0,250.0]{type <- rnd(1.0)<0.5 ? "parking" : "work";}
+				default {type <- "work";}
+			}
+		}
 	
-		
-		list<file> shp_individuals <-  define_shapefiles("individuals");
-	
-		
-		if (not empty(shp_individuals)) {
-			map<int,Building> bds <- Building as_map (each.id::each);
-			loop shp_individual over:shp_individuals {
-				create Individual from: shp_individual with: [
-					age:: int(get("age")),
-					gender::string(get("gender")),
-					category::string(get("category")),
-					work_building::get_working_place(int(get("work_pl")),bds),
-					home_building::get_living_place(int(get("home_pl")),bds)
-					
-				];
-			}
-			if (num_individuals > -1.0 and (num_individuals < length(Individual))) {
-				ask (length(Individual) - num_individuals) among Individual{
-					do die;
-				}
-				num_individuals <- min(num_individuals,length(Individual));
-			}
-			ask Individual {
-				relatives <- world.manage_list_int(string(shape get "rels")) where (not dead(each));
-				friends <- world.manage_list_int(string(shape get "frs"))  where (not dead(each));
-				colleagues <- world.manage_list_int(string(shape get "colls"))  where (not dead(each));
-			}
-		} else {
-			ask Building{
-				switch size{
-					match_between [0.0,50.0]{}
-					match_between [50.0,125.0]{type <-"home";}
-					match_between [125.0,250.0]{type <- rnd(1.0)<0.5 ? "parking" : "work";}
-					default {type <- "work";}
-				}
-			}
-	
-			//Creation of the people agents
-			create Individual number: num_individuals {
-				home_building <- one_of(Building where (each.type = "home"));
-				work_building <- one_of(Building where (each.type = "work"));
-				car_place <- home_building.location;
-				bike_place <- home_building.location;
-				location <- any_location_in(home_building);
-			}
+		//Creation of the people agents
+		create Individual number: num_individuals {
+			home_building <- one_of(Building where (each.type = "home"));
+			work_building <- one_of(Building where (each.type = "work"));
+			location <- any_location_in(home_building);
+			car_place <- any_location_in(Road closest_to self);
+			bike_place <-location;
 		}
-		
-		do write_message("Individual created");
-		
-		do define_agenda();
-		
-		loop times: 7 {first_activity_h << 24;}
-		ask Individual {
-			loop i from: 0 to: 6 {
-				if not empty(agenda_week[i]) {
-					int min_act <- agenda_week[i].keys min_of each[0];
-			 		first_activity_h[i] <- min(first_activity_h[i], min_act);
-				}
-				
-			}
-		}
-		
-		do write_message("Agenda generated");
-		
-		ask Individual {
-			do initialization;
-		}
-		
-		map<string, list<Building>> buildings <- Building group_by (each.type);
-				
-		switch choice_of_target_mode {
-			match random {
-				ask Individual {
-					list<predicate> acts <- remove_duplicates((agenda_week accumulate each.values) collect each.key) - [staying_at_home, working, studying, visiting_friend] ;
-					loop act over: acts {
-						map<string, list<Building>> bds;
-						loop type over: activities[act.name] {
-							list<Building> buildings <- buildings[type];
-							bds[type] <- nb_candidates among buildings;
-								
-						}
-						building_targets[act] <- bds;
-					}
-				}
-			}
-			match closest {
-				ask Individual {
-					list<predicate> acts <- remove_duplicates((agenda_week accumulate each.values) collect each.key) - [staying_at_home, working, studying, visiting_friend] ;
-					loop act over: acts {
-						map<string, list<Building>> bds;
-						loop type over: activities[act.name] {
-							list<Building> buildings <- buildings[type];
-							bds[type] <- [buildings closest_to home_building.location];
-								
-						}
-						building_targets[act] <- bds;
-					}
-				}
-			}
-			match gravity {
-				ask Individual {
-					list<predicate> acts <- remove_duplicates((agenda_week accumulate each.values) collect each.key) - [staying_at_home, working, studying, visiting_friend] ;
-					loop act over: acts {
-						map<string, list<Building>> bds;
-						loop type over: activities[act.name] {
-							list<Building> buildings <- buildings[type];
-							if length(buildings) <= nb_candidates {
-								bds[type] <- buildings;
-							} else {
-								list<Building> bds_;
-								list<float> proba_per_building;
-								loop b over: buildings {
-									float dist <- max(20,b.location distance_to home_building.location);
-									proba_per_building << (b.shape.area / dist ^ gravity_power);
-								}
-								loop while: length(bds_) < nb_candidates {
-									bds_<< buildings[rnd_choice(proba_per_building)];
-									bds_ <- remove_duplicates(bds_);
-								}
-								bds[type] <- bds_;
-							}
-							building_targets[act] <- bds;
-						}
-					}
-				}
-			}
-			
-		}
+
+
       	road_network <- directed(as_edge_graph(Road,Crossroad));
       	
       	do write_message("Shortest path cache computation");

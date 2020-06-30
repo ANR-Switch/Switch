@@ -49,6 +49,12 @@ global {
 	list<string> OSM_work_place <- ['office',"estate_agent","public","civic","government","manufacture","company"];
 	list<string> OSM_school <- ["school"];
 	
+	//****************************************************
+	
+	// color constants
+	map<predicate,rgb> colors_per_act <- [staying_at_home::#blue, working::#red, studying:: #chartreuse, leisure::#magenta, visiting_friend::#pink, eating::#orange, shopping::#gold, practicing_sport::#cyan, doing_other_act::#gray];
+	map<string,rgb> colors_per_mobility_mode <- ["car"::#olivedrab, "bike"::#maroon, "bus"::#palegreen, "walk"::#blueviolet];
+
 	// ************Traffic Constants**********************
 	//Graph of the road network
 	graph<Crossroad,Road> road_network;
@@ -137,4 +143,31 @@ global {
 	string student <- "student" const: true;
 	string unemployed <- "unemployed" const: true;
 	string none <- "none" const: true;
+	
+	//**********************************************************
+	
+	//Basic agendas for test purpose
+	
+	list<list<string>> agenda_work <- 
+			       [["08:00:00","working"],
+			        ["12:00:00","eating"],
+			        ["14:00:00","working"],
+			        ["18:00:00","staying_at_home"]
+			       ];
+	list<list<string>> agenda_work_then_leisure <- 
+			       [["08:00:00","working"],
+			        ["12:00:00","eating"],
+			        ["14:00:00","working"],
+			        ["18:00:00","staying_at_home"],
+			        ["20:00:00","leisure"],
+			        ["23:00:00","staying_at_home"]
+			       ];
+	list<list<string>> agenda_leisure <- 
+			       [["14:00:00","leisure"],
+			        ["19:00:00","staying_at_home"]
+			       ];
+	list<list<string>> agenda_couch_potato <- 
+			       [
+			       ];
+	
 }

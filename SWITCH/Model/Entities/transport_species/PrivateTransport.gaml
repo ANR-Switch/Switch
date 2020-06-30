@@ -46,7 +46,7 @@ species PrivateTransport parent: Transport {
 		}	
 	}
 	
-	action endTrip virtual:true;
+	action endTrip(float arrived_time) virtual:true;
 	
 	aspect default {
 		draw square(1 #px) color: #green border: #black;

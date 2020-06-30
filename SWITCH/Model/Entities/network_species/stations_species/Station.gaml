@@ -28,15 +28,6 @@ species Station {
 		}else{
 			waiting_passengers[transportLine_id] <- [p::destination];
 		}
-		p.status <- "waiting at station";
-	}
-	
-	action collectPassenger(PublicTransport tp){
-		if waiting_passengers[tp.transportLine_id] != nil{
-			loop passenger over: waiting_passengers[tp.transportLine_id]{
-				
-			}
-		}
 	}
 	
 	aspect default {

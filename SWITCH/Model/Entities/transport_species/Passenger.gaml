@@ -9,8 +9,9 @@
 model SWITCH
 
 import "Car.gaml"
+import "../EventListener.gaml"
 /* Insert your model definition here */
-species Passenger {
+species Passenger parent: EventListener{
 	Car current_car;
 	Bike current_bike;
 	Walk current_walk;
@@ -22,11 +23,17 @@ species Passenger {
 	
 	list<float> times_spent_in_jammed_roads <- [];
 	
+	list<float> times_spent_waiting_at_stations <- [];
+	
 	//times_in_transport =[string transport_type :: [float practical_travel_time :: float theoric_travel_time]]
 	map<string,list<pair<float,float>>> times_in_transport <- [];
 	
 	action addTimeSpentInJams(float time_in_jams){
 		times_spent_in_jammed_roads << time_in_jams;
+	}
+	
+	action addStationWaitingTimes(float time_at_station){
+		times_spent_waiting_at_stations << time_at_station;
 	}
 	
 	action addTransportTravelTime(Transport t, float practical_travel_time, float theoric_travel_time){
@@ -36,6 +43,7 @@ species Passenger {
 		}else{
 			times_in_transport[t.transport_mode] <- [practical_travel_time::theoric_travel_time];
 		}
-		
 	}
+	
+	action setSignal (float signal_time, string signal_type) virtual:true;
 }

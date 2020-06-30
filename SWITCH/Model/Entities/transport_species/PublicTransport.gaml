@@ -28,7 +28,7 @@ species PublicTransport parent: Transport {
 		station_departure <- Station(trip_description[0][2]);
 		location <- station_departure.location;
 		station_target <- Station(trip_description[0][2]);
-		do collectPassenger(station_target);
+		do collectPassenger(station_target, start_time);
 		station_departure <- station_target;
 		remove trip_description[0] from: trip_description;
 		station_target <- Station(trip_description[0][2]);
@@ -45,7 +45,7 @@ species PublicTransport parent: Transport {
 	}
 	
 	action joinNextStation(float start_time){
-		write "join next station";
+		//write "join next station";
 		station_departure <- station_target;
 		remove trip_description[0] from: trip_description;
 		station_target <- Station(trip_description[0][2]);
@@ -64,20 +64,20 @@ species PublicTransport parent: Transport {
 		invoke setSignal(signal_time,signal_type);
 		switch signal_type {
 			match "collect"{
-				write "trip "+trip_id+" collecting station "+station_target.name+" at "+date(starting_date + signal_time);
-				do collectPassenger(station_target);
+				//write "trip "+trip_id+" collecting station "+station_target.name+" at "+date(starting_date + signal_time);
+				do collectPassenger(station_target, signal_time);
 				do joinNextStation (signal_time);
 			}
 		}
 		
 	}
 	
-	action endTrip{
-		write " bus "+trip_id+" endtrip";
+	action endTrip(float arrived_time){
+		//write " bus "+trip_id+" endtrip";
 		location <- station_target.location;
 		if passengers[Station(trip_description[0][2])] != nil{
 			loop passenger over: passengers[Station(trip_description[0][2])]{
-				passenger.status <- "arrived";
+				ask passenger{ do setSignal(arrived_time, "arrived");}
 				passenger.location <- location;
 				nb_passenger <- nb_passenger -1;
 			}
@@ -85,23 +85,24 @@ species PublicTransport parent: Transport {
 		}
 		if length(trip_description) <=1 {
 			// the transport arrived at the last station and has already drop the passenger
-			write "die";
+			//write "die";
 			do die;
 		}else{
 			//there is at least one more station in the trip so we create an event to collect the current station
 			//and join the next one
 			float collect_time <- date(trip_description[0][1]) - current_date;
 			ask EventManager{
-				write "register collect event at " + date(starting_date+time+collect_time);
+				//write "register collect event at " + date(starting_date+time+collect_time);
 				do registerEvent(time + collect_time, myself,"collect");
 			}
 		}
 	}
 	
-	action collectPassenger(Station station_target_){
+	action collectPassenger(Station station_target_, float collect_time){
 		ask station_target_{
 			if waiting_passengers[myself.transportLine_id] != nil{
 				list<pair<Passenger,Station>> remaining_passenger <- [];
+				write waiting_passengers[myself.transportLine_id];
 				loop passenger over: waiting_passengers[myself.transportLine_id]{
 					Passenger p  <- passenger.key;
 					Station destination <- passenger.value;
@@ -111,11 +112,11 @@ species PublicTransport parent: Transport {
 						}else{
 							myself.passengers[destination] <- [p];
 						}
-						p.status <- "passenger";
+						ask p{ do setSignal(collect_time, "passenger");}
 						myself.nb_passenger <- myself.nb_passenger + 1;
 					}else{
 						remaining_passenger << p::destination;
-						p.status <- "transport full";
+						ask p{ do setSignal(collect_time, "transport full");}
 					}
 				}
 				waiting_passengers[myself.transportLine_id] <- remaining_passenger;

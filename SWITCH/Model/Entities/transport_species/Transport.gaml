@@ -92,7 +92,7 @@ species Transport parent: EventListener{
 							do leave(myself, signal_time);
 						}
 					}
-					do endTrip();
+					do endTrip(signal_time);
 				}
 				lastAction <- "First in queue";
 			}
@@ -221,7 +221,7 @@ species Transport parent: EventListener{
 	
 	action updatePassengerPosition virtual: true;
 
-	action endTrip virtual:true;
+	action endTrip(float arrived_time) virtual:true;
 
 	aspect default {
 		draw square(1 #px) color: #green border: #black depth: 1.0;
