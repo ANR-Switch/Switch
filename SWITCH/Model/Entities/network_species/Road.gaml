@@ -9,6 +9,7 @@ model SWITCH
 import "Crossroad.gaml"
 import "../../Constants.gaml"
 import "../../Parameters.gaml"
+import "../../logger.gaml"
 import "../transport_species/Transport.gaml"
 import "../transport_species/Bike.gaml"
 import "../transport_species/Walk.gaml"
@@ -73,8 +74,10 @@ species Road {
 
 	//actual free space capacity of the road (in meters)
 	float current_capacity <- max_capacity min: 0.0 max: max_capacity;
-
-	float occupation_ratio -> (max_capacity - current_capacity) / max_capacity;
+	
+	bool is_jammed function: (occupation_ratio > jam_threshold) and (max_capacity > 25.0);
+	
+	float occupation_ratio function: (max_capacity - current_capacity) / max_capacity;
 	
 	//has_bike_lane = true if there is a specific lane for bikes in this road
 	//				= false if not
@@ -130,7 +133,6 @@ species Road {
 						myself.current_capacity <- myself.current_capacity - t.size;
 						do setEntryTime(request_time with_precision 3);
 					}
-
 				} else {
 					ask waiting_transports {
 						do add([request_time, t]);
@@ -155,7 +157,6 @@ species Road {
 					myself.current_capacity <- myself.current_capacity - t.size;
 					do setEntryTime(entry_time with_precision 3);
 				}
-
 				ask waiting_transports {
 					do remove([request_time, t]);
 				}
@@ -221,8 +222,7 @@ species Road {
 		switch species(t) {
 			match Bike {
 				if not has_bike_lane {
-					float gainedCapacity <- t.size;
-					current_capacity <- current_capacity + gainedCapacity;
+					current_capacity <- current_capacity + t.size;
 				}
 
 				remove t from: present_bikes;
@@ -233,8 +233,7 @@ species Road {
 			}
 
 			default {
-				float gainedCapacity <- t.size;
-				current_capacity <- current_capacity + gainedCapacity;
+				current_capacity <- current_capacity + t.size;
 				ask present_transports {
 					do remove;
 				}
@@ -271,13 +270,10 @@ species Road {
 		return Transport(waiting_transports.get(index)[1]);
 	}
 
-	bool isJammed{
-		return occupation_ratio > jam_threshold;
-	}
 	bool hasCapacity (float capacity) {
 		return current_capacity > capacity;
 	}
-
+	
 	aspect default {
 		geometry geom_display <- (shape + (2.0));
 		draw geom_display border: #gray color: rgb(255 * (max_capacity - current_capacity) / max_capacity, 0, 0);

@@ -118,7 +118,7 @@ species Transport parent: EventListener{
 		if (next != nil) {
 			listactions <- listactions + " " + signal_time + " Queing " + next.name + " TravelTime:" + getRoadTravelTime(next) + " (" + path_to_target + ")\n";
 			last_entering_road <- signal_time;
-			jammed_road <- next.isJammed();
+			jammed_road <- next.is_jammed;
 			ask next {
 				do queueInRoad(myself, signal_time);
 			}

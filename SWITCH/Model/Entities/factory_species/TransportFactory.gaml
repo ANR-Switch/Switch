@@ -21,7 +21,7 @@ global{
 	
 	Car createCar(point start_location, point end_location, list<Passenger> passengers_, float start_time){
         create Car returns: children{
-        	test_mode <- true;
+        	test_mode <- false;
 	    	do getIn(passengers_);
             do start(start_location,end_location, road_network, start_time);
         } 

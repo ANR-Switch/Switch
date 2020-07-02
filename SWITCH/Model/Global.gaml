@@ -11,7 +11,6 @@ model SWITCH
 import "../Utilities/import GTFS.gaml"
 
 import "Parameters.gaml"
-
 import "Entities/network_species/Building.gaml"
 import "Entities/network_species/Crossroad.gaml"
 import "Entities/network_species/Road.gaml"
@@ -20,8 +19,6 @@ import "Entities/EventManager.gaml"
 import "Entities/factory_species/TransportFactory.gaml"
 
 global {
-		//variables environement de transport :
-	//map<string, map<string,float>> info_mode_env; //<mode, <critère,valeur>>
 	
 	//price
 	float gas_price;
@@ -181,12 +178,18 @@ global {
       	}
       	
       	do createTransportLineAndStations();
+      	
+      	the_logger.nb_road <- length(Road);
 	}
 	
 	action write_message(string mess) {
 		if (debug_mode) {
 			write mess;
 		}
+	}
+	
+	reflex print_time{
+		write current_date;
 	}
 	
 	Building get_living_place(int id_bd,map<int,Building> bds) {

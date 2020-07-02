@@ -101,11 +101,11 @@ species PublicTransport parent: Transport {
 	action collectPassenger(Station station_target_, float collect_time){
 		ask station_target_{
 			if waiting_passengers[myself.transportLine_id] != nil{
-				list<pair<Passenger,Station>> remaining_passenger <- [];
-				write waiting_passengers[myself.transportLine_id];
+				list<list> remaining_passenger <- [];
+				//write waiting_passengers[myself.transportLine_id];
 				loop passenger over: waiting_passengers[myself.transportLine_id]{
-					Passenger p  <- passenger.key;
-					Station destination <- passenger.value;
+					Passenger p  <- Passenger(passenger[0]);
+					Station destination <- Station(passenger[1]);
 					if myself.nb_passenger < myself.max_passenger {
 						if myself.passengers[destination] !=nil {
 							myself.passengers[destination] << p;
@@ -115,7 +115,7 @@ species PublicTransport parent: Transport {
 						ask p{ do setSignal(collect_time, "passenger");}
 						myself.nb_passenger <- myself.nb_passenger + 1;
 					}else{
-						remaining_passenger << p::destination;
+						remaining_passenger << [p,destination];
 						ask p{ do setSignal(collect_time, "transport full");}
 					}
 				}

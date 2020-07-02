@@ -24,7 +24,7 @@ species Building {
 			match "parking"{color <- #blue;}
 			default {color <- #grey;}
 		}
-		draw shape color: color border: #black;
+		draw shape color: #grey border: #black;
 	}
 }
 

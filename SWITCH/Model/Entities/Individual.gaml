@@ -17,7 +17,7 @@ import "network_species/stations_species/StationBus.gaml"
 
 
 
-species Individual skills: [moving] control:simple_bdi parent:Passenger{
+species Individual parent:Passenger{
 	
 	
 	list<list<list>> week_agenda <-
@@ -65,7 +65,7 @@ species Individual skills: [moving] control:simple_bdi parent:Passenger{
 			float time_diff <- world.hour2date(activity[0]) - current_date;
 			//here we generrate a random number of seconds to add or substract to the activity time so
 			//the individuals don't start the same activity at the same time
-			float time_distribution <- rnd(-3600.0,3600.0);
+			float time_distribution <- rnd(-1200.0,1200.0);
 			ask EventManager{
 				do registerEvent(time + time_diff + time_distribution, myself, activity[1]);
 			}
@@ -110,7 +110,14 @@ species Individual skills: [moving] control:simple_bdi parent:Passenger{
 	//compute a trip acording to priority and target
 	action compute_transport_trip(point target_){
 		transport_trip <- [];
-		switch one_of(["car","bike","bus","walk"]) {
+		string transport_mode;
+		switch rnd(1.0){
+			match_between [0.0,0.6]{transport_mode <- "car";}
+			match_between [0.6,0.8]{transport_mode <- "bus";}
+			match_between [0.8,0.9]{transport_mode <- "bike";}
+			match_between [0.9,1.0]{transport_mode <- "walk";}
+		}
+		switch transport_mode {
 			match "car"{
 				transport_trip << ["walk",location, car_place];
 				point target_parking <- any_location_in(Road closest_to target_);
@@ -194,7 +201,7 @@ species Individual skills: [moving] control:simple_bdi parent:Passenger{
 	}
 	
 	aspect default {
-		draw circle(5) color: color rotate: heading border: #black;
+		draw circle(5) color: color border: #black;
 	}	
 		
 }

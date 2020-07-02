@@ -48,9 +48,9 @@ experiment "Abstract Experiment" virtual:true{
 	
 	
 	output {
-		display "default_display" synchronized: false background: background virtual: true draw_env: false {
+		display "default_display" type:opengl synchronized: false background: background virtual: true draw_env: false {
 			
-			overlay position: { 5, 5 } size: { 400 #px, 600 #px }  transparency: 0.5
+			/*overlay position: { 5, 5 } size: { 400 #px, 600 #px }  transparency: 0.5
             {
            		//draw world.name  font: default at: { 20#px, 20#px} anchor: #top_left color:text_color;
            		draw ("Day " + int((current_date - starting_date) /  #day))   font: default at: { 20#px, 50#px} anchor: #top_left color:text_color;
@@ -73,19 +73,20 @@ experiment "Abstract Experiment" virtual:true{
                 }
             }
 			image file:  file_exists(dataset+"/satellite.png") ? (dataset+"/satellite.png"): dataset_folder+"Default/satellite.png" transparency: 0.5 refresh: false;
-			
+			*/
 			species Building;
 			species Road aspect: default;
 			species Crossroad;
 			species StationBus;
 			species StationMetro;
 			species StationTram;
-			species Individual;
 			species Bus;
+			species Individual;
+			
 		}
 		
 		display activity_charts refresh: every(1 #mn) {
-			chart "activities during week"  size: {1.0,0.5} background: #darkgray{
+			/*chart "activities during week"  size: {1.0,0.5} background: #darkgray{
 				loop act over: colors_per_act.keys {
 					data act.name color: colors_per_act[act] value: Individual count (each.current_activity = act);
 				}
@@ -94,8 +95,9 @@ experiment "Abstract Experiment" virtual:true{
 				loop act over: colors_per_act.keys {
 					data act.name color: colors_per_act[act] value: Individual count (each.current_activity = act);
 				}
-			}
+			}*/
 		}
+		
 	}
 
 }

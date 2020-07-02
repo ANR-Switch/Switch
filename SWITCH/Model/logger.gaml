@@ -10,6 +10,7 @@ model logger
 import "Entities/transport_species/Transport.gaml"
 
 species logger { 
+	int nb_road;
 	
 	// data = [Transport t :: [list<float> x_series :: list<float> y_series]]
 	map<int, pair<list<float>,list<float>>> data;
