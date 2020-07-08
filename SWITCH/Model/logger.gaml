@@ -17,6 +17,24 @@ species logger {
 	int nbTransportToMonitor <- 100;
 	int cIndex <- 0;
 	map<Transport, int> transportIndex <- [];
+	/*map<string, list<float>> exec_times <- [];
+	map<string, rgb> color_exec_times;
+	
+	init{
+		exec_times["compute trip"]<-[];
+		exec_times["execute trip"]<-[];
+		exec_times["collect"]<-[];
+		exec_times["start transport"]<-[];
+		exec_times["compute travel time"]<-[];
+		exec_times["insert event"]<-[];
+		
+		color_exec_times["insert event"]<- #magenta;
+		color_exec_times["compute trip"]<- #green;
+		color_exec_times["execute trip"]<-#red;
+		color_exec_times["collect"]<- #yellow;
+		color_exec_times["start transport"]<-#black;
+		color_exec_times["compute travel time"]<-#blue;
+	}*/
 	
 	
 	

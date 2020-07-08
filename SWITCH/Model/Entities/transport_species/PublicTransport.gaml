@@ -42,10 +42,11 @@ species PublicTransport parent: Transport {
 			add nil to: path_to_target at: 0;
 			do sendEnterRequest(start_time);
 		}
+		
 	}
 	
 	action joinNextStation(float start_time){
-		//write "join next station";
+		float exec_start_time <- machine_time;
 		station_departure <- station_target;
 		remove trip_description[0] from: trip_description;
 		station_target <- Station(trip_description[0][2]);

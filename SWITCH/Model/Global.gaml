@@ -43,6 +43,7 @@ global {
 	float bus_freq; //intervalle en minute
 			
 	logger the_logger;
+	EventManager the_event_manager;
 	list<file> shp_roads <-  define_shapefiles("roads");
 	geometry shape <- envelope(union(shp_roads collect envelope(each)));
 	
@@ -53,6 +54,8 @@ global {
 	
 	list<int> first_activity_h;
 	bool is_fast_step <- false;
+	
+	list<Road> road_near_work <- [];
 	
 	
 	reflex end_simulation when: current_date = end_date {
@@ -74,7 +77,7 @@ global {
 	
 	action global_init  {
 		
-		create EventManager;
+		create EventManager{myself.the_event_manager <- self;}
     	create logger{ myself.the_logger <- self; }
 		//Initialization of the building using the shapefile of buildings
 		list<file> shp_buildings <- define_shapefiles("buildings");
@@ -131,20 +134,21 @@ global {
 			
 		}
 		do write_message("Nodes filtered");
+		
+		list<Building> work_buildings;
+		list<Building> home_buildings;
 
 		ask Building{
 			switch size{
-				match_between [0.0,50.0]{}
-				match_between [50.0,125.0]{type <-"home";}
-				match_between [125.0,250.0]{type <- rnd(1.0)<0.5 ? "parking" : "work";}
-				default {type <- "work";}
+				match_between [50.0,125.0]{type <-"home"; home_buildings << self; }
+				match_between [300.0,400.0]{type <- "work"; work_buildings << self;}
 			}
 		}
 	
 		//Creation of the people agents
 		create Individual number: num_individuals {
-			home_building <- one_of(Building where (each.type = "home"));
-			work_building <- one_of(Building where (each.type = "work"));
+			home_building <- one_of(home_buildings);
+			work_building <- one_of(work_buildings);
 			location <- any_location_in(home_building);
 			car_place <- any_location_in(Road closest_to self);
 			bike_place <-location;
@@ -170,16 +174,18 @@ global {
       	
       	
       	
-      	do write_message("Shoretest path loaded");
+      	//do write_message("Shortest path loaded");
       	
       	ask Road {
       		start_node <- road_network source_of self;
       		end_node <- road_network target_of self;
+      		if length(work_buildings at_distance 100.0) > 0{
+      			myself.road_near_work << self;
+      		}
       	}
       	
       	do createTransportLineAndStations();
       	
-      	the_logger.nb_road <- length(Road);
 	}
 	
 	action write_message(string mess) {

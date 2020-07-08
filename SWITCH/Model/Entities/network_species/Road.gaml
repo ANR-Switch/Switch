@@ -15,6 +15,7 @@ import "../transport_species/Bike.gaml"
 import "../transport_species/Walk.gaml"
 import "../data_structure_species/SortedMap.gaml"
 import "../data_structure_species/Queue.gaml"
+
 species Road {
 
 //type of road (the OpenStreetMap highway feature: https://wiki.openstreetmap.org/wiki/Map_Features)
@@ -129,7 +130,6 @@ species Road {
 			default {
 				if hasCapacity(t.size) {
 					ask t {
-						listactions <- listactions + " " + request_time + " I'll be entering at " + request_time + "(" + path_to_target + ")\n";
 						myself.current_capacity <- myself.current_capacity - t.size;
 						do setEntryTime(request_time with_precision 3);
 					}
@@ -153,12 +153,11 @@ species Road {
 			int delay <- 0;
 			loop while: hasCapacity(t.size) and not waiting_transports.isEmpty() {
 				ask t {
-					listactions <- listactions + " " + entry_time + " AcceptTransport " + entry_time + delay + "(" + path_to_target + ")\n";
 					myself.current_capacity <- myself.current_capacity - t.size;
 					do setEntryTime(entry_time with_precision 3);
 				}
 				ask waiting_transports {
-					do remove([request_time, t]);
+					do remove(0);
 				}
 
 				if not waiting_transports.isEmpty() {
@@ -196,12 +195,9 @@ species Road {
 				float leave_time;
 				ask t {
 					leave_time <- entry_time + getRoadTravelTime(myself);
-					listactions <- listactions + " " + entry_time + " Will leave at " + leave_time + "(" + path_to_target + ")\n";
 				}
-
 				if present_transports.isEmpty() {
 					ask t {
-						listactions <- listactions + " " + entry_time + " I'm alone, so i'll leave at " + leave_time + "(" + path_to_target + ")\n";
 						do setLeaveTime(leave_time with_precision 3);
 					}
 
@@ -210,11 +206,10 @@ species Road {
 				ask present_transports {
 					do add([leave_time, t]);
 				}
-
 			}
 
 		}
-
+		
 	}
 
 	//action called by a transport when it leaves the road
@@ -241,7 +236,6 @@ species Road {
 				do acceptTransport(signal_time);
 				if not present_transports.isEmpty() {
 					ask getHeadPresentTransport() {
-						listactions <- listactions + " " + signal_time + " The car in front of me has left the road. Will leave the road at " + (signal_time + 1) + ", I'll be in front of the road at " + max(myself.getHeadPresentTransportLeaveTime(), signal_time + 1) + "(" + path_to_target + ")\n";
 						if self.test_mode { do addPointReachedEndRoad(signal_time); }
 						do setLeaveTime(max(myself.getHeadPresentTransportLeaveTime(), signal_time + myself.output_flow_capacity) with_precision 3);
 					}

@@ -21,15 +21,19 @@ species Individual parent:Passenger{
 	
 	
 	list<list<list>> week_agenda <-
-	 [agenda_work,
-	  agenda_work,
-	  agenda_work,
-	  agenda_work_then_leisure,
-	  agenda_work,
-	  agenda_leisure,
-	  agenda_leisure];
+	 [copy(agenda_work),
+	  copy(agenda_work),
+	  copy(agenda_work),
+	  copy(agenda_work_then_leisure),
+	  copy(agenda_work),
+	  copy(agenda_leisure),
+	  copy(agenda_leisure)];
+	list<list> day_agenda;
 
 	predicate current_activity;
+	predicate waiting_activity;
+	
+	bool joining_activity;
 	
 	Building work_building;
 	Building home_building;
@@ -45,10 +49,19 @@ species Individual parent:Passenger{
 	
 	rgb color;
 	
+	string prefered_transport_mode;
+	
 	init{
 		current_activity <- staying_at_home;
 		color <- colors_per_act[current_activity];
-		do RegisterTodayAgendaEvent;
+		do FillTodayAgenda;
+		do registerNextActivity;
+		switch rnd(1.0){
+			match_between [0.0,0.8]{prefered_transport_mode <- "car";}
+			//match_between [0.6,0.8]{prefered_transport_mode <- "bus";}
+			match_between [0.8,0.9]{prefered_transport_mode <- "bike";}
+			match_between [0.9,1.0]{prefered_transport_mode <- "walk";}
+		}
 	}
 	
 	bool has_car{
@@ -59,16 +72,33 @@ species Individual parent:Passenger{
 		return not (bike_place = nil);
 	}
 	
-	action RegisterTodayAgendaEvent{
+	/*action RegisterTodayAgendaEvent{
 		int day_of_week <- world.date2day(current_date);
 		loop activity over: week_agenda[day_of_week]{
 			float time_diff <- world.hour2date(activity[0]) - current_date;
-			//here we generrate a random number of seconds to add or substract to the activity time so
+			//here we generate a random number of seconds to add or substract to the activity time so
 			//the individuals don't start the same activity at the same time
 			float time_distribution <- rnd(-1200.0,1200.0);
 			ask EventManager{
 				do registerEvent(time + time_diff + time_distribution, myself, activity[1]);
 			}
+		}
+	}*/
+	
+	action FillTodayAgenda{
+		int day_of_week <- world.date2day(current_date);
+		day_agenda <- week_agenda[day_of_week];
+	}
+	
+	action registerNextActivity{
+		if length(day_agenda) > 0{
+			float time_diff <- world.hour2date(day_agenda[0][0]) - current_date;
+			//here we generate a random number of seconds to add or substract to the activity time so
+			//the individuals don't start the activities at the same time
+			float time_distribution <- rnd(-1800.0,1800.0);
+			ask EventManager{
+				do registerEvent(time + time_diff + time_distribution, myself, myself.day_agenda[0][1]);
+			}	
 		}
 	}
 	
@@ -76,17 +106,17 @@ species Individual parent:Passenger{
 		switch signal_type{
 			match "working"{
 				current_activity <- working;
-				do compute_transport_trip(work_building.location);
+				do compute_transport_trip(any_location_in(work_building.location));
 				do executeTripPlan;
 			}
 			match "eating"{
 				current_activity <- eating;
-				do compute_transport_trip(home_building.location);
+				do compute_transport_trip(any_location_in(home_building.location));
 				do executeTripPlan;
 			}
 			match "staying at home"{
 				current_activity <- staying_at_home;
-				do compute_transport_trip(home_building.location);
+				do compute_transport_trip(any_location_in(home_building.location));
 				do executeTripPlan;
 			}
 			match "leisure"{
@@ -98,6 +128,8 @@ species Individual parent:Passenger{
 				remove transport_trip[0] from: transport_trip;
 				if length(transport_trip) = 0 {
 					color <- colors_per_act[current_activity];
+					remove day_agenda[0] from: day_agenda;
+					do registerNextActivity;
 				}else{
 					do executeTripPlan;
 				}
@@ -110,14 +142,7 @@ species Individual parent:Passenger{
 	//compute a trip acording to priority and target
 	action compute_transport_trip(point target_){
 		transport_trip <- [];
-		string transport_mode;
-		switch rnd(1.0){
-			match_between [0.0,0.6]{transport_mode <- "car";}
-			match_between [0.6,0.8]{transport_mode <- "bus";}
-			match_between [0.8,0.9]{transport_mode <- "bike";}
-			match_between [0.9,1.0]{transport_mode <- "walk";}
-		}
-		switch transport_mode {
+		switch prefered_transport_mode {
 			match "car"{
 				transport_trip << ["walk",location, car_place];
 				point target_parking <- any_location_in(Road closest_to target_);

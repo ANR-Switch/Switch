@@ -85,8 +85,8 @@ experiment "Abstract Experiment" virtual:true{
 			
 		}
 		
-		display activity_charts refresh: every(1 #mn) {
-			/*chart "activities during week"  size: {1.0,0.5} background: #darkgray{
+		/*display activity_charts refresh: every(1 #mn) {
+			chart "activities during week"  size: {1.0,0.5} background: #darkgray{
 				loop act over: colors_per_act.keys {
 					data act.name color: colors_per_act[act] value: Individual count (each.current_activity = act);
 				}
@@ -95,9 +95,27 @@ experiment "Abstract Experiment" virtual:true{
 				loop act over: colors_per_act.keys {
 					data act.name color: colors_per_act[act] value: Individual count (each.current_activity = act);
 				}
-			}*/
+			}
+		}*/
+		/*display execution_times{
+			chart "cumulatives executions times (in ms)" size: {1.0,0.5}{
+				loop function over: the_logger.exec_times.keys{
+					data function color: the_logger.color_exec_times[function] value: sum(the_logger.exec_times[function]) thickness: 2.5 marker: false;
+				}
+			}
+		}*/
+		display event_number{
+			chart "registered events number" size: {1.0,0.5}{
+				data "nb_event" color: #black value: length(EventManager[0].events_map.data) thickness: 2.5 marker: false;
+			}
 		}
 		
+		display occupation_ratio{
+			chart "average road occupation ratio" size: {1.0,0.5}{
+				data "avg road occupation" color: #blue value: mean(Road collect each.occupation_ratio) thickness: 2.5 marker: false;
+				data "avg road occupation near work places" color: #red value: mean(road_near_work collect each.occupation_ratio) thickness: 2.5 marker: false;
+			}
+		}
 	}
 
 }

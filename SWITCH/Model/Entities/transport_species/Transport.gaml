@@ -12,7 +12,7 @@ import "../network_species/Road.gaml"
 import "../EventManager.gaml"
 import "../EventListener.gaml"
 
-species Transport parent: EventListener{
+species Transport parent: EventListener virtual: true{
 	
 	string transport_mode <- "transport";
 	
@@ -35,9 +35,6 @@ species Transport parent: EventListener{
 
 	//list of roads that lead to the target
 	list<Road> path_to_target;
-	string listactions <- "";
-	string listEvent <- "";
-	string listEventManager <- "";
 
 	bool jammed_road <- false;
 	float last_entering_road <- time;
@@ -74,14 +71,13 @@ species Transport parent: EventListener{
 				if test_mode { do addPointEnterRoad(signal_time); }
 				do changeRoad(signal_time);
 				do updatePassengerPosition();
+				
 			}
 			match "First in queue" {
-				listactions <- listactions + " " + signal_time + " First in Queue " + hasNextRoad() + " (" + path_to_target + ")\n";
 				if hasNextRoad() {
 					do sendEnterRequest(signal_time);
 				} else {
 				//the transport is arrived
-					listactions <- listactions + " " + signal_time + " There is no next road (" + path_to_target + ")\n";
 					if jammed_road {
 						time_in_jams <- time_in_jams + (signal_time - last_entering_road);
 					}
@@ -94,7 +90,6 @@ species Transport parent: EventListener{
 					}
 					do endTrip(signal_time);
 				}
-				lastAction <- "First in queue";
 			}
 		}
 	}
@@ -103,7 +98,6 @@ species Transport parent: EventListener{
 		Road current <- getCurrentRoad();
 		Road next <- getNextRoad();
 		if current != nil {
-			listactions <- listactions + " " + signal_time + " Leaving " + current.name + "(" + path_to_target + ")\n";
 			if jammed_road {
 				time_in_jams <- time_in_jams + (signal_time - last_entering_road);
 			}
@@ -116,21 +110,17 @@ species Transport parent: EventListener{
 		}
 		remove first(path_to_target) from: path_to_target;
 		if (next != nil) {
-			listactions <- listactions + " " + signal_time + " Queing " + next.name + " TravelTime:" + getRoadTravelTime(next) + " (" + path_to_target + ")\n";
 			last_entering_road <- signal_time;
 			jammed_road <- next.is_jammed;
 			ask next {
 				do queueInRoad(myself, signal_time);
 			}
-		} else {
-			listactions <- listactions + " " + signal_time + " Queing " + next.name + " End of the road " + " (" + path_to_target + ")\n";
 		}
 	}
 
 	//the parameter should point toward the next road in path_to_target
 	action sendEnterRequest (float request_time) {
 		if (hasNextRoad()) {
-			listactions <- listactions + " " + request_time + " Enter request " + getNextRoad().name + "(" + path_to_target + ")\n";
 			ask getNextRoad() {
 				do enterRequest(myself, request_time);
 			}
@@ -138,7 +128,6 @@ species Transport parent: EventListener{
 	}
 
 	action setEntryTime (float entry_time) {
-		listEvent <- listEvent + " " + entry_time + " Enter road/ ";
 		ask EventManager {
 			do registerEvent(entry_time, myself, "enter road");
 		}
@@ -147,7 +136,6 @@ species Transport parent: EventListener{
 
 	action setLeaveTime (float leave_time) {
 		if test_mode { do addPointReachedEndRoad; }
-		listEvent <- listEvent + " " + leave_time + " First In queue/ ";
 		ask EventManager {
 			do registerEvent(leave_time, myself, "First in queue");
 		}
@@ -192,31 +180,6 @@ species Transport parent: EventListener{
 		}else{
 			return nil;
 		}
-	}
-
-	
-	
-	//this function return a convenient string corresponding to a time (in second)
-	string timestamp (float time_to_print) {
-		int nb_heure <- floor(time_to_print / 3600);
-		int nb_min <- floor((time_to_print - nb_heure * 3600) / 60);
-		int nb_sec <- floor(time_to_print - nb_heure * 3600 - nb_min * 60);
-		string buff <- "";
-		if nb_heure < 10 {
-			buff <- buff + "0";
-		}
-
-		buff <- buff + nb_heure + "h";
-		if nb_min < 10 {
-			buff <- buff + "0";
-		}
-
-		buff <- buff + nb_min + "m";
-		if nb_sec < 10 {
-			buff <- buff + "0";
-		}
-
-		return buff + nb_sec + "s";
 	}
 	
 	action updatePassengerPosition virtual: true;
