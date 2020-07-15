@@ -19,6 +19,7 @@ import "Entities/EventManager.gaml"
 import "Entities/factory_species/TransportFactory.gaml"
 
 global {
+	float seed <- 12358.0;
 	
 	//price
 	float gas_price;

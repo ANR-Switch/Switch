@@ -105,31 +105,54 @@ species Individual parent:Passenger{
 	action setSignal (float signal_time, string signal_type){
 		switch signal_type{
 			match "working"{
-				current_activity <- working;
-				do compute_transport_trip(any_location_in(work_building.location));
-				do executeTripPlan;
+				if not joining_activity{
+					current_activity <- working;
+					do compute_transport_trip(any_location_in(work_building.location));
+					last_start_time <- signal_time;
+					do executeTripPlan;
+				}else{
+					waiting_activity <- working;
+				}
 			}
 			match "eating"{
-				current_activity <- eating;
-				do compute_transport_trip(any_location_in(home_building.location));
-				do executeTripPlan;
+				if not joining_activity{
+					current_activity <- eating;
+					do compute_transport_trip(any_location_in(home_building.location));
+					do executeTripPlan;
+				}else{
+					waiting_activity <- eating;
+				}
 			}
 			match "staying at home"{
-				current_activity <- staying_at_home;
-				do compute_transport_trip(any_location_in(home_building.location));
-				do executeTripPlan;
+				if not joining_activity{
+					current_activity <- staying_at_home;
+					do compute_transport_trip(any_location_in(home_building.location));
+					do executeTripPlan;
+				}else{
+					waiting_activity <- staying_at_home;
+				}
 			}
 			match "leisure"{
-				current_activity <- leisure;
-				do compute_transport_trip(one_of(Building).location);
-				do executeTripPlan;
+				if not joining_activity{
+					current_activity <- leisure;
+					do compute_transport_trip(one_of(Building).location);
+					do executeTripPlan;
+				}else{
+					waiting_activity <- leisure;
+				}
 			}
 			match "arrived"{
 				remove transport_trip[0] from: transport_trip;
 				if length(transport_trip) = 0 {
 					color <- colors_per_act[current_activity];
 					remove day_agenda[0] from: day_agenda;
-					do registerNextActivity;
+					if waiting_activity != nil{
+						waiting_activity <- nil;
+						joining_activity <- false;
+						do setSignal(signal_time, waiting_activity.name);
+					}else{
+						do registerNextActivity;
+					}
 				}else{
 					do executeTripPlan;
 				}
@@ -181,6 +204,7 @@ species Individual parent:Passenger{
 
 	action executeTripPlan{
 		color <- colors_per_mobility_mode[string(transport_trip[0][0])];
+		joining_activity <- false;
 		switch transport_trip[0][0]{
 			match "car"{
 				do useCar([self], transport_trip[0][2]);
@@ -210,7 +234,6 @@ species Individual parent:Passenger{
 		if (current_car = nil) {
 			current_car <- world.createCar(self.location,pos_target_,passengers_, time);
 		}
-		
 	}
 	
 	action useBike(list<Individual> passengers_, point pos_target_){

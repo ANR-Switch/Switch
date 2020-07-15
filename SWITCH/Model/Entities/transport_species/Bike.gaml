@@ -33,10 +33,8 @@ species Bike parent: PrivateTransport {
 			ask passenger{ do setSignal(arrived_time, "arrived");}
 			passenger.location <- location;
 			passenger.current_bike <- nil;
-			ask passenger {
-				do addTransportTravelTime(myself, myself.practical_trip_time with_precision 3, myself.theoric_trip_time with_precision 3);
-			}
 		}
+		do registerDataInfo;
 		do die;
 	}
 	

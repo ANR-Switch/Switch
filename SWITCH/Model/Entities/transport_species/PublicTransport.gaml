@@ -86,7 +86,7 @@ species PublicTransport parent: Transport {
 		}
 		if length(trip_description) <=1 {
 			// the transport arrived at the last station and has already drop the passenger
-			//write "die";
+			do registerDataInfo;
 			do die;
 		}else{
 			//there is at least one more station in the trip so we create an event to collect the current station
@@ -97,6 +97,7 @@ species PublicTransport parent: Transport {
 				do registerEvent(time + collect_time, myself,"collect");
 			}
 		}
+		
 	}
 	
 	action collectPassenger(Station station_target_, float collect_time){

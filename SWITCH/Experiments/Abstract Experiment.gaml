@@ -116,6 +116,14 @@ experiment "Abstract Experiment" virtual:true{
 				data "avg road occupation near work places" color: #red value: mean(road_near_work collect each.occupation_ratio) thickness: 2.5 marker: false;
 			}
 		}
+		
+		display delay_times{
+			chart "average delay times(in s)" size: {1.0,0.5} type:histogram{
+				loop key over: the_logger.late_times_by_transports_modes_during_day.keys{
+					data key value: mean(the_logger.late_times_by_transports_modes_during_day[key]["car"]) thickness: 2.5 marker: false;
+				}
+			}
+		}
 	}
 
 }

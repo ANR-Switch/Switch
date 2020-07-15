@@ -236,7 +236,6 @@ species Road {
 				do acceptTransport(signal_time);
 				if not present_transports.isEmpty() {
 					ask getHeadPresentTransport() {
-						if self.test_mode { do addPointReachedEndRoad(signal_time); }
 						do setLeaveTime(max(myself.getHeadPresentTransportLeaveTime(), signal_time + myself.output_flow_capacity) with_precision 3);
 					}
 

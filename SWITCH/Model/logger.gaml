@@ -9,14 +9,30 @@ model logger
 
 import "Entities/transport_species/Transport.gaml"
 
-species logger { 
-	int nb_road;
+species logger {
+	float time_step <- 10 #mn;
+	//[string transport_mode :: list[float late_time]]
+	map<string, map<string,list<float>>> late_times_by_transports_modes_during_day;
 	
-	// data = [Transport t :: [list<float> x_series :: list<float> y_series]]
-	map<int, pair<list<float>,list<float>>> data;
-	int nbTransportToMonitor <- 100;
-	int cIndex <- 0;
-	map<Transport, int> transportIndex <- [];
+	init{
+		float t <- 0.0;
+		date d <- date(2020,1,1,0,0,0);
+		loop times: int(24#h / time_step){
+			int hour <- (d+t).hour;
+			int min <- (d+t).minute;
+			string key <- ""+(hour>9?hour:"0"+hour)+"h"+(min>9?min:"0"+min);
+			late_times_by_transports_modes_during_day[key]<-
+			[
+				"walk"::[],
+				"bike"::[],
+				"car"::[],
+				"bus"::[]
+			];
+			t <- t+time_step;
+		}	
+	}
+	
+	
 	/*map<string, list<float>> exec_times <- [];
 	map<string, rgb> color_exec_times;
 	
@@ -36,31 +52,22 @@ species logger {
 		color_exec_times["compute travel time"]<-#blue;
 	}*/
 	
+	action addDelayTime(string transport_type,float delay){
+		int hour <- current_date.hour;
+		int min <- floor(current_date.minute / (time_step /#mn)) * (time_step /#mn);
+		string key <- ""+(hour>9?hour:"0"+hour)+"h"+(min>9?min:"0"+min);
+		late_times_by_transports_modes_during_day[key][transport_type]<<delay;
+	}
 	
-	
-	action add_transport_data(Transport t, float x, float y) {
-		if data.keys contains t {
-			data[transportIndex[t]]<- data[transportIndex[t]].key + [x] :: data[transportIndex[t]].value + [y] ;
-		}else{
-			if (cIndex < nbTransportToMonitor) {
-				transportIndex  <+ t::cIndex;
-				data[transportIndex[t]] <- [x]::[y];
-				cIndex <- cIndex + 1;
+	reflex saveDataCSV when: every(11#h){
+		list<string> data2save <- [];
+		loop hour over:late_times_by_transports_modes_during_day.keys{
+			loop transport_mode over: late_times_by_transports_modes_during_day[hour].keys{
+				loop delay over: late_times_by_transports_modes_during_day[hour][transport_mode]{
+					data2save << ""+hour+","+transport_mode+","+delay;
+				}
 			}
 		}
+		save data:data2save to: dataset+"/output_data/late_times.csv" type:"csv";
 	}
-	
-	action remove_transport_data(Transport t){
-		remove index:t from: data;
-	}
-	
-	string data_to_string{
-		string res <- "default";
-		return res;
-	}
-	
-	action reset_data {
-		data <- [];
-	}
-	
 }

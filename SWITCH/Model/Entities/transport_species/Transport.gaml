@@ -35,55 +35,33 @@ species Transport parent: EventListener virtual: true{
 
 	//list of roads that lead to the target
 	list<Road> path_to_target;
-
-	bool jammed_road <- false;
-	float last_entering_road <- time;
-	float time_in_jams <- 0.0;
-	float practical_trip_time <- 0.0;
-	float theoric_trip_time <- 0.0;
 	
-	//******* /!\ TESTING ATTRIBUTES and ACTION **********
-	bool test_mode <- false;
-	float traveled_dist <- 0.0;
-
-	action addPointReachedEndRoad(float time_){
-		traveled_dist <- traveled_dist + getCurrentRoad().size;
-		if (length(logger) >0) {
-			ask logger {
-				do add_transport_data(myself, time_, myself.traveled_dist);
-			}
-		}
-	}
-
-	action addPointEnterRoad(float time_){
-		if (length(logger) >0) {
-			ask logger {
-				do add_transport_data(myself, time_, myself.traveled_dist);
-			}
-		}
-	}
-	//****************************************************
+	//***********metrics about the trip*****************
+	float last_entry_time <- 0.0;
+	//theoric_trip_time is the cumulated trip time at free flow speed
+	float theoric_trip_time <- 0.0;
+	//actual_trip_time is the cumulated real trip_time 
+	float actual_trip_time <- 0.0;
+	// jam_time is the cumulated trip time spend in jammed roads
+	float jam_time <- 0.0;
+	bool road_was_jammed <- false;
+	//*************************************************
 
 	action setSignal (float signal_time, string signal_type) {
 		switch signal_type {
 			match "enter road" {
-			//if we are leaving a road by entering another the transports averts the first road 
-				if test_mode { do addPointEnterRoad(signal_time); }
+				//if we are leaving a road by entering another the transports warns the first road 
 				do changeRoad(signal_time);
 				do updatePassengerPosition();
-				
 			}
 			match "First in queue" {
 				if hasNextRoad() {
 					do sendEnterRequest(signal_time);
 				} else {
 				//the transport is arrived
-					if jammed_road {
-						time_in_jams <- time_in_jams + (signal_time - last_entering_road);
-					}
-					practical_trip_time <- practical_trip_time + (signal_time - last_entering_road);
-					theoric_trip_time <- theoric_trip_time + get_freeflow_travel_time(getCurrentRoad());
 					if getCurrentRoad() != nil{
+						actual_trip_time <- actual_trip_time + signal_time - last_entry_time;
+						jam_time <- road_was_jammed ? jam_time + signal_time - last_entry_time : jam_time;
 						ask getCurrentRoad() {
 							do leave(myself, signal_time);
 						}
@@ -98,20 +76,16 @@ species Transport parent: EventListener virtual: true{
 		Road current <- getCurrentRoad();
 		Road next <- getNextRoad();
 		if current != nil {
-			if jammed_road {
-				time_in_jams <- time_in_jams + (signal_time - last_entering_road);
-			}
-			practical_trip_time <- practical_trip_time + (signal_time - last_entering_road);
-			theoric_trip_time <- theoric_trip_time + get_freeflow_travel_time(current);
+			actual_trip_time <- actual_trip_time + signal_time - last_entry_time;
 			ask current {
 				do leave(myself, signal_time);
 			}
-			traveled_dist <- traveled_dist + getCurrentRoad().size;
 		}
 		remove first(path_to_target) from: path_to_target;
 		if (next != nil) {
-			last_entering_road <- signal_time;
-			jammed_road <- next.is_jammed;
+			last_entry_time <- signal_time;
+			theoric_trip_time <- theoric_trip_time + get_freeflow_travel_time(next);
+			road_was_jammed <- next.is_jammed;
 			ask next {
 				do queueInRoad(myself, signal_time);
 			}
@@ -135,7 +109,6 @@ species Transport parent: EventListener virtual: true{
 	}
 
 	action setLeaveTime (float leave_time) {
-		if test_mode { do addPointReachedEndRoad; }
 		ask EventManager {
 			do registerEvent(leave_time, myself, "First in queue");
 		}
@@ -158,7 +131,6 @@ species Transport parent: EventListener virtual: true{
 		}else{
 			return distance_to(location,pos_target)/self.max_speed;
 		}
-		
 	}
 
 	bool hasNextRoad {
@@ -171,7 +143,6 @@ species Transport parent: EventListener virtual: true{
 		} else {
 			return nil;
 		}
-
 	}
 
 	Road getCurrentRoad {
@@ -179,6 +150,12 @@ species Transport parent: EventListener virtual: true{
 			return path_to_target[0];
 		}else{
 			return nil;
+		}
+	}
+	
+	action registerDataInfo{
+		ask logger[0]{
+			do addDelayTime(myself.transport_mode,myself.actual_trip_time - myself.theoric_trip_time);
 		}
 	}
 	
