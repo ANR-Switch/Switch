@@ -59,15 +59,15 @@ species logger {
 		late_times_by_transports_modes_during_day[key][transport_type]<<delay;
 	}
 	
-	reflex saveDataCSV when: every(11#h){
-		list<string> data2save <- [];
+	reflex saveDataCSV when: every(15#h){
+		string data2save <- "hour,mode,delay";
 		loop hour over:late_times_by_transports_modes_during_day.keys{
 			loop transport_mode over: late_times_by_transports_modes_during_day[hour].keys{
 				loop delay over: late_times_by_transports_modes_during_day[hour][transport_mode]{
-					data2save << ""+hour+","+transport_mode+","+delay;
+					data2save <- data2save+"\n"+hour+","+transport_mode+","+delay;
 				}
 			}
 		}
-		save data:data2save to: dataset+"/output_data/late_times.csv" type:"csv";
+		save data2save to: dataset+"/output_data/late_times.csv" type:"text";
 	}
 }
