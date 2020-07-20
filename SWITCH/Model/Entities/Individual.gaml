@@ -20,14 +20,6 @@ import "network_species/stations_species/StationBus.gaml"
 species Individual parent:Passenger{
 	
 	
-	list<list<list>> week_agenda <-
-	 [copy(agenda_work),
-	  copy(agenda_work),
-	  copy(agenda_work),
-	  copy(agenda_work_then_leisure),
-	  copy(agenda_work),
-	  copy(agenda_leisure),
-	  copy(agenda_leisure)];
 	list<list> day_agenda;
 
 	predicate current_activity;
@@ -35,8 +27,11 @@ species Individual parent:Passenger{
 	
 	bool joining_activity;
 	
-	Building work_building;
-	Building home_building;
+	point work_place;
+	point home_place;
+	point school_place;
+	point shopping_place;
+	point leisure_place;
 	
 	map<predicate,list<pair<float,float>>> times_to_join_activity <- [];
 	map<predicate,list<pair<float,float>>> times_spent_in_activity <- [];
@@ -54,14 +49,6 @@ species Individual parent:Passenger{
 	init{
 		current_activity <- staying_at_home;
 		color <- colors_per_act[current_activity];
-		do FillTodayAgenda;
-		do registerNextActivity;
-		switch rnd(1.0){
-			match_between [0.0,0.8]{prefered_transport_mode <- "car";}
-			//match_between [0.6,0.8]{prefered_transport_mode <- "bus";}
-			match_between [0.8,0.9]{prefered_transport_mode <- "bike";}
-			match_between [0.9,1.0]{prefered_transport_mode <- "walk";}
-		}
 	}
 	
 	bool has_car{
@@ -72,32 +59,10 @@ species Individual parent:Passenger{
 		return not (bike_place = nil);
 	}
 	
-	/*action RegisterTodayAgendaEvent{
-		int day_of_week <- world.date2day(current_date);
-		loop activity over: week_agenda[day_of_week]{
-			float time_diff <- world.hour2date(activity[0]) - current_date;
-			//here we generate a random number of seconds to add or substract to the activity time so
-			//the individuals don't start the same activity at the same time
-			float time_distribution <- rnd(-1200.0,1200.0);
-			ask EventManager{
-				do registerEvent(time + time_diff + time_distribution, myself, activity[1]);
-			}
-		}
-	}*/
-	
-	action FillTodayAgenda{
-		int day_of_week <- world.date2day(current_date);
-		day_agenda <- week_agenda[day_of_week];
-	}
-	
 	action registerNextActivity{
 		if length(day_agenda) > 0{
-			float time_diff <- world.hour2date(day_agenda[0][0]) - current_date;
-			//here we generate a random number of seconds to add or substract to the activity time so
-			//the individuals don't start the activities at the same time
-			float time_distribution <- rnd(-1800.0,1800.0);
 			ask EventManager{
-				do registerEvent(time + time_diff + time_distribution, myself, myself.day_agenda[0][1]);
+				do registerEvent(float(myself.day_agenda[0][1]), myself, myself.day_agenda[0][0]);
 			}	
 		}
 	}
@@ -107,7 +72,7 @@ species Individual parent:Passenger{
 			match "working"{
 				if not joining_activity{
 					current_activity <- working;
-					do compute_transport_trip(any_location_in(work_building.location));
+					do compute_transport_trip(work_place);
 					last_start_time <- signal_time;
 					do executeTripPlan;
 				}else{
@@ -117,7 +82,7 @@ species Individual parent:Passenger{
 			match "eating"{
 				if not joining_activity{
 					current_activity <- eating;
-					do compute_transport_trip(any_location_in(home_building.location));
+					do compute_transport_trip(home_place);
 					do executeTripPlan;
 				}else{
 					waiting_activity <- eating;
@@ -126,7 +91,7 @@ species Individual parent:Passenger{
 			match "staying at home"{
 				if not joining_activity{
 					current_activity <- staying_at_home;
-					do compute_transport_trip(any_location_in(home_building.location));
+					do compute_transport_trip(home_place);
 					do executeTripPlan;
 				}else{
 					waiting_activity <- staying_at_home;
@@ -135,10 +100,37 @@ species Individual parent:Passenger{
 			match "leisure"{
 				if not joining_activity{
 					current_activity <- leisure;
-					do compute_transport_trip(one_of(Building).location);
+					do compute_transport_trip(leisure_place);
 					do executeTripPlan;
 				}else{
 					waiting_activity <- leisure;
+				}
+			}
+			match "studying"{
+				if not joining_activity{
+					current_activity <- studying;
+					do compute_transport_trip(school_place);
+					do executeTripPlan;
+				}else{
+					waiting_activity <- studying;
+				}
+			}
+			match "manage kid"{
+				if not joining_activity{
+					current_activity <- manage_kid;
+					do compute_transport_trip(school_place);
+					do executeTripPlan;
+				}else{
+					waiting_activity <- manage_kid;
+				}
+			}
+			match "shopping"{
+				if not joining_activity{
+					current_activity <- shopping;
+					do compute_transport_trip(shopping_place);
+					do executeTripPlan;
+				}else{
+					waiting_activity <- shopping;
 				}
 			}
 			match "arrived"{

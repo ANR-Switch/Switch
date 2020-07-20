@@ -9,6 +9,7 @@ model SWITCH
 
 //import "../Utilities/Generate Agenda.gaml"
 import "../Utilities/import GTFS.gaml"
+import "../Utilities/stochastic population generation.gaml"
 
 import "Parameters.gaml"
 import "Entities/network_species/Building.gaml"
@@ -57,6 +58,12 @@ global {
 	bool is_fast_step <- false;
 	
 	list<Road> road_near_work <- [];
+	
+	list<Building> work_buildings;
+	list<Building> home_buildings;
+	list<Building> shop_buildings;
+	list<Building> school_buildings;
+	list<Building> leisure_buildings;
 	
 	
 	reflex end_simulation when: current_date = end_date {
@@ -136,24 +143,22 @@ global {
 		}
 		do write_message("Nodes filtered");
 		
-		list<Building> work_buildings;
-		list<Building> home_buildings;
-
 		ask Building{
 			switch size{
 				match_between [50.0,125.0]{type <-"home"; home_buildings << self; }
-				match_between [300.0,400.0]{type <- "work"; work_buildings << self;}
+				match_between [125.0,200.0]{type <- "leisure"; leisure_buildings << self;}
+				match_between [250.0,300.0]{type <- "shop"; shop_buildings << self;}
+				match_between [300.0,340.0]{type <- "leisure"; leisure_buildings << self;}
+				match_between [340.0,350.0]{type <- "school"; school_buildings << self;}
+				match_between [350.0,1000.0]{type <- "work"; work_buildings << self;}
 			}
 		}
-	
-		//Creation of the people agents
-		create Individual number: num_individuals {
-			home_building <- one_of(home_buildings);
-			work_building <- one_of(work_buildings);
-			location <- any_location_in(home_building);
-			car_place <- any_location_in(Road closest_to self);
-			bike_place <-location;
+		if file_exists(population_dataset){
+			
+		}else{
+			do generate_population();
 		}
+		
 
 
       	road_network <- directed(as_edge_graph(Road,Crossroad));

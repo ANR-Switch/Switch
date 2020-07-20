@@ -104,7 +104,7 @@ experiment "Abstract Experiment" virtual:true{
 				}
 			}
 		}*/
-		display event_number{
+		/*display event_number{
 			chart "registered events number" size: {1.0,0.5}{
 				data "nb_event" color: #black value: length(EventManager[0].events_map.data) thickness: 2.5 marker: false;
 			}
@@ -123,7 +123,7 @@ experiment "Abstract Experiment" virtual:true{
 					data key value: mean(the_logger.late_times_by_transports_modes_during_day[key]["car"]) thickness: 2.5 marker: false;
 				}
 			}
-		}
+		}*/
 	}
 
 }

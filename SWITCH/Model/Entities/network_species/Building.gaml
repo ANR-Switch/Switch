@@ -21,7 +21,9 @@ species Building {
 		switch type{
 			match "home"{color <- #grey;}
 			match "work"{color <- #red;}
-			match "parking"{color <- #blue;}
+			match "school"{color <- #cyan;}
+			match "shop"{color <- #gold;}
+			match "leisure"{color <- #magenta;}
 			default {color <- #grey;}
 		}
 		draw shape color: color border: #black;
