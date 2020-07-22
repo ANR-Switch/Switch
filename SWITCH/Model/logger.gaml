@@ -59,7 +59,7 @@ species logger {
 		}
 	}
 	
-	reflex saveDataCSV when: current_date.hour=23 and current_date.minute = 59{
+	reflex saveDataCSV when: current_date.hour=9 and current_date.minute = 0{
 		string delays_buff <- "hour, transport_mode, mean delay, min delay, max delay, nb delay, 1st quartile delay, median delay, third quartile delay";
 		string occup_buff <- "hour, mean road occupation, min road occupation, max road occupation, nb road occupation, 1st quartile road occupation, median road occupation, third quartile road occupation";
 		write ""+ nb_data_delays+" data entries about delays to save";
@@ -93,9 +93,9 @@ species logger {
 					first_quartile_delay <- delays[int(floor(nb_delay*0.25))];
 					median_delay <- delays[int(floor(nb_delay*0.5))];
 					third_quartile_delay <- delays[int(floor(nb_delay*0.75))];
-					delays_buff <- delays_buff+"\n"+hour+","+transport_mode+","+mean_delay+","+min_delay+","+nb_delay+","+first_quartile_delay+","+median_delay+","+third_quartile_delay;
+					delays_buff <- delays_buff+"\n"+hour+","+transport_mode+","+mean_delay+","+min_delay+","+max_delay+","+nb_delay+","+first_quartile_delay+","+median_delay+","+third_quartile_delay;
 				}else{
-					delays_buff <- delays_buff+"\n"+hour+","+transport_mode+","+0+","+0+","+0+","+0+","+0+","+0;
+					delays_buff <- delays_buff+"\n"+hour+","+transport_mode+","+0+","+0+","+0+","+0+","+0+","+0+","+0;
 				}
 			}
 			road_occupations <- road_occupations_ratios_during_day[hour].data collect each[0];
@@ -107,9 +107,9 @@ species logger {
 				first_quartile_road_occupation <- road_occupations[int(floor(nb_road_occupation*0.25))];
 				median_road_occupation <- road_occupations[int(floor(nb_road_occupation*0.5))];
 				third_quartile_road_occupation <- road_occupations[int(floor(nb_road_occupation*0.75))];
-				occup_buff <- occup_buff+ "\n"+hour+","+mean_road_occupation+","+min_road_occupation+","+nb_road_occupation+","+first_quartile_road_occupation+","+median_road_occupation+","+third_quartile_road_occupation;
+				occup_buff <- occup_buff+ "\n"+hour+","+mean_road_occupation+","+min_road_occupation+","+max_road_occupation+","+nb_road_occupation+","+first_quartile_road_occupation+","+median_road_occupation+","+third_quartile_road_occupation;
 			}else{
-				occup_buff <- occup_buff+ "\n"+hour+","+0+","+0+","+0+","+0+","+0+","+0;
+				occup_buff <- occup_buff+ "\n"+hour+","+0+","+0+","+0+","+0+","+0+","+0+","+0;
 			}
 		}
 		save delays_buff to: dataset+"/output_data/late_times.csv" type:"text";
