@@ -21,6 +21,7 @@ species Car parent: PrivateTransport {
 	}
 	
 	action endTrip(float arrived_time){
+		do registerDataInfo(arrived_time);
 		location <- pos_target;
 		loop passenger over:passengers{
 			// we assumed that the first passenger is always the transport owner
@@ -29,7 +30,6 @@ species Car parent: PrivateTransport {
 			passenger.location <- location;
 			passenger.current_car <- nil;
 		}
-		do registerDataInfo;
 		do die;
 	}
 	

@@ -153,9 +153,9 @@ species Transport parent: EventListener virtual: true{
 		}
 	}
 	
-	action registerDataInfo{
+	action registerDataInfo(float add_time){
 		ask logger[0]{
-			do addDelayTime(myself.transport_mode,myself.actual_trip_time - myself.theoric_trip_time);
+			do addDelayTime(myself.transport_mode,add_time,myself.actual_trip_time - myself.theoric_trip_time);
 		}
 	}
 	
