@@ -42,6 +42,8 @@ species Transport parent: EventListener virtual: true{
 	float theoric_trip_time <- 0.0;
 	//actual_trip_time is the cumulated real trip_time 
 	float actual_trip_time <- 0.0;
+	//actual_trip_distance is the cumulated distance achieved by this transport 
+	float actual_trip_distance <- 0.0;
 	// jam_time is the cumulated trip time spend in jammed roads
 	float jam_time <- 0.0;
 	bool road_was_jammed <- false;
@@ -61,6 +63,7 @@ species Transport parent: EventListener virtual: true{
 				//the transport is arrived
 					if getCurrentRoad() != nil{
 						actual_trip_time <- actual_trip_time + signal_time - last_entry_time;
+						actual_trip_distance <- actual_trip_distance + getCurrentRoad().size;
 						jam_time <- road_was_jammed ? jam_time + signal_time - last_entry_time : jam_time;
 						ask getCurrentRoad() {
 							do leave(myself, signal_time);
@@ -77,6 +80,7 @@ species Transport parent: EventListener virtual: true{
 		Road next <- getNextRoad();
 		if current != nil {
 			actual_trip_time <- actual_trip_time + signal_time - last_entry_time;
+			actual_trip_distance <- actual_trip_distance + current.size;
 			ask current {
 				do leave(myself, signal_time);
 			}
@@ -155,7 +159,11 @@ species Transport parent: EventListener virtual: true{
 	
 	action registerDataInfo(float add_time){
 		ask logger[0]{
-			do addDelayTime(myself.transport_mode,add_time,myself.actual_trip_time - myself.theoric_trip_time);
+			if myself.actual_trip_time > 0{
+				do addDelayTime(myself.transport_mode,add_time,myself.actual_trip_time - myself.theoric_trip_time);
+				do addSpeed(myself.transport_mode,add_time,(myself.actual_trip_distance/myself.actual_trip_time)*3.6);
+			}
+			
 		}
 	}
 	

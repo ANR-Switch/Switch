@@ -74,7 +74,7 @@ species Individual parent:Passenger{
 					current_activity <- working;
 					do compute_transport_trip(work_place);
 					last_start_time <- signal_time;
-					do executeTripPlan;
+					do executeTripPlan(signal_time);
 				}else{
 					waiting_activity <- working;
 				}
@@ -83,7 +83,7 @@ species Individual parent:Passenger{
 				if not joining_activity{
 					current_activity <- eating;
 					do compute_transport_trip(home_place);
-					do executeTripPlan;
+					do executeTripPlan(signal_time);
 				}else{
 					waiting_activity <- eating;
 				}
@@ -92,7 +92,7 @@ species Individual parent:Passenger{
 				if not joining_activity{
 					current_activity <- staying_at_home;
 					do compute_transport_trip(home_place);
-					do executeTripPlan;
+					do executeTripPlan(signal_time);
 				}else{
 					waiting_activity <- staying_at_home;
 				}
@@ -101,7 +101,7 @@ species Individual parent:Passenger{
 				if not joining_activity{
 					current_activity <- leisure;
 					do compute_transport_trip(leisure_place);
-					do executeTripPlan;
+					do executeTripPlan(signal_time);
 				}else{
 					waiting_activity <- leisure;
 				}
@@ -110,7 +110,7 @@ species Individual parent:Passenger{
 				if not joining_activity{
 					current_activity <- studying;
 					do compute_transport_trip(school_place);
-					do executeTripPlan;
+					do executeTripPlan(signal_time);
 				}else{
 					waiting_activity <- studying;
 				}
@@ -119,7 +119,7 @@ species Individual parent:Passenger{
 				if not joining_activity{
 					current_activity <- manage_kid;
 					do compute_transport_trip(school_place);
-					do executeTripPlan;
+					do executeTripPlan(signal_time);
 				}else{
 					waiting_activity <- manage_kid;
 				}
@@ -128,7 +128,7 @@ species Individual parent:Passenger{
 				if not joining_activity{
 					current_activity <- shopping;
 					do compute_transport_trip(shopping_place);
-					do executeTripPlan;
+					do executeTripPlan(signal_time);
 				}else{
 					waiting_activity <- shopping;
 				}
@@ -146,11 +146,26 @@ species Individual parent:Passenger{
 						do registerNextActivity;
 					}
 				}else{
-					do executeTripPlan;
+					do executeTripPlan(signal_time);
 				}
 			}
-			match "passenger"{}
-			match "transport full"{}
+			match "passenger"{
+				if time_start_waiting_at_station > 0 {
+					ask logger[0]{
+						do addStationWaiting(signal_time,time-myself.time_start_waiting_at_station);
+					}
+					time_start_waiting_at_station <- -1.0;
+				}
+			}
+			match "transport full"{
+				write "transport full";
+				if time_start_waiting_at_station > 0 {
+					ask logger[0]{
+						do addStationWaiting(signal_time,time-myself.time_start_waiting_at_station);
+					}
+					time_start_waiting_at_station <- time;
+				}
+			}
 		}
 	}
 	
@@ -194,7 +209,7 @@ species Individual parent:Passenger{
 		ask world {do write_message(myself.name + " - transport trip: " + myself.transport_trip);}
 	}
 
-	action executeTripPlan{
+	action executeTripPlan(float excution_time){
 		color <- colors_per_mobility_mode[string(transport_trip[0][0])];
 		joining_activity <- false;
 		switch transport_trip[0][0]{
@@ -207,6 +222,7 @@ species Individual parent:Passenger{
 			}
 			
 			match "bus"{
+				time_start_waiting_at_station <- excution_time;
 				ask StationBus(transport_trip[0][1]){
 					StationBus destination <- StationBus(myself.transport_trip[0][2]);
 					TransportLine line <- inter(self.lines, destination.lines)[0];

@@ -23,21 +23,18 @@ species Passenger parent: EventListener{
 	
 	list<float> times_spent_in_jammed_roads <- [];
 	
-	list<float> times_spent_waiting_at_stations <- [];
+	float time_start_waiting_at_station <- -1.0;
 	
 	float last_start_time <- 0.0;
 	float last_theoric_trip_time <- 0.0;
 	float last_late_time <- 0.0;
+	
 	
 	//times_in_transport =[string transport_type :: [float practical_travel_time :: float theoric_travel_time]]
 	map<string,list<pair<float,float>>> times_in_transport <- [];
 	
 	action addTimeSpentInJams(float time_in_jams){
 		times_spent_in_jammed_roads << time_in_jams;
-	}
-	
-	action addStationWaitingTimes(float time_at_station){
-		times_spent_waiting_at_stations << time_at_station;
 	}
 	
 	action addTransportTravelTime(Transport t, float practical_travel_time, float theoric_travel_time){
