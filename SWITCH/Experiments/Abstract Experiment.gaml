@@ -50,7 +50,7 @@ experiment "Abstract Experiment" virtual:true{
 	output {
 		display "default_display" type:opengl synchronized: false background: background virtual: true draw_env: false {
 			
-			/*overlay position: { 5, 5 } size: { 400 #px, 600 #px }  transparency: 0.5
+			overlay position: { 5, 5 } size: { 400 #px, 600 #px }  transparency: 0.5
             {
            		//draw world.name  font: default at: { 20#px, 20#px} anchor: #top_left color:text_color;
            		draw ("Day " + int((current_date - starting_date) /  #day))   font: default at: { 20#px, 50#px} anchor: #top_left color:text_color;
@@ -73,7 +73,7 @@ experiment "Abstract Experiment" virtual:true{
                 }
             }
 			image file:  file_exists(dataset+"/satellite.png") ? (dataset+"/satellite.png"): dataset_folder+"Default/satellite.png" transparency: 0.5 refresh: false;
-			*/
+
 			species Building;
 			species Road aspect: default;
 			species Crossroad;

@@ -198,9 +198,9 @@ global {
 	//*****************Stochastic distribution for population generation**************************
 	map<string,float> prefered_tp_mode_proba <-
 			["car"::0.6,
-			 "bus"::0.2,
-			 "walk"::0.1,
-			 "bike"::0.1	
+			 "bus"::0.15,
+			 "walk"::0.10,
+			 "bike"::0.15	
 			];
 			
 	map<string,float> social_class_distrib <-

@@ -169,6 +169,8 @@ species Individual parent:Passenger{
 		}
 	}
 	
+	
+	
 	//compute a trip acording to priority and target
 	action compute_transport_trip(point target_){
 		transport_trip <- [];
