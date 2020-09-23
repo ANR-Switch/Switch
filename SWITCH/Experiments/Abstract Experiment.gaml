@@ -13,14 +13,22 @@ global {
 	rgb background <- world.color.darker.darker;
 	string dataset_folder <- "../../Datasets"; // Need to be overwritten if the caller is not in a sub-directory
 
+
 	init { 
 		do global_init;
+		
+	}
+	
+	reflex printstate{
+		write Individual count (each.current_activity.name="stay at home morning");
 	}
 
 }
 
 
 experiment "Abstract Experiment" virtual:true{
+	
+	parameter 'Buildings:' var: isBuildingDisplayed category: 'Display' ;
 
 	string ask_dataset_path {
 		int index <- -1;
@@ -48,9 +56,23 @@ experiment "Abstract Experiment" virtual:true{
 	
 	
 	output {
+		layout #split parameters: false navigator: false editors: false consoles: false ;	
+		
+			display "datalist_pie_chart" type: java2D
+		{
+			chart "Current activity distribution" type: pie style: exploded
+			{
+				loop acti over: activity_list{
+				data acti value: Individual count (each.current_activity.name=acti) ;
+			}
+				
+			}
+
+		}
+		
 		display "default_display" type:opengl synchronized: false background: background virtual: true draw_env: false {
 			
-			overlay position: { 5, 5 } size: { 400 #px, 600 #px }  transparency: 0.5
+			overlay position: { 5, 5 } size: { 400 #px, 600 #px } 
             {
            		//draw world.name  font: default at: { 20#px, 20#px} anchor: #top_left color:text_color;
            		draw ("Day " + int((current_date - starting_date) /  #day))   font: default at: { 20#px, 50#px} anchor: #top_left color:text_color;
@@ -72,7 +94,7 @@ experiment "Abstract Experiment" virtual:true{
                     y <- y + 35#px;
                 }
             }
-			image file:  file_exists(dataset+"/satellite.png") ? (dataset+"/satellite.png"): dataset_folder+"Default/satellite.png" transparency: 0.5 refresh: false;
+			//image file:  file_exists(dataset+"/satellite.png") ? (dataset+"/satellite.png"): dataset_folder+"Default/satellite.png" transparency: 0.5 refresh: false;
 
 			species Building;
 			species Road aspect: default;

@@ -24,6 +24,7 @@ global {
 	string act_sport <- "sport";
 	string act_manage_kid <- "manage kid";
 	string act_other <- "other activity";
+	list<string> activity_list <- [act_studying,act_working,act_home,act_friend,act_eating,act_shopping,act_leisure,act_sport,act_manage_kid,act_other];
 	
 	
 	predicate studying <- new_predicate(act_studying);

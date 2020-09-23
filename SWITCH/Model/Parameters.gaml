@@ -31,7 +31,7 @@ global {
 	list<string> type_mode <- ["car","bus","bike","walk"];
 	list<string> criteria <- ["comfort", "safety", "price","ecology","simplicity","time"];
 	//Step value
-	float normal_step <- 30 #sec;
+	float normal_step <- 5 #sec;
 	float fast_step <- 15 #mn;
 	
 	float step <- normal_step;
@@ -59,7 +59,7 @@ global {
 	float bike_speed <- 8.0#km/#h;
 	float walk_speed <- 3.0 #km/#h;
 
-	int num_individuals <- 10000;
+	int num_individuals <- 500;
 	
 	bool road_speed_in_km_h <- false;
 	
@@ -80,7 +80,7 @@ global {
 	 
 	 list<predicate> activity_predicates <- [studying, working, staying_at_home,visiting_friend,leisure,eating,shopping,practicing_sport,doing_other_act];
 	
-	
+
 	//for each category of age, and for each sex, the weight of the different activities
 	map<list<int>,map<string,map<string,float>>> weight_activity_per_age_sex_class <- [
 		 [0,10] :: 
@@ -252,5 +252,13 @@ global {
 	//sometimes there is dead lock so road may accept transports even if they are full
 	float ignore_capacity_constraint <- 0.00;
 	
+	//********************************************************************************************
+	
+	
+	
+	
+	//********************************************************************************************
+	//*****************************Visualisation parameters************************************************
+	bool isBuildingDisplayed <- false;
 	//********************************************************************************************
 }
