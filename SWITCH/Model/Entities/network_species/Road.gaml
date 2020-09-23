@@ -30,6 +30,8 @@ species Road {
 
 	//end crossroad node
 	Crossroad end_node;
+	
+	point trans;
 
 	//maximum legal speed on this road
 	float max_speed;
@@ -104,6 +106,8 @@ species Road {
 		create Queue {
 			myself.present_transports <- self;
 		}
+		
+		
 
 	}
 
@@ -269,7 +273,8 @@ species Road {
 	
 	aspect default {
 		geometry geom_display <- (shape + (2.0));
-		draw geom_display border: #gray color: rgb(255 * (max_capacity - current_capacity) / max_capacity, 0, 0);
+		
+		draw geom_display translated_by(trans*2) border: #gray color: rgb(255 * (max_capacity - current_capacity) / max_capacity, 0, 0);
 	}
 
 	aspect advanced {

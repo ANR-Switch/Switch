@@ -25,7 +25,7 @@ global {
 	string act_manage_kid <- "manage kid";
 	string act_other <- "other activity";
 	list<string> activity_list <- [act_studying,act_working,act_home,act_friend,act_eating,act_shopping,act_leisure,act_sport,act_manage_kid,act_other];
-	
+	list<string> mode_list <- ["car","bike","bus","walk","none"];
 	
 	predicate studying <- new_predicate(act_studying);
 	predicate working <- new_predicate(act_working);
@@ -60,7 +60,7 @@ global {
 	map<string,rgb> colors_per_act_string <- [(staying_at_home.name)::#blue, (working.name)::#red, (studying.name):: #cyan, (leisure.name)::#magenta, (visiting_friend.name)::#pink, (eating.name)::#darkorange, (shopping.name)::#gold, (practicing_sport.name)::#cyan, (manage_kid.name)::#grey, (doing_other_act.name)::#gray];
 	
 	
-	map<string,rgb> colors_per_mobility_mode <- ["car"::#olivedrab, "bike"::#maroon, "bus"::#palegreen, "walk"::#blueviolet];
+	map<string,rgb> colors_per_mobility_mode <- ["car"::#olivedrab, "bike"::#maroon, "bus"::#palegreen, "walk"::#blueviolet,"none"::#gray];
 
 	// ************Traffic Constants**********************
 	//Graph of the road network

@@ -45,6 +45,7 @@ species Individual parent:Passenger{
 	rgb color;
 	
 	string prefered_transport_mode;
+	string current_transport_mode <- "none";
 	
 	init{
 		current_activity <- staying_at_home;
@@ -141,6 +142,7 @@ species Individual parent:Passenger{
 					if waiting_activity != nil{
 						waiting_activity <- nil;
 						joining_activity <- false;
+						current_transport_mode <- "none";
 						do setSignal(signal_time, waiting_activity.name);
 					}else{
 						do registerNextActivity;
@@ -217,10 +219,12 @@ species Individual parent:Passenger{
 		switch transport_trip[0][0]{
 			match "car"{
 				do useCar([self], transport_trip[0][2]);
+				current_transport_mode <- "car";
 			}
 			
 			match "bike"{
 				do useBike([self], transport_trip[0][2]);
+				current_transport_mode <- "bike";
 			}
 			
 			match "bus"{
@@ -230,10 +234,12 @@ species Individual parent:Passenger{
 					TransportLine line <- inter(self.lines, destination.lines)[0];
 					do waitAtStation(myself,line.id,destination);
 				}
+				current_transport_mode <- "bus";
 			}
 			
 			match "walk"{
 				do useWalk([self], transport_trip[0][2]);
+				current_transport_mode <- "walk";
 			}
 		}
 	}

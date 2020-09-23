@@ -50,13 +50,20 @@ experiment "Abstract Experiment" virtual: true {
 	output {
 		layout #split parameters: false navigator: false editors: false consoles: false;
 		display "datalist_pie_chart" type: java2D {
-			chart "Current activity distribution" type: pie style: exploded {
+			chart "Current activity distribution" type: pie style: exploded size:{1,0.5} position: {0, 0}{
 				loop acti over: activity_list {
 					data acti value: Individual count (each.current_activity.name = acti) color: colors_per_act_string[acti];
+					
 				}
 
 			}
-			graphics toto{
+			chart "Current mode distribution" type: pie style: exploded size:{1,0.5}  position: {0, 0.5}{
+				loop mode over: mode_list {
+					data mode value: Individual count (each.current_transport_mode = mode) color:colors_per_mobility_mode[mode];
+				}
+
+			}
+			graphics TimeAndDate{
 				draw ("Day " + int((current_date - starting_date) /  #day))   font: default at: { 20#px, 50#px} anchor: #top_left color:text_color;
             	string dispclock <- current_date.hour <10 ? "0"+current_date.hour : ""+current_date.hour;
             	dispclock <- current_date.minute <10 ? dispclock+"h0"+current_date.minute : dispclock +"h"+current_date.minute;
