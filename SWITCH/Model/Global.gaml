@@ -37,7 +37,8 @@ global {
 	//comfort
 	//use of number of users car si c'est bondé c'est moins confortable
 	float bus_capacity; //capacity of one bus
-
+	map<string, int> activity_cumulative_stat;
+	map<string, int> mode_cumulative_stat;
 
 	//time
 	float bus_freq; //intervalle en minute
@@ -60,8 +61,12 @@ global {
 	reflex end_simulation when: current_date = end_date {
 		do pause;
 	}
+	
+	
 
 	reflex manage_step when: every(#h) {
+		
+		
 		float next_event_time <- (first(EventManager).getEventTime(0));
 		if (not is_fast_step and (time < next_event_time)) {
 			step <- fast_step;
@@ -76,6 +81,8 @@ global {
 	}
 
 	action global_init {
+		
+
 		create EventManager {
 			myself.the_event_manager <- self;
 		}
@@ -203,9 +210,10 @@ global {
 				myself.road_near_work << self;
 			}
 			//don't know why some roads have a nil start...
-			if(start_node = nil or end_node = nil ){
+			if (start_node = nil or end_node = nil) {
 				do die;
 			}
+
 			point A <- start_node.location;
 			point B <- end_node.location;
 			if (A = B) {

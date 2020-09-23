@@ -36,6 +36,7 @@ species EventManager {
 			EventListener event_target <- getEventTarget(0);
 			float start_time;
 			float exec_time;
+			
 			ask events_map{
 				do remove(0);
 			}

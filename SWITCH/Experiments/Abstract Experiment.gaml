@@ -15,10 +15,6 @@ global {
 		do global_init;
 	}
 
-	reflex printstate {
-		write Individual count (each.current_activity.name = "stay at home morning");
-	}
-
 }
 
 experiment "Abstract Experiment" virtual: true {
@@ -49,21 +45,21 @@ experiment "Abstract Experiment" virtual: true {
 
 	output {
 		layout #split parameters: false navigator: false editors: false consoles: false;
-		display "datalist_pie_chart" type: java2D {
-			chart "Current activity distribution" type: pie style: exploded size:{1,0.5} position: {0, 0}{
+		display "Current Distribution" type: java2D background: background {
+			chart "Current activity distribution" type: pie style: exploded size:{1,0.5} position: {0, 0} background: background{
 				loop acti over: activity_list {
 					data acti value: Individual count (each.current_activity.name = acti) color: colors_per_act_string[acti];
 					
 				}
 
 			}
-			chart "Current mode distribution" type: pie style: exploded size:{1,0.5}  position: {0, 0.5}{
+			chart "Current mode distribution" type: pie style: exploded size:{1,0.5}  position: {0, 0.5} background: background{
 				loop mode over: mode_list {
 					data mode value: Individual count (each.current_transport_mode = mode) color:colors_per_mobility_mode[mode];
 				}
 
 			}
-			graphics TimeAndDate{
+			graphics TimeAndDate {
 				draw ("Day " + int((current_date - starting_date) /  #day))   font: default at: { 20#px, 50#px} anchor: #top_left color:text_color;
             	string dispclock <- current_date.hour <10 ? "0"+current_date.hour : ""+current_date.hour;
             	dispclock <- current_date.minute <10 ? dispclock+"h0"+current_date.minute : dispclock +"h"+current_date.minute;
@@ -74,7 +70,7 @@ experiment "Abstract Experiment" virtual: true {
 
 		}
 
-		display "default_display" type: opengl synchronized: false background: background virtual: true draw_env: false {
+		display "Map" type: opengl synchronized: false background: background virtual: true draw_env: false {
 			overlay position: {0, 0} size: {200 #px, 650 #px} rounded: false transparency:0.5{
 				draw ("Day " + int((current_date - starting_date) / #day)) font: default at: {15 #px, 10 #px} anchor: #top_left color: text_color;
 				string dispclock <- current_date.hour < 10 ? "0" + current_date.hour : "" + current_date.hour;
@@ -103,6 +99,16 @@ experiment "Abstract Experiment" virtual: true {
 			species StationTram;
 			species Bus;
 			species Individual;
+		}
+		
+		display "How many travels by modes?" type: java2D background: background {
+			chart "How many travels by modes every step?" type: histogram style:stack background: background {
+				data "car" value: mode_cumulative_stat["car"] accumulate_values: true	color:colors_per_mobility_mode["car"];
+				data "bike" value: mode_cumulative_stat["bike"] accumulate_values: true	color:colors_per_mobility_mode["bike"];
+				data "bus" value: mode_cumulative_stat["bus"] accumulate_values: true	color:colors_per_mobility_mode["bus"];
+				data "walk" value: mode_cumulative_stat["walk"] accumulate_values: true	color:colors_per_mobility_mode["walk"];
+
+			}
 		}
 
 		/*display activity_charts refresh: every(1 #mn) {

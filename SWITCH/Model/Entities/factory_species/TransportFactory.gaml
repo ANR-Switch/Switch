@@ -6,6 +6,8 @@
 ***/
 model SWITCH
 
+import "../../Global.gaml"
+
 import "../transport_species/Transport.gaml"
 import "../transport_species/Bike.gaml"
 import "../transport_species/Walk.gaml"
@@ -24,6 +26,7 @@ global{
 	    	do getIn(passengers_);
             do start(start_location,end_location, road_network, start_time);
         } 
+        mode_cumulative_stat["car"]<- mode_cumulative_stat["car"]+1;
         return children[0];
     }
     
@@ -32,6 +35,7 @@ global{
 	    	do getIn(passengers_);
             do start(start_location,end_location,road_network, start_time);
         } 
+        mode_cumulative_stat["bike"]<- mode_cumulative_stat["bike"]+1;
         return children[0];
     }
     
@@ -40,6 +44,7 @@ global{
 	    	do getIn(passengers_);
             do start(start_location,end_location,road_network, start_time);
         } 
+        mode_cumulative_stat["walk"]<- mode_cumulative_stat["walk"]+1;
         return children[0];
     }
     
@@ -50,6 +55,7 @@ global{
     		trip_description <- trip_description_;
     		do start(road_network, start_time);
         }
+        mode_cumulative_stat["bus"]<- mode_cumulative_stat["bus"]+1;
         return children[0];
     }
     
@@ -60,6 +66,7 @@ global{
     		trip_description <- trip_description_;
     		do start(road_network, start_time);
         } 
+        mode_cumulative_stat["metro"]<- mode_cumulative_stat["metro"]+1;
         return children[0];
     }
     
@@ -70,6 +77,18 @@ global{
     		trip_description <- trip_description_;
     		do start(road_network, start_time);
         } 
+        mode_cumulative_stat["tram"]<- mode_cumulative_stat["tram"]+1;
         return children[0];
     }
+    
+    reflex resetState{
+		loop acti over: activity_list {
+			add acti::0 to: activity_cumulative_stat;
+		}
+
+		write mode_cumulative_stat;
+		loop mode over: mode_list {
+			add mode::0 to: mode_cumulative_stat;
+		}
+	}
 }
