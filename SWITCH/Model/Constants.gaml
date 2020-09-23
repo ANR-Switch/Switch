@@ -56,6 +56,10 @@ global {
 	
 	// color constants
 	map<predicate,rgb> colors_per_act <- [staying_at_home::#blue, working::#red, studying:: #cyan, leisure::#magenta, visiting_friend::#pink, eating::#darkorange, shopping::#gold, practicing_sport::#cyan, manage_kid::#grey, doing_other_act::#gray];
+	
+	map<string,rgb> colors_per_act_string <- [(staying_at_home.name)::#blue, (working.name)::#red, (studying.name):: #cyan, (leisure.name)::#magenta, (visiting_friend.name)::#pink, (eating.name)::#darkorange, (shopping.name)::#gold, (practicing_sport.name)::#cyan, (manage_kid.name)::#grey, (doing_other_act.name)::#gray];
+	
+	
 	map<string,rgb> colors_per_mobility_mode <- ["car"::#olivedrab, "bike"::#maroon, "bus"::#palegreen, "walk"::#blueviolet];
 
 	// ************Traffic Constants**********************
