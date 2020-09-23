@@ -151,32 +151,7 @@ global {
 	string unemployed <- "unemployed" const: true;
 	string none <- "none" const: true;
 	
-	//**********************************************************
-	
-	//Basic agendas for test purpose
-	
-	list<list<string>> agenda_work <- 
-			       [["08:00:00","working"],
-			        ["12:00:00","eating"],
-			        ["14:00:00","working"],
-			        ["18:00:00","staying_at_home"]
-			       ];
-	list<list<string>> agenda_work_then_leisure <- 
-			       [["08:00:00","working"],
-			        ["12:00:00","eating"],
-			        ["14:00:00","working"],
-			        ["18:00:00","staying_at_home"],
-			        ["20:00:00","leisure"],
-			        ["23:00:00","staying_at_home"]
-			       ];
-	list<list<string>> agenda_leisure <- 
-			       [["14:00:00","leisure"],
-			        ["19:00:00","staying_at_home"]
-			       ];
-	list<list<string>> agenda_couch_potato <- 
-			       [
-			       ];
-			       
+	//**********************************************************		       
 	
 	list<string> retired_classic <- ["eating midday","stay at home afternoon"];
 	list<string> retired_leisure1 <- ["leisure morning","eating midday","leisure afternoon","stay at home evening"];

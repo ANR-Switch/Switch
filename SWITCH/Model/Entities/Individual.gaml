@@ -137,12 +137,12 @@ species Individual parent:Passenger{
 			match "arrived"{
 				remove transport_trip[0] from: transport_trip;
 				if length(transport_trip) = 0 {
+					joining_activity <- false;
+					current_transport_mode <- "none";
 					color <- colors_per_act[current_activity];
 					remove day_agenda[0] from: day_agenda;
 					if waiting_activity != nil{
 						waiting_activity <- nil;
-						joining_activity <- false;
-						current_transport_mode <- "none";
 						do setSignal(signal_time, waiting_activity.name);
 					}else{
 						do registerNextActivity;
