@@ -87,6 +87,16 @@ species PublicTransport parent: Transport {
 		if length(trip_description) <=1 {
 			// the transport arrived at the last station and has already drop the passenger
 			do registerDataInfo(arrived_time);
+			loop s over: passengers.keys{
+				if length(passengers[s]) >0{
+					write ""+length(passengers[s])+"passagers restant pour station "+ s.name color:#red;
+					loop p over: passengers[s]{
+						ask p{ do setSignal(arrived_time, "arrived");}
+						p.location <- location;
+						nb_passenger <- nb_passenger -1;
+					}
+				}
+			}
 			do die;
 		}else{
 			//there is at least one more station in the trip so we create an event to collect the current station

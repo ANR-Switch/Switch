@@ -49,6 +49,7 @@ species Individual parent:Passenger{
 	
 	init{
 		current_activity <- staying_at_home;
+		waiting_activity <- nil;
 		color <- colors_per_act[current_activity];
 	}
 	
@@ -137,6 +138,7 @@ species Individual parent:Passenger{
 			match "arrived"{
 				remove transport_trip[0] from: transport_trip;
 				if length(transport_trip) = 0 {
+					if prefered_transport_mode = "bus"{write "bus trip ok";}
 					joining_activity <- false;
 					current_transport_mode <- "none";
 					color <- colors_per_act[current_activity];

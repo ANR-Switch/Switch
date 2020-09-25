@@ -13,6 +13,7 @@ import "../../logger.gaml"
 import "../transport_species/Transport.gaml"
 import "../transport_species/Bike.gaml"
 import "../transport_species/Walk.gaml"
+import "../transport_species/Bus.gaml"
 import "../data_structure_species/SortedMap.gaml"
 import "../data_structure_species/Queue.gaml"
 
@@ -48,7 +49,7 @@ species Road {
 	//foot=no means pedestrians are not allowed
 	string foot;
 
-	//bicycle=no means pedestrians are not allowed
+	//bicycle=no means bikes are not allowed
 	string bicycle;
 
 	// access=no means car are not allowed
@@ -85,11 +86,13 @@ species Road {
 	//has_bike_lane = true if there is a specific lane for bikes in this road
 	//				= false if not
 	bool has_bike_lane <- false;
+	bool has_bus_lane <- false;
 
 	//lists of current vehicules present in the road 
 	list<Walk> present_pedestrians <- [];
 	list<Bike> present_bikes <- [];
 	Queue present_transports <- [];
+	Queue present_buses <- [];
 
 	//This list store all the incoming transports requests by chronological order
 	//waiting_transports = [[float time_request, Transport t]]
@@ -102,13 +105,12 @@ species Road {
 		create SortedMap {
 			myself.waiting_transports <- self;
 		}
-
 		create Queue {
 			myself.present_transports <- self;
 		}
-		
-		
-
+		create Queue {
+			myself.present_buses <- self;
+		}
 	}
 
 	action enterRequest (Transport t, float request_time) {
@@ -129,6 +131,26 @@ species Road {
 					do setEntryTime(request_time with_precision 3);
 				}
 
+			}
+			
+			match Bus{
+				if not has_bus_lane {
+					if hasCapacity(t.size) {
+						ask t {
+							myself.current_capacity <- myself.current_capacity - t.size;
+							do setEntryTime(request_time with_precision 3);
+						}
+					} else {
+						ask waiting_transports {
+							do add([request_time, t]);
+						}
+					}
+				}else{
+					ask t {
+							myself.current_capacity <- myself.current_capacity - t.size;
+							do setEntryTime(request_time with_precision 3);
+					}
+				}
 			}
 
 			default {
@@ -183,7 +205,6 @@ species Road {
 					float leave_time <- entry_time + getRoadTravelTime(myself);
 					do setLeaveTime(leave_time with_precision 3);
 				}
-
 			}
 
 			match Walk {
@@ -192,7 +213,32 @@ species Road {
 					float leave_time <- entry_time + getRoadTravelTime(myself);
 					do setLeaveTime(leave_time with_precision 3);
 				}
-
+			}
+			
+			match Bus {
+				float leave_time;
+				ask t {
+					leave_time <- entry_time + getRoadTravelTime(myself);
+				}
+				if has_bus_lane{
+					if present_buses.isEmpty() {
+						ask t {
+							do setLeaveTime(leave_time with_precision 3);
+						}
+					}
+					ask present_buses {
+						do add([leave_time, t]);
+					}
+				}else{
+					if present_transports.isEmpty() {
+						ask t {
+							do setLeaveTime(leave_time with_precision 3);
+						}
+					}
+					ask present_transports {
+						do add([leave_time, t]);
+					}
+				}
 			}
 
 			default {
@@ -204,7 +250,6 @@ species Road {
 					ask t {
 						do setLeaveTime(leave_time with_precision 3);
 					}
-
 				}
 
 				ask present_transports {
@@ -229,6 +274,30 @@ species Road {
 
 			match Walk {
 				remove t from: present_pedestrians;
+			}
+			
+			match Bus {
+				if has_bus_lane{
+					ask present_buses {
+						do remove;
+					}
+					if not present_transports.isEmpty() {
+						ask getHeadPresentBus() {
+							do setLeaveTime(max(myself.getHeadPresentBusLeaveTime(), signal_time + myself.output_flow_capacity) with_precision 3);
+						}
+					}
+				}else{
+					current_capacity <- current_capacity + t.size;
+					ask present_transports {
+						do remove;
+					}
+					do acceptTransport(signal_time);
+					if not present_transports.isEmpty() {
+						ask getHeadPresentTransport() {
+							do setLeaveTime(max(myself.getHeadPresentTransportLeaveTime(), signal_time + myself.output_flow_capacity) with_precision 3);
+						}
+					}
+				}
 			}
 
 			default {
@@ -257,6 +326,14 @@ species Road {
 
 	Transport getHeadPresentTransport {
 		return Transport(present_transports.element()[1]);
+	}
+	
+	float getHeadPresentBusLeaveTime {
+		return float(present_buses.element()[0]);
+	}
+
+	Bus getHeadPresentBus {
+		return Bus(present_buses.element()[1]);
 	}
 
 	float getWaitingTimeRequest (int index) {

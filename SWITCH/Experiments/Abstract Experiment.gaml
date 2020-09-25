@@ -44,7 +44,7 @@ experiment "Abstract Experiment" virtual: true {
 	}
 
 	output {
-		layout #split parameters: false navigator: false editors: false consoles: false;
+		layout #split parameters: false navigator: false editors: false consoles: true;
 		display "Current Distribution" type: java2D background: background {
 			chart "Current activity distribution" type: pie style: exploded size:{1,0.5} position: {0, 0} background: background{
 				loop acti over: activity_list {
@@ -107,49 +107,16 @@ experiment "Abstract Experiment" virtual: true {
 				data "bike" value: mode_cumulative_stat["bike"] accumulate_values: true	color:colors_per_mobility_mode["bike"];
 				data "bus" value: mode_cumulative_stat["bus"] accumulate_values: true	color:colors_per_mobility_mode["bus"];
 				data "walk" value: mode_cumulative_stat["walk"] accumulate_values: true	color:colors_per_mobility_mode["walk"];
-
 			}
 		}
-
-		/*display activity_charts refresh: every(1 #mn) {
-			chart "activities during week"  size: {1.0,0.5} background: #darkgray{
-				loop act over: colors_per_act.keys {
-					data act.name color: colors_per_act[act] value: Individual count (each.current_activity = act);
-				}
-			}
-			chart "activities" type: pie size: {1.0,0.5} position: {0.0,0.5} background: #darkgray {
-				loop act over: colors_per_act.keys {
-					data act.name color: colors_per_act[act] value: Individual count (each.current_activity = act);
-				}
-			}
-		}*/
-/*display execution_times{
-			chart "cumulatives executions times (in ms)" size: {1.0,0.5}{
-				loop function over: the_logger.exec_times.keys{
-					data function color: the_logger.color_exec_times[function] value: sum(the_logger.exec_times[function]) thickness: 2.5 marker: false;
-				}
-			}
-		}*/
-/*display event_number{
-			chart "registered events number" size: {1.0,0.5}{
-				data "nb_event" color: #black value: length(EventManager[0].events_map.data) thickness: 2.5 marker: false;
+		display "How many transports during day" type: java2D background: background {
+			chart "How many travels by modes every step?" type: series style:stack background: #white {
+				data "car" value: length(Car) color:colors_per_mobility_mode["car"] thickness: 2.5 marker: false; 
+				data "bike" value: length(Bike)	color:colors_per_mobility_mode["bike"] thickness: 2.5 marker: false;
+				data "bus" value: length(Bus) color:colors_per_mobility_mode["bus"] thickness: 2.5 marker: false;
+				data "walk" value: length(Walk)	color:colors_per_mobility_mode["walk"] thickness: 2.5 marker: false;
 			}
 		}
-		
-		display occupation_ratio{
-			chart "average road occupation ratio" size: {1.0,0.5}{
-				data "avg road occupation" color: #blue value: mean(Road collect each.occupation_ratio) thickness: 2.5 marker: false;
-				data "avg road occupation near work places" color: #red value: mean(road_near_work collect each.occupation_ratio) thickness: 2.5 marker: false;
-			}
-		}
-		
-		display delay_times{
-			chart "average delay times(in s)" size: {1.0,0.5} type:histogram{
-				loop key over: the_logger.late_times_by_transports_modes_during_day.keys{
-					data key value: mean(the_logger.late_times_by_transports_modes_during_day[key]["car"]) thickness: 2.5 marker: false;
-				}
-			}
-		}*/
 	}
 
 }
