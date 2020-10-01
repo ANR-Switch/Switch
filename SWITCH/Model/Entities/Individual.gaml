@@ -53,14 +53,6 @@ species Individual parent:Passenger{
 		color <- colors_per_act[current_activity];
 	}
 	
-	bool has_car{
-		return not (car_place = nil);
-	}
-	
-	bool has_bike{
-		return not (bike_place = nil);
-	}
-	
 	action registerNextActivity{
 		if length(day_agenda) > 0{
 			ask EventManager{
@@ -173,12 +165,10 @@ species Individual parent:Passenger{
 		}
 	}
 	
-	
-	
 	//compute a trip acording to priority and target
 	action compute_transport_trip(point target_){
 		transport_trip <- [];
-		switch prefered_transport_mode {
+		switch transport_choice() {
 			match "car"{
 				transport_trip << ["walk",location, car_place];
 				point target_parking <- any_location_in(Road closest_to target_);
@@ -245,6 +235,10 @@ species Individual parent:Passenger{
 			}
 		}
 	}
+	
+	string transport_choice{
+		return prefered_transport_mode;
+	}
 
 	
 	action useCar(list<Individual> passengers_, point pos_target_){
@@ -264,6 +258,14 @@ species Individual parent:Passenger{
 		if (current_walk = nil) {
 			current_walk <- world.createWalk(self.location,pos_target_,passengers_, time);
 		}
+	}
+	
+	bool hasCar{
+		return not (car_place = nil);
+	}
+	
+	bool hasBike{
+		return not (bike_place = nil);
 	}
 	
 	aspect default {
