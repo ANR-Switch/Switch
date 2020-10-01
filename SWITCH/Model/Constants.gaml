@@ -22,8 +22,10 @@ global {
 	string act_shopping <- "shopping";
 	string act_leisure <- "leisure";
 	string act_sport <- "sport";
+	string act_manage_kid <- "manage kid";
 	string act_other <- "other activity";
-	
+	list<string> activity_list <- [act_studying,act_working,act_home,act_friend,act_eating,act_shopping,act_leisure,act_sport,act_manage_kid,act_other];
+	list<string> mode_list <- ["car","bike","bus","walk"];
 	
 	predicate studying <- new_predicate(act_studying);
 	predicate working <- new_predicate(act_working);
@@ -33,6 +35,7 @@ global {
 	predicate eating <- new_predicate(act_eating);
 	predicate shopping <- new_predicate(act_shopping);
 	predicate practicing_sport <- new_predicate(act_sport);
+	predicate manage_kid <- new_predicate(act_manage_kid);
 	predicate doing_other_act <- new_predicate(act_other);
 	
 	predicate at_target <- new_predicate("at target");
@@ -49,6 +52,15 @@ global {
 	list<string> OSM_work_place <- ['office',"estate_agent","public","civic","government","manufacture","company"];
 	list<string> OSM_school <- ["school"];
 	
+	//****************************************************
+	
+	// color constants
+	map<predicate,rgb> colors_per_act <- [staying_at_home::#blue, working::#red, studying:: #cyan, leisure::#magenta, visiting_friend::#pink, eating::#darkorange, shopping::#gold, practicing_sport::#cyan, manage_kid::#grey, doing_other_act::#gray];
+	
+	map<string,rgb> colors_per_act_string <- [(staying_at_home.name)::#blue, (working.name)::#red, (studying.name):: #cyan, (leisure.name)::#magenta, (visiting_friend.name)::#pink, (eating.name)::#darkorange, (shopping.name)::#gold, (practicing_sport.name)::#cyan, (manage_kid.name)::#grey, (doing_other_act.name)::#gray];
+	
+	map<string,rgb> colors_per_mobility_mode <- ["car"::#olivedrab, "bike"::#maroon, "bus"::#palegreen, "walk"::#blueviolet,"none"::#gray];
+
 	// ************Traffic Constants**********************
 	//Graph of the road network
 	graph<Crossroad,Road> road_network;
@@ -137,4 +149,32 @@ global {
 	string student <- "student" const: true;
 	string unemployed <- "unemployed" const: true;
 	string none <- "none" const: true;
+	
+	//**********************************************************		       
+	
+	list<string> retired_classic <- ["eating midday","stay at home afternoon"];
+	list<string> retired_leisure1 <- ["leisure morning","eating midday","leisure afternoon","stay at home evening"];
+	list<string> retired_leisure2 <- ["eating midday","leisure afternoon","stay at home evening"];
+	list<string> retired_leisure3 <- ["leisure morning","eating midday","stay at home afternoon"];
+	list<string> retired_shopping1 <- ["shopping morning","eating midday","stay at home afternoon"];
+	list<string> retired_shopping2 <- ["eating midday","shopping afternoon","stay at home evening"];
+	
+	list<string> student_classic <- ["studying morning","eating midday","studying afternoon","stay at home evening"];
+	list<string> student_sleep_bonus <- ["eating midday","studying afternoon","stay at home evening"];
+	list<string> student_leisure <- ["studying morning","eating midday","leisure afternoon","stay at home afternoon"];
+	list<string> student_classic_leisure <- ["studying morning","eating midday","studying afternoon","leisure evening","stay at home night"];
+	
+	list<string> active_nokid_classic <- ["working morning","eating midday","working afternoon","stay at home evening"];
+	list<string> active_nokid_with_leisure <- ["working morning","eating midday","working afternoon","leisure evening","stay at home night"];
+	list<string> active_nokid_with_shopping <- ["working morning","eating midday","working afternoon","shopping evening","stay at home night"];
+	
+	list<string> active_with_kid_classic <- ["manage kid morning","working morning","eating midday","working afternoon","manage kid evening","stay at home evening"];
+	
+	map<string,list<list<string>>> activity_chains_by_social_class <-
+		[
+			"retired"::[retired_classic,retired_leisure1,retired_leisure2,retired_leisure3,retired_shopping1,retired_shopping2],
+			"student"::[student_classic,student_sleep_bonus,student_leisure,student_classic_leisure],
+			"active"::[active_nokid_classic,active_nokid_with_leisure,active_nokid_with_shopping],
+			"active with kid"::[active_with_kid_classic]
+		];
 }

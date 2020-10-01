@@ -17,6 +17,7 @@ species SortedMap {
 	action add(list list_to_add){
 		//Dichotomic search of the insertion index
 		int insert_index <- indexSearch(float(list_to_add[0]));
+		
 		if insert_index = -1{
 			add list_to_add at:0 to: data;
 		}else if insert_index= length(data)-1{
@@ -34,9 +35,9 @@ species SortedMap {
 		remove data[index] from: data;
 	}
 	
-	action remove(list list_to_remove){
+	/*action remove(list list_to_remove){
 		remove list_to_remove from: data;
-	}
+	}*/
 	
 	bool isEmpty{
 		return length(data) = 0;

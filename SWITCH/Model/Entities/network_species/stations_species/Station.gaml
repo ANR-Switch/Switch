@@ -20,22 +20,13 @@ species Station {
 	list<TransportLine> lines <- [];
 	
 	//key=TransportLine_id list=[Passenger waiting_passenger :: Station destination]
-	map<string, list<pair<Passenger,Station>>> waiting_passengers <- [];
+	map<string, list<list>> waiting_passengers <- [];
 
 	action waitAtStation(Passenger p, string transportLine_id, Station destination){
 		if waiting_passengers[transportLine_id] != nil{
-			waiting_passengers[transportLine_id] << p::destination;
+			waiting_passengers[transportLine_id] << [p,destination];
 		}else{
-			waiting_passengers[transportLine_id] <- [p::destination];
-		}
-		p.status <- "waiting at station";
-	}
-	
-	action collectPassenger(PublicTransport tp){
-		if waiting_passengers[tp.transportLine_id] != nil{
-			loop passenger over: waiting_passengers[tp.transportLine_id]{
-				
-			}
+			waiting_passengers[transportLine_id] <- [[p,destination]];
 		}
 	}
 	

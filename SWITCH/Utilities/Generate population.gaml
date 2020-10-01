@@ -90,8 +90,8 @@ global {
 					"age":: age,
 					"gender"::gender,
 					"category"::category,
-					"work_pl":: work_building = nil ? -2 :((work_building = the_outside) ? -1 : work_building.id),
-					"home_pl":: home_building.id,
+					"work_pl":: work_place = nil ? -2 :((work_place = the_outside) ? -1 : work_place.id),
+					"home_pl":: home_place.id,
 					"rels"::string(relatives collect int(each)),
 					"frs"::string(friends collect int(each)),
 					"colls"::string(colleagues collect int(each))];
@@ -105,8 +105,8 @@ global {
 				"age":: age,
 				"gender"::gender,
 				"category"::category,
-				"work_pl":: work_building = nil ? -2 :((work_building = the_outside) ? -1 : work_building.id),
-				"home_pl":: home_building.id,
+				"work_pl":: work_place = nil ? -2 :((work_place = the_outside) ? -1 : work_place.id),
+				"home_pl":: home_place.id,
 				"rels"::string(relatives collect int(each)),
 				"frs"::string(friends collect int(each)),
 				"colls"::string(colleagues collect int(each))
@@ -168,7 +168,7 @@ global {
 					create Individual {
 						age <- rnd(max_student_age + 1,retirement_age);
 						gender <- "M";
-						home_building <- myself;
+						home_place <- myself;
 						household << self;
 						sub_area <- myself.sub_area;
 					} 
@@ -176,7 +176,7 @@ global {
 					create Individual {
 						age <- rnd(max_student_age + 1,retirement_age);
 						gender <- "F";
-						home_building <- myself;
+						home_place <- myself;
 						household << self;
 						sub_area <- myself.sub_area;
 					
@@ -188,7 +188,7 @@ global {
 							//last_activity <-first(staying_home);
 							age <- rnd(0,max_student_age);
 							gender <- one_of(["M", "F"]);
-							home_building <- myself;
+							home_place <- myself;
 							household << self;
 							sub_area <- myself.sub_area;
 						}
@@ -198,7 +198,7 @@ global {
 							category <- retired;
 							age <- rnd(retirement_age + 1, max_age);
 							gender <- "M";
-							home_building <- myself;
+							home_place <- myself;
 							household << self;
 							sub_area <- myself.sub_area;
 						}
@@ -208,7 +208,7 @@ global {
 							category <- retired;
 							age <- rnd(retirement_age + 1, max_age);
 							gender <- "F";
-							home_building <- myself;
+							home_place <- myself;
 							household << self;
 							sub_area <- myself.sub_area;
 						}
@@ -217,7 +217,7 @@ global {
 					create Individual {
 						age <- rnd(min_student_age + 1,max_age);
 						gender <- one_of(["M", "F"]);
-						home_building <- myself;
+						home_place <- myself;
 						household << self;
 						category <- age > retirement_age ? retired : none;
 						sub_area <- myself.sub_area;
@@ -231,7 +231,7 @@ global {
 			}
 		}
 		ask Individual {
-			location <- any_location_in(home_building);
+			location <- any_location_in(home_place);
 		}
 		ask Individual where ((each.age >= max_student_age) and (each.age < retirement_age)) {
 			category <- flip((gender = "M") ? proba_unemployed_M : proba_unemployed_F) ? unemployed : worker;
@@ -255,13 +255,13 @@ global {
 			if (category = worker) {
 				int nb_colleagues <- max(0,int(gauss(nb_work_colleagues_mean,nb_work_colleagues_std)));
 				if nb_colleagues > 0 {
-					colleagues <- nb_colleagues among (working_places[work_building] - self);
+					colleagues <- nb_colleagues among (working_places[work_place] - self);
 				}
 			} 
 			else if (category = student) {
 				int nb_classmates <- max(0,int(gauss(nb_classmates_mean,nb_classmates_std)));
 				if nb_classmates > 0 {
-					colleagues <- nb_classmates among ((schools[work_building] where ((each.age >= (age -1)) and (each.age <= (age + 1))))- self);
+					colleagues <- nb_classmates among ((schools[work_place] where ((each.age >= (age -1)) and (each.age <= (age + 1))))- self);
 				}
 			}
 		}
@@ -294,8 +294,8 @@ global {
 	 * 
 	 */
 	action create_social_networks(int min_student_age, int max_student_age) {
-		map<Building, list<Individual>> WP<- (Individual where (each.category = worker)) group_by each.work_building;
-		map<Building, list<Individual>> Sc<- (Individual where (each.category = student)) group_by each.work_building;
+		map<Building, list<Individual>> WP<- (Individual where (each.category = worker)) group_by each.work_place;
+		map<Building, list<Individual>> Sc<- (Individual where (each.category = student)) group_by each.work_place;
 		map<int,list<Individual>> ind_per_age_cat;
 		ind_per_age_cat[min_age_for_evening_act] <- [];
 		ind_per_age_cat[min_student_age] <- [];
@@ -334,22 +334,22 @@ global {
 					loop l over: schools.keys {
 						if (age >= min(l) and age <= max(l)) {
 							if (flip(proba_go_outside) or empty(schools[l])) {
-								work_building <- the_outside;	
+								work_place <- the_outside;	
 							} else {
 								switch choice_of_target_mode {
 									match random {
-										work_building <- one_of(schools[l]);
+										work_place <- one_of(schools[l]);
 									}
 									match closest {
-										work_building <- schools[l] closest_to self;
+										work_place <- schools[l] closest_to self;
 									}
 									match gravity {
 										list<float> proba_per_building;
 										loop b over: schools[l] {
-											float dist <- max(20,b.location distance_to home_building.location);
+											float dist <- max(20,b.location distance_to home_place.location);
 											proba_per_building << (b.shape.area / dist ^ gravity_power);
 										}
-										work_building <- schools[l][rnd_choice(proba_per_building)];	
+										work_place <- schools[l][rnd_choice(proba_per_building)];	
 									}
 								}
 								
@@ -358,26 +358,26 @@ global {
 					}
 				} else if (age < retirement_age) { 
 					if flip(proba_work_at_home) {
-						work_building <- home_building;
+						work_place <- home_place;
 					}
 					else if (flip(proba_go_outside) or empty(working_places)) {
-						work_building <- the_outside;	
+						work_place <- the_outside;	
 					} else {
 						switch choice_of_target_mode {
 							match random {
-								work_building <- working_places.keys[rnd_choice(working_places.values)];
+								work_place <- working_places.keys[rnd_choice(working_places.values)];
 								
 							}
 							match closest {
-								work_building <- working_places.keys closest_to self;
+								work_place <- working_places.keys closest_to self;
 							}
 							match gravity {
 								list<float> proba_per_building;
 								loop b over: working_places.keys {
-									float dist <-  max(20,b.location distance_to home_building.location);
+									float dist <-  max(20,b.location distance_to home_place.location);
 									proba_per_building << (working_places[b]  / (dist ^ gravity_power));
 								}
-								work_building <- working_places.keys[rnd_choice(proba_per_building)];	
+								work_place <- working_places.keys[rnd_choice(proba_per_building)];	
 							}
 						}
 					}

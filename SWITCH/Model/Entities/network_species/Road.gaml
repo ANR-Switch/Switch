@@ -9,11 +9,14 @@ model SWITCH
 import "Crossroad.gaml"
 import "../../Constants.gaml"
 import "../../Parameters.gaml"
+import "../../logger.gaml"
 import "../transport_species/Transport.gaml"
 import "../transport_species/Bike.gaml"
 import "../transport_species/Walk.gaml"
+import "../transport_species/Bus.gaml"
 import "../data_structure_species/SortedMap.gaml"
 import "../data_structure_species/Queue.gaml"
+
 species Road {
 
 //type of road (the OpenStreetMap highway feature: https://wiki.openstreetmap.org/wiki/Map_Features)
@@ -28,6 +31,8 @@ species Road {
 
 	//end crossroad node
 	Crossroad end_node;
+	
+	point trans;
 
 	//maximum legal speed on this road
 	float max_speed;
@@ -44,7 +49,7 @@ species Road {
 	//foot=no means pedestrians are not allowed
 	string foot;
 
-	//bicycle=no means pedestrians are not allowed
+	//bicycle=no means bikes are not allowed
 	string bicycle;
 
 	// access=no means car are not allowed
@@ -73,17 +78,21 @@ species Road {
 
 	//actual free space capacity of the road (in meters)
 	float current_capacity <- max_capacity min: 0.0 max: max_capacity;
-
-	float occupation_ratio -> (max_capacity - current_capacity) / max_capacity;
+	
+	bool is_jammed function: (occupation_ratio > jam_threshold) and (max_capacity > 25.0);
+	
+	float occupation_ratio function: (max_capacity - current_capacity) / max_capacity;
 	
 	//has_bike_lane = true if there is a specific lane for bikes in this road
 	//				= false if not
 	bool has_bike_lane <- false;
+	bool has_bus_lane <- false;
 
 	//lists of current vehicules present in the road 
 	list<Walk> present_pedestrians <- [];
 	list<Bike> present_bikes <- [];
 	Queue present_transports <- [];
+	Queue present_buses <- [];
 
 	//This list store all the incoming transports requests by chronological order
 	//waiting_transports = [[float time_request, Transport t]]
@@ -96,11 +105,12 @@ species Road {
 		create SortedMap {
 			myself.waiting_transports <- self;
 		}
-
 		create Queue {
 			myself.present_transports <- self;
 		}
-
+		create Queue {
+			myself.present_buses <- self;
+		}
 	}
 
 	action enterRequest (Transport t, float request_time) {
@@ -122,15 +132,33 @@ species Road {
 				}
 
 			}
+			
+			match Bus{
+				if not has_bus_lane {
+					if hasCapacity(t.size) {
+						ask t {
+							myself.current_capacity <- myself.current_capacity - t.size;
+							do setEntryTime(request_time with_precision 3);
+						}
+					} else {
+						ask waiting_transports {
+							do add([request_time, t]);
+						}
+					}
+				}else{
+					ask t {
+							myself.current_capacity <- myself.current_capacity - t.size;
+							do setEntryTime(request_time with_precision 3);
+					}
+				}
+			}
 
 			default {
 				if hasCapacity(t.size) {
 					ask t {
-						listactions <- listactions + " " + request_time + " I'll be entering at " + request_time + "(" + path_to_target + ")\n";
 						myself.current_capacity <- myself.current_capacity - t.size;
 						do setEntryTime(request_time with_precision 3);
 					}
-
 				} else {
 					ask waiting_transports {
 						do add([request_time, t]);
@@ -151,13 +179,11 @@ species Road {
 			int delay <- 0;
 			loop while: hasCapacity(t.size) and not waiting_transports.isEmpty() {
 				ask t {
-					listactions <- listactions + " " + entry_time + " AcceptTransport " + entry_time + delay + "(" + path_to_target + ")\n";
 					myself.current_capacity <- myself.current_capacity - t.size;
 					do setEntryTime(entry_time with_precision 3);
 				}
-
 				ask waiting_transports {
-					do remove([request_time, t]);
+					do remove(0);
 				}
 
 				if not waiting_transports.isEmpty() {
@@ -179,7 +205,6 @@ species Road {
 					float leave_time <- entry_time + getRoadTravelTime(myself);
 					do setLeaveTime(leave_time with_precision 3);
 				}
-
 			}
 
 			match Walk {
@@ -188,32 +213,52 @@ species Road {
 					float leave_time <- entry_time + getRoadTravelTime(myself);
 					do setLeaveTime(leave_time with_precision 3);
 				}
-
+			}
+			
+			match Bus {
+				float leave_time;
+				ask t {
+					leave_time <- entry_time + getRoadTravelTime(myself);
+				}
+				if has_bus_lane{
+					if present_buses.isEmpty() {
+						ask t {
+							do setLeaveTime(leave_time with_precision 3);
+						}
+					}
+					ask present_buses {
+						do add([leave_time, t]);
+					}
+				}else{
+					if present_transports.isEmpty() {
+						ask t {
+							do setLeaveTime(leave_time with_precision 3);
+						}
+					}
+					ask present_transports {
+						do add([leave_time, t]);
+					}
+				}
 			}
 
 			default {
 				float leave_time;
 				ask t {
 					leave_time <- entry_time + getRoadTravelTime(myself);
-					listactions <- listactions + " " + entry_time + " Will leave at " + leave_time + "(" + path_to_target + ")\n";
 				}
-
 				if present_transports.isEmpty() {
 					ask t {
-						listactions <- listactions + " " + entry_time + " I'm alone, so i'll leave at " + leave_time + "(" + path_to_target + ")\n";
 						do setLeaveTime(leave_time with_precision 3);
 					}
-
 				}
 
 				ask present_transports {
 					do add([leave_time, t]);
 				}
-
 			}
 
 		}
-
+		
 	}
 
 	//action called by a transport when it leaves the road
@@ -221,8 +266,7 @@ species Road {
 		switch species(t) {
 			match Bike {
 				if not has_bike_lane {
-					float gainedCapacity <- t.size;
-					current_capacity <- current_capacity + gainedCapacity;
+					current_capacity <- current_capacity + t.size;
 				}
 
 				remove t from: present_bikes;
@@ -231,10 +275,33 @@ species Road {
 			match Walk {
 				remove t from: present_pedestrians;
 			}
+			
+			match Bus {
+				if has_bus_lane{
+					ask present_buses {
+						do remove;
+					}
+					if not present_transports.isEmpty() {
+						ask getHeadPresentBus() {
+							do setLeaveTime(max(myself.getHeadPresentBusLeaveTime(), signal_time + myself.output_flow_capacity) with_precision 3);
+						}
+					}
+				}else{
+					current_capacity <- current_capacity + t.size;
+					ask present_transports {
+						do remove;
+					}
+					do acceptTransport(signal_time);
+					if not present_transports.isEmpty() {
+						ask getHeadPresentTransport() {
+							do setLeaveTime(max(myself.getHeadPresentTransportLeaveTime(), signal_time + myself.output_flow_capacity) with_precision 3);
+						}
+					}
+				}
+			}
 
 			default {
-				float gainedCapacity <- t.size;
-				current_capacity <- current_capacity + gainedCapacity;
+				current_capacity <- current_capacity + t.size;
 				ask present_transports {
 					do remove;
 				}
@@ -242,8 +309,6 @@ species Road {
 				do acceptTransport(signal_time);
 				if not present_transports.isEmpty() {
 					ask getHeadPresentTransport() {
-						listactions <- listactions + " " + signal_time + " The car in front of me has left the road. Will leave the road at " + (signal_time + 1) + ", I'll be in front of the road at " + max(myself.getHeadPresentTransportLeaveTime(), signal_time + 1) + "(" + path_to_target + ")\n";
-						if self.test_mode { do addPointReachedEndRoad(signal_time); }
 						do setLeaveTime(max(myself.getHeadPresentTransportLeaveTime(), signal_time + myself.output_flow_capacity) with_precision 3);
 					}
 
@@ -262,6 +327,14 @@ species Road {
 	Transport getHeadPresentTransport {
 		return Transport(present_transports.element()[1]);
 	}
+	
+	float getHeadPresentBusLeaveTime {
+		return float(present_buses.element()[0]);
+	}
+
+	Bus getHeadPresentBus {
+		return Bus(present_buses.element()[1]);
+	}
 
 	float getWaitingTimeRequest (int index) {
 		return float(waiting_transports.get(index)[0]);
@@ -271,16 +344,14 @@ species Road {
 		return Transport(waiting_transports.get(index)[1]);
 	}
 
-	bool isJammed{
-		return occupation_ratio > jam_threshold;
-	}
 	bool hasCapacity (float capacity) {
 		return current_capacity > capacity;
 	}
-
+	
 	aspect default {
 		geometry geom_display <- (shape + (2.0));
-		draw geom_display border: #gray color: rgb(255 * (max_capacity - current_capacity) / max_capacity, 0, 0);
+		
+		draw geom_display translated_by(trans*2) border: #gray color: rgb(255 * (max_capacity - current_capacity) / max_capacity, 0, 0);
 	}
 
 	aspect advanced {

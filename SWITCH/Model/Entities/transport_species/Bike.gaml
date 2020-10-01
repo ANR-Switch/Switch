@@ -25,17 +25,15 @@ species Bike parent: PrivateTransport {
 		return r.size / max_speed_formula;
 	}	
 	
-	action endTrip{
+	action endTrip(float arrived_time){
+		do registerDataInfo(arrived_time);
 		location <- pos_target;
 		loop passenger over:passengers{
 			// we assumed that the first passenger is always the transport owner
 			if passenger = passengers[0]{ passenger.bike_place <- location;}
-			passenger.status <- "arrived";
+			ask passenger{ do setSignal(arrived_time, "arrived");}
 			passenger.location <- location;
 			passenger.current_bike <- nil;
-			ask passenger {
-				do addTransportTravelTime(myself, myself.practical_trip_time with_precision 3, myself.theoric_trip_time with_precision 3);
-			}
 		}
 		do die;
 	}

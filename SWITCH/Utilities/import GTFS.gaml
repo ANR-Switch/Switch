@@ -152,32 +152,10 @@ global {
 							point stop_location <- myself.string2point(stop[4],stop[3]);
 							switch transport_type{
 								match 0{
-									create StationTram{
-										id <- stop[0];
-										name <- stop[2];
-										location <- stop_location;
-										// We check if the stop is near (20m) a road of the simulation
-										// if it isn't we kill it
-										if length(Road at_distance 20.0) >0{
-											station_map[id]<-self;
-										}else{
-											do die;
-										}
-									}
+									//TODO
 								}
 								match 1{
-									create StationMetro{
-										id <- stop[0];
-										name <- stop[2];
-										location <- stop_location;
-										// We check if the stop is near (20m) a road of the simulation
-										// if it isn't we kill it
-										if length(Road at_distance 20.0) >0{
-											station_map[id]<-self;
-										}else{
-											do die;
-										}
-									}
+									//TODO
 								}
 								match 3{
 									create StationBus{
@@ -220,10 +198,18 @@ global {
 		}
 		
 		ask TransportLine{
-			//if a trip has one station or less to collect then we remove it (useless trip)
+		
 			loop trip over: trips.keys{
 				if length(trips[trip]) <= 1 {
+					//if a trip has one station or less to collect then we remove it (useless trip)
 					remove trips[trip] from: trips;
+				}else{
+					//else we add its served stations to the attribute list in TransportLine
+					loop trip_step over: trips[trip]{
+						if not (served_stations contains Station(trip_step[2])){
+							served_stations << Station(trip_step[2]);
+						}
+					}
 				}
 			}
 			//if the transportLine has no trips planned then we kill it
@@ -255,10 +241,8 @@ global {
 	list<string> getServiceIdsFromDate(date today){
 		list<string> service_ids_for_today <- [];
 		int day_of_the_week <- date2day(today);
-		//in case day_of_the_week = 0 (sunday) we adjust it so it point towards the sunday columns (the 7) in the calendar map 
-		day_of_the_week <- day_of_the_week = 0 ? 7 : day_of_the_week;
 		loop services_date over: calendar_map.keys{
-			if int(calendar_map[services_date][day_of_the_week])=1{
+			if int(calendar_map[services_date][day_of_the_week+1])=1{
 				date start_date_ <- string2date(calendar_map[services_date][8]);
 				date end_date_ <- string2date(calendar_map[services_date][9]);
 				if (today - start_date_ >=0 ) and (today - end_date_ <=0){
@@ -297,7 +281,10 @@ global {
 			match 11{month_code <- 2;}
 			match 12{month_code <- 4;}
 		}
-		return ((day_code mod 7) + (year_code mod 7) + month_code) mod 7;
+		int day <- ((day_code mod 7) + (year_code mod 7) + month_code) mod 7;
+		// actually day is like monday =1 tuesday = 2 .... saturday = 6 sunday =0 so we add a condition to have the return value like
+		// monday = 0 tuesday = 1 .... saturday = 5 sunday = 6
+		return day != 0 ? day -1 : 6; 
 		/*int day_num <- int(((day_code mod 7) + (year_code mod 7) + month_code) mod 7);
 		switch day_num{
 			match 1 {return "monday";}
@@ -308,6 +295,19 @@ global {
 			match 6 {return "saturday";}
 			match 0 {return "sunday";}
 		}*/
+	}
+	
+	//convert a time from GTFS format string (HH:mm:ss) to a GAMA date type
+	// /!\ the returned date has the year, month and day from the current_date
+	//     if the computed date is before current_date then the hour corresponds
+	//     to the next day so we add a day to the returned date
+	date hour2date(string time_){
+		date target_date <- date(time_,"HH:mm:ss");
+		target_date <- date(current_date.year,current_date.month,current_date.day, target_date.hour, target_date.minute, target_date.second);
+		if target_date before current_date{
+			target_date <- target_date add_days 1;
+		}
+		return target_date;
 	}
 	
 	point string2point(string lon, string lat){

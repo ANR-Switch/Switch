@@ -42,15 +42,13 @@ species Walk parent: PrivateTransport {
 		}
 	}
 	
-	action endTrip{
+	action endTrip(float arrived_time){
+		do registerDataInfo(arrived_time);
 		location <- pos_target;
 		loop passenger over:passengers{
-			passenger.status <- "arrived";
+			ask passenger{ do setSignal(arrived_time, "arrived");}
 			passenger.location <- location;
 			passenger.current_walk <- nil;
-			ask passenger {
-				do addTransportTravelTime(myself, myself.practical_trip_time with_precision 3, myself.theoric_trip_time with_precision 3);
-			}
 		}
 		do die;
 	}

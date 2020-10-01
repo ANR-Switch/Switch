@@ -10,17 +10,13 @@ import "Constants.gaml"
 
 global {
 	string dataset <- "../Datasets/Castanet Tolosan/"; // default
+	string population_dataset <- "../Datasets/populations/castanet_tolosan.shp";
 	
 	string weather <- "sunny" among: ["sunny","rainy","stormy",nil];
 	
 	//if empty, all;
 	list<string> sub_areas <- [];
 	//list<string> sub_areas <- ["MERVILLA"];
-	
-		
-	map<predicate,rgb> colors_per_act <- [staying_at_home::#blue, working::#red, studying:: #chartreuse, leisure::#magenta, visiting_friend::#pink, eating::#orange, shopping::#gold, practicing_sport::#cyan, doing_other_act::#gray];
-	map<string,rgb> colors_per_mobility_mode <- ["car"::#olivedrab, "bike"::#maroon, "bus"::#palegreen, "walk"::#blueviolet];
-	
 	
 	//file road_shapefile <- shape_file(dataset+"roads.shp");
 	//file building_shapefile <- shape_file(dataset+"buildings.shp");
@@ -35,8 +31,8 @@ global {
 	list<string> type_mode <- ["car","bus","bike","walk"];
 	list<string> criteria <- ["comfort", "safety", "price","ecology","simplicity","time"];
 	//Step value
-	float normal_step <- 30 #sec;
-	float fast_step <- 15 #mn;
+	float normal_step <- 1 #mn;
+	float fast_step <- 30 #mn;
 	
 	float step <- normal_step;
 	
@@ -84,7 +80,7 @@ global {
 	 
 	 list<predicate> activity_predicates <- [studying, working, staying_at_home,visiting_friend,leisure,eating,shopping,practicing_sport,doing_other_act];
 	
-	
+
 	//for each category of age, and for each sex, the weight of the different activities
 	map<list<int>,map<string,map<string,float>>> weight_activity_per_age_sex_class <- [
 		 [0,10] :: 
@@ -199,5 +195,70 @@ global {
 	// building type that will considered as school (ou university) - for each type, the min and max age to go to this type of school.
 	map<list<int>,string> possible_schools <- [[3,18]::"school", [19,23]::"university"]; 
 	
+	//*****************Stochastic distribution for population generation**************************
+	map<string,float> prefered_tp_mode_proba <-
+			["car"::0.6,
+			 "bus"::0.15,
+			 "walk"::0.10,
+			 "bike"::0.15	
+			];
+			
+	map<string,float> social_class_distrib <-
+		[
+			"retired"::0.1,
+			"student"::0.3,
+			"active"::0.4,
+			"active with kid"::0.2
+		];		
+			
+	map<string,pair<float,float>> activity_start_distrib <- 
+	[
+		"eating midday"::pair(43200.0, 3600.0),
+		
+		"stay at home morning"::pair(28800.0, 2500.0),
+		"stay at home afternoon"::pair(50400.0, 1800.0),
+		"stay at home evening"::pair(64800.0, 2500.0),
+		"stay at home night"::pair(79200.0, 5000.0),
+		
+		"leisure morning"::pair(36000.0, 2500.0),
+		"leisure afternoon"::pair(50400.0, 1800.0),
+		"leisure evening"::pair(64800.0, 2500.0),
+		"leisure night"::pair(79200.0, 5000.0),
+		
+		"shopping morning"::pair(32400.0, 2500.0),
+		"shopping afternoon"::pair(50400.0, 1800.0),
+		"shopping evening"::pair(64800.0, 2500.0),
+		"shopping night"::pair(79200.0, 5000.0),
+		
+		"studying morning"::pair(32400.0, 2500.0),
+		"studying afternoon"::pair(50400.0, 1800.0),
+		"studying evening"::pair(64800.0, 2500.0),
+		"studying night"::pair(79200.0, 5000.0),
+		
+		"working morning"::pair(28800.0, 2500.0),
+		"working afternoon"::pair(50400.0, 1800.0),
+		"working evening"::pair(64800.0, 2500.0),
+		"working night"::pair(79200.0, 5000.0),
+		
+		"manage kid morning"::pair(32400.0, 2500.0),
+		"manage kid afternoon"::pair(50400.0, 1800.0),
+		"manage kid evening"::pair(64800.0, 2500.0),
+		"manage kid night"::pair(79200.0, 5000.0)
+	];		
 	
+	//********************************************************************************************
+	//*****************************Road parameters************************************************
+	
+	//sometimes there is dead lock so road may accept transports even if they are full
+	float ignore_capacity_constraint <- 0.00;
+	
+	//********************************************************************************************
+	
+	
+	
+	
+	//********************************************************************************************
+	//*****************************Visualisation parameters************************************************
+	bool isBuildingDisplayed <- true;
+	//********************************************************************************************
 }

@@ -32,6 +32,7 @@ species PrivateTransport parent: Transport {
 		path the_path <- path_between(available_graph, location, pos_target);
 		if (the_path = nil) {
 			write "PATH NIL //// TELEPORTATION ACTIVEEE !!!!!!";
+			
 			do endTrip;
 		} else {
 			path_to_target <- list<Road>(the_path.edges);			
@@ -46,7 +47,7 @@ species PrivateTransport parent: Transport {
 		}	
 	}
 	
-	action endTrip virtual:true;
+	action endTrip(float arrived_time) virtual:true;
 	
 	aspect default {
 		draw square(1 #px) color: #green border: #black;

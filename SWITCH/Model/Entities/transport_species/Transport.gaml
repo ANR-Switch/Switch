@@ -12,7 +12,7 @@ import "../network_species/Road.gaml"
 import "../EventManager.gaml"
 import "../EventListener.gaml"
 
-species Transport parent: EventListener{
+species Transport parent: EventListener virtual: true{
 	
 	string transport_mode <- "transport";
 	
@@ -35,66 +35,42 @@ species Transport parent: EventListener{
 
 	//list of roads that lead to the target
 	list<Road> path_to_target;
-	string listactions <- "";
-	string listEvent <- "";
-	string listEventManager <- "";
-
-	bool jammed_road <- false;
-	float last_entering_road <- time;
-	float time_in_jams <- 0.0;
-	float practical_trip_time <- 0.0;
-	float theoric_trip_time <- 0.0;
 	
-	//******* /!\ TESTING ATTRIBUTES and ACTION **********
-	bool test_mode <- false;
-	float traveled_dist <- 0.0;
-
-	action addPointReachedEndRoad(float time_){
-		traveled_dist <- traveled_dist + getCurrentRoad().size;
-		if (length(logger) >0) {
-			ask logger {
-				do add_transport_data(myself, time_, myself.traveled_dist);
-			}
-		}
-	}
-
-	action addPointEnterRoad(float time_){
-		if (length(logger) >0) {
-			ask logger {
-				do add_transport_data(myself, time_, myself.traveled_dist);
-			}
-		}
-	}
-	//****************************************************
+	//***********metrics about the trip*****************
+	float last_entry_time <- 0.0;
+	//theoric_trip_time is the cumulated trip time at free flow speed
+	float theoric_trip_time <- 0.0;
+	//actual_trip_time is the cumulated real trip_time 
+	float actual_trip_time <- 0.0;
+	//actual_trip_distance is the cumulated distance achieved by this transport 
+	float actual_trip_distance <- 0.0;
+	// jam_time is the cumulated trip time spend in jammed roads
+	float jam_time <- 0.0;
+	bool road_was_jammed <- false;
+	//*************************************************
 
 	action setSignal (float signal_time, string signal_type) {
 		switch signal_type {
 			match "enter road" {
-			//if we are leaving a road by entering another the transports averts the first road 
-				if test_mode { do addPointEnterRoad(signal_time); }
+				//if we are leaving a road by entering another the transports warns the first road 
 				do changeRoad(signal_time);
 				do updatePassengerPosition();
 			}
 			match "First in queue" {
-				listactions <- listactions + " " + signal_time + " First in Queue " + hasNextRoad() + " (" + path_to_target + ")\n";
 				if hasNextRoad() {
 					do sendEnterRequest(signal_time);
 				} else {
 				//the transport is arrived
-					listactions <- listactions + " " + signal_time + " There is no next road (" + path_to_target + ")\n";
-					if jammed_road {
-						time_in_jams <- time_in_jams + (signal_time - last_entering_road);
-					}
-					practical_trip_time <- practical_trip_time + (signal_time - last_entering_road);
-					theoric_trip_time <- theoric_trip_time + get_freeflow_travel_time(getCurrentRoad());
 					if getCurrentRoad() != nil{
+						actual_trip_time <- actual_trip_time + signal_time - last_entry_time;
+						actual_trip_distance <- actual_trip_distance + getCurrentRoad().size;
+						jam_time <- road_was_jammed ? jam_time + signal_time - last_entry_time : jam_time;
 						ask getCurrentRoad() {
 							do leave(myself, signal_time);
 						}
 					}
-					do endTrip();
+					do endTrip(signal_time);
 				}
-				lastAction <- "First in queue";
 			}
 		}
 	}
@@ -103,34 +79,26 @@ species Transport parent: EventListener{
 		Road current <- getCurrentRoad();
 		Road next <- getNextRoad();
 		if current != nil {
-			listactions <- listactions + " " + signal_time + " Leaving " + current.name + "(" + path_to_target + ")\n";
-			if jammed_road {
-				time_in_jams <- time_in_jams + (signal_time - last_entering_road);
-			}
-			practical_trip_time <- practical_trip_time + (signal_time - last_entering_road);
-			theoric_trip_time <- theoric_trip_time + get_freeflow_travel_time(current);
+			actual_trip_time <- actual_trip_time + signal_time - last_entry_time;
+			actual_trip_distance <- actual_trip_distance + current.size;
 			ask current {
 				do leave(myself, signal_time);
 			}
-			traveled_dist <- traveled_dist + getCurrentRoad().size;
 		}
 		remove first(path_to_target) from: path_to_target;
 		if (next != nil) {
-			listactions <- listactions + " " + signal_time + " Queing " + next.name + " TravelTime:" + getRoadTravelTime(next) + " (" + path_to_target + ")\n";
-			last_entering_road <- signal_time;
-			jammed_road <- next.isJammed();
+			last_entry_time <- signal_time;
+			theoric_trip_time <- theoric_trip_time + get_freeflow_travel_time(next);
+			road_was_jammed <- next.is_jammed;
 			ask next {
 				do queueInRoad(myself, signal_time);
 			}
-		} else {
-			listactions <- listactions + " " + signal_time + " Queing " + next.name + " End of the road " + " (" + path_to_target + ")\n";
 		}
 	}
 
 	//the parameter should point toward the next road in path_to_target
 	action sendEnterRequest (float request_time) {
 		if (hasNextRoad()) {
-			listactions <- listactions + " " + request_time + " Enter request " + getNextRoad().name + "(" + path_to_target + ")\n";
 			ask getNextRoad() {
 				do enterRequest(myself, request_time);
 			}
@@ -138,7 +106,6 @@ species Transport parent: EventListener{
 	}
 
 	action setEntryTime (float entry_time) {
-		listEvent <- listEvent + " " + entry_time + " Enter road/ ";
 		ask EventManager {
 			do registerEvent(entry_time, myself, "enter road");
 		}
@@ -146,8 +113,6 @@ species Transport parent: EventListener{
 	}
 
 	action setLeaveTime (float leave_time) {
-		if test_mode { do addPointReachedEndRoad; }
-		listEvent <- listEvent + " " + leave_time + " First In queue/ ";
 		ask EventManager {
 			do registerEvent(leave_time, myself, "First in queue");
 		}
@@ -170,7 +135,6 @@ species Transport parent: EventListener{
 		}else{
 			return distance_to(location,pos_target)/self.max_speed;
 		}
-		
 	}
 
 	bool hasNextRoad {
@@ -183,7 +147,6 @@ species Transport parent: EventListener{
 		} else {
 			return nil;
 		}
-
 	}
 
 	Road getCurrentRoad {
@@ -193,35 +156,20 @@ species Transport parent: EventListener{
 			return nil;
 		}
 	}
-
 	
-	
-	//this function return a convenient string corresponding to a time (in second)
-	string timestamp (float time_to_print) {
-		int nb_heure <- floor(time_to_print / 3600);
-		int nb_min <- floor((time_to_print - nb_heure * 3600) / 60);
-		int nb_sec <- floor(time_to_print - nb_heure * 3600 - nb_min * 60);
-		string buff <- "";
-		if nb_heure < 10 {
-			buff <- buff + "0";
+	action registerDataInfo(float add_time){
+		ask logger[0]{
+			if myself.actual_trip_time > 0{
+				do addDelayTime(myself.transport_mode,add_time,myself.actual_trip_time - myself.theoric_trip_time);
+				do addSpeed(myself.transport_mode,add_time,(myself.actual_trip_distance/myself.actual_trip_time)*3.6);
+			}
+			
 		}
-
-		buff <- buff + nb_heure + "h";
-		if nb_min < 10 {
-			buff <- buff + "0";
-		}
-
-		buff <- buff + nb_min + "m";
-		if nb_sec < 10 {
-			buff <- buff + "0";
-		}
-
-		return buff + nb_sec + "s";
 	}
 	
 	action updatePassengerPosition virtual: true;
 
-	action endTrip virtual:true;
+	action endTrip(float arrived_time) virtual:true;
 
 	aspect default {
 		draw square(1 #px) color: #green border: #black depth: 1.0;

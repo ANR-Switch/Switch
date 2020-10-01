@@ -20,18 +20,15 @@ species Car parent: PrivateTransport {
 		max_passenger <- 5;
 	}
 	
-	action endTrip{
+	action endTrip(float arrived_time){
+		do registerDataInfo(arrived_time);
 		location <- pos_target;
 		loop passenger over:passengers{
 			// we assumed that the first passenger is always the transport owner
 			if passenger = passengers[0]{ passenger.car_place <- location;}
-			passenger.status <- "arrived";
+			ask passenger{ do setSignal(arrived_time, "arrived");}
 			passenger.location <- location;
 			passenger.current_car <- nil;
-			ask passenger {
-				do addTimeSpentInJams(myself.time_in_jams);
-				do addTransportTravelTime(myself, myself.practical_trip_time with_precision 3, myself.theoric_trip_time with_precision 3);
-			}
 		}
 		do die;
 	}
