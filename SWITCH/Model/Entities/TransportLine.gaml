@@ -20,7 +20,6 @@ species TransportLine parent: EventListener{
 	string id;
 	string short_name;
 	string long_name;
-	
 	//3=bus 0=tram 1=metro
 	int transport_type;
 	
